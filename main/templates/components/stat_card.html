@@ -1,0 +1,43 @@
+{% comment %}
+Composant réutilisable pour les cartes de statistiques
+
+Usage:
+{% include 'components/stat_card.html' with value="1,234" label="Étudiants" icon="fas fa-users" color="primary" trend="+12%" trend_type="success" %}
+
+Paramètres:
+- value: Valeur principale à afficher
+- label: Libellé de la statistique
+- icon: Classe d'icône Font Awesome
+- color: Couleur de l'icône (primary, success, warning, info, danger)
+- trend: Pourcentage de tendance (optionnel)
+- trend_type: Type de tendance (success, warning, danger) (optionnel)
+{% endcomment %}
+
+<div class="card-neumorphic">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="bg-{{ color|default:'primary' }} text-white rounded-circle p-3">
+                <i class="{{ icon|default:'fas fa-chart-bar' }} fa-2x"></i>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3">
+            <h5 class="mb-0">{{ value }}</h5>
+            <p class="text-muted mb-0">{{ label }}</p>
+            {% if trend %}
+            <div class="d-flex align-items-center mt-1">
+                <span class="badge bg-{{ trend_type|default:'secondary' }} me-2">
+                    {% if trend_type == 'success' %}
+                        <i class="fas fa-arrow-up"></i>
+                    {% elif trend_type == 'danger' %}
+                        <i class="fas fa-arrow-down"></i>
+                    {% else %}
+                        <i class="fas fa-minus"></i>
+                    {% endif %}
+                    {{ trend }}
+                </span>
+                <small class="text-muted">vs période précédente</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

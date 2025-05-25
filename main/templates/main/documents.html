@@ -1,0 +1,305 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Documents officiels - YSEM{% endblock %}
+
+{% block page_title %}Documents officiels{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Document Generation -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-plus-circle me-2"></i>
+                Générer un document
+            </h5>
+            <form>
+                <div class="mb-3">
+                    <label for="student" class="form-label">Étudiant</label>
+                    <select class="form-select" id="student" required>
+                        <option value="">Sélectionner un étudiant</option>
+                        <option value="2024001">Jean Dupont (2024001)</option>
+                        <option value="2024002">Marie Martin (2024002)</option>
+                        <option value="2024003">Pierre Durand (2024003)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="document-type" class="form-label">Type de document</label>
+                    <select class="form-select" id="document-type" required>
+                        <option value="">Sélectionner le type</option>
+                        <option value="certificat-scolarite">Certificat de scolarité</option>
+                        <option value="releve-notes">Relevé de notes</option>
+                        <option value="attestation-inscription">Attestation d'inscription</option>
+                        <option value="diplome">Diplôme</option>
+                        <option value="carte-etudiant">Carte d'étudiant</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="academic-year" class="form-label">Année académique</label>
+                    <select class="form-select" id="academic-year">
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2023-2024">2023-2024</option>
+                        <option value="2022-2023">2022-2023</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes (optionnel)</label>
+                    <textarea class="form-control" id="notes" rows="3" placeholder="Informations supplémentaires..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    Générer le document
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Document Templates -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-file-alt me-2"></i>
+                Modèles de documents
+            </h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 text-center" style="background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;">
+                        <i class="fas fa-certificate fa-3x text-primary mb-3"></i>
+                        <h6>Certificat de scolarité</h6>
+                        <p class="text-muted small">Document attestant de l'inscription de l'étudiant</p>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 text-center" style="background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;">
+                        <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                        <h6>Relevé de notes</h6>
+                        <p class="text-muted small">Relevé officiel des notes et résultats</p>
+                        <button class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 text-center" style="background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;">
+                        <i class="fas fa-id-card fa-3x text-info mb-3"></i>
+                        <h6>Carte d'étudiant</h6>
+                        <p class="text-muted small">Carte d'identité étudiante officielle</p>
+                        <button class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="p-3 text-center" style="background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;">
+                        <i class="fas fa-graduation-cap fa-3x text-warning mb-3"></i>
+                        <h6>Diplôme</h6>
+                        <p class="text-muted small">Diplôme officiel de fin d'études</p>
+                        <button class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-eye me-1"></i>
+                            Aperçu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Documents -->
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Documents récents
+                </h5>
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtrer
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2"></i>
+                        Exporter
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Étudiant</th>
+                            <th>Type</th>
+                            <th>Date de génération</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    <div>
+                                        <div class="fw-bold">Certificat_Scolarite_2024001.pdf</div>
+                                        <small class="text-muted">245 KB</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jean Dupont (2024001)</td>
+                            <td>
+                                <span class="badge bg-primary">Certificat de scolarité</span>
+                            </td>
+                            <td>15/09/2024 14:30</td>
+                            <td>
+                                <span class="badge bg-success">Généré</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="Aperçu">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" title="Envoyer par email">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    <div>
+                                        <div class="fw-bold">Releve_Notes_2024002.pdf</div>
+                                        <small class="text-muted">189 KB</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Marie Martin (2024002)</td>
+                            <td>
+                                <span class="badge bg-success">Relevé de notes</span>
+                            </td>
+                            <td>14/09/2024 16:45</td>
+                            <td>
+                                <span class="badge bg-warning">En attente</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="Aperçu">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" title="Valider">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                    <div>
+                                        <div class="fw-bold">Carte_Etudiant_2024003.pdf</div>
+                                        <small class="text-muted">156 KB</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Pierre Durand (2024003)</td>
+                            <td>
+                                <span class="badge bg-info">Carte d'étudiant</span>
+                            </td>
+                            <td>13/09/2024 10:15</td>
+                            <td>
+                                <span class="badge bg-success">Généré</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="Aperçu">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" title="Envoyer par email">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+    
+    .table {
+        background: transparent;
+    }
+    
+    .table th {
+        border-top: none;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .table td {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.5em 1em;
+    }
+    
+    .btn-group .btn {
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        margin: 0 2px;
+    }
+</style>
+{% endblock %}

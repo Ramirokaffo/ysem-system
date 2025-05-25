@@ -1,0 +1,25 @@
+
+
+Il s'agit d'un systeme de gestion de la scolarité à YSEM
+
+On va mettre en place la structure de base du dashboard (sans mettre les contenues) pour les responsables du service de la scolarité.
+Les menus de cette interface: 
+- Accueil
+- Inscriptions
+- Etudiants
+- Documents (Documents officiels des Etudiants)
+- Statistiques
+- Paramètres
+
+Ce dashboard doit etre ultra moderne et responsive. Bien organisé avec des composants Django reutilisables.
+On utilise neumorphism-ui pour le style. Ses fichiers sont dans le dossier static de l'application main qui est déjà crée (/Users/user/Desktop/Programmation/ysem-project/ysem/main/static/neumorphism-ui-v1.0.0/).
+(https://themesberg.com/docs/neumorphism-ui/getting-started/quick-start/)
+
+echo "# ysem-system" >> README.md
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Ramirokaffo/ysem-system.git
+git push -u origin main
+

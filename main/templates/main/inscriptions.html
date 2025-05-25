@@ -1,0 +1,269 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Gestion des inscriptions - YSEM{% endblock %}
+
+{% block page_title %}Gestion des inscriptions{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Search and Filters -->
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-search me-2"></i>
+                Recherche et filtres
+            </h5>
+            <form class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Rechercher</label>
+                    <input type="text" class="form-control" id="search" placeholder="Nom, prénom, matricule...">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status">
+                        <option value="">Tous les statuts</option>
+                        <option value="pending">En attente</option>
+                        <option value="approved">Approuvée</option>
+                        <option value="rejected">Rejetée</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="program" class="form-label">Programme</label>
+                    <select class="form-select" id="program">
+                        <option value="">Tous les programmes</option>
+                        <option value="info">Informatique</option>
+                        <option value="gestion">Gestion</option>
+                        <option value="marketing">Marketing</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Inscriptions List -->
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Liste des inscriptions
+                </h5>
+                <button class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouvelle inscription
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Matricule</th>
+                            <th>Nom complet</th>
+                            <th>Programme</th>
+                            <th>Date d'inscription</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>2024001</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                        JD
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Jean Dupont</div>
+                                        <small class="text-muted">jean.dupont@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Informatique - L1</td>
+                            <td>15/09/2024</td>
+                            <td>
+                                <span class="badge bg-warning">En attente</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" title="Approuver">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Rejeter">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>2024002</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-success text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                        MM
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Marie Martin</div>
+                                        <small class="text-muted">marie.martin@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Gestion - L2</td>
+                            <td>14/09/2024</td>
+                            <td>
+                                <span class="badge bg-success">Approuvée</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="Imprimer">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><strong>2024003</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-info text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                        PD
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">Pierre Durand</div>
+                                        <small class="text-muted">pierre.durand@email.com</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Marketing - L3</td>
+                            <td>13/09/2024</td>
+                            <td>
+                                <span class="badge bg-warning">En attente</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" title="Approuver">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Rejeter">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                    </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .table {
+        background: transparent;
+    }
+
+    .table th {
+        border-top: none;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .table td {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,0.02);
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+
+    .badge {
+        border-radius: 20px;
+        padding: 0.5em 1em;
+    }
+
+    .btn-group .btn {
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        margin: 0 2px;
+    }
+
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 2px;
+        border: none;
+        background: var(--primary-color);
+        color: var(--text-color);
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        color: var(--text-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+</style>
+{% endblock %}

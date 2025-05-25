@@ -1,0 +1,296 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Gestion des étudiants - YSEM{% endblock %}
+
+{% block page_title %}Gestion des étudiants{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Search and Filters -->
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-search me-2"></i>
+                Recherche d'étudiants
+            </h5>
+            <form class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Rechercher</label>
+                    <input type="text" class="form-control" id="search" placeholder="Nom, prénom, matricule...">
+                </div>
+                <div class="col-md-2">
+                    <label for="program" class="form-label">Programme</label>
+                    <select class="form-select" id="program">
+                        <option value="">Tous</option>
+                        <option value="info">Informatique</option>
+                        <option value="gestion">Gestion</option>
+                        <option value="marketing">Marketing</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="level" class="form-label">Niveau</label>
+                    <select class="form-select" id="level">
+                        <option value="">Tous</option>
+                        <option value="L1">L1</option>
+                        <option value="L2">L2</option>
+                        <option value="L3">L3</option>
+                        <option value="M1">M1</option>
+                        <option value="M2">M2</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status">
+                        <option value="">Tous</option>
+                        <option value="active">Actif</option>
+                        <option value="suspended">Suspendu</option>
+                        <option value="graduated">Diplômé</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="year" class="form-label">Année</label>
+                    <select class="form-select" id="year">
+                        <option value="">Toutes</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Students List -->
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Liste des étudiants (1,234 résultats)
+                </h5>
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-2"></i>
+                        Exporter
+                    </button>
+                    <button class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter étudiant
+                    </button>
+                </div>
+            </div>
+
+            <!-- Students Grid -->
+            <div class="row">
+                <!-- Student Card 1 -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100" style="background: var(--primary-color); border-radius: 15px; box-shadow: 4px 4px 8px #b8b9be, -4px -4px 8px #fff;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-lg bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Jean Dupont</h6>
+                                    <small class="text-muted">2024001</small>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Programme:</small>
+                                <div class="fw-bold">Informatique - L1</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Email:</small>
+                                <div>jean.dupont@email.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Statut:</small>
+                                <span class="badge bg-success ms-1">Actif</span>
+                            </div>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Card 2 -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100" style="background: var(--primary-color); border-radius: 15px; box-shadow: 4px 4px 8px #b8b9be, -4px -4px 8px #fff;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-lg bg-success text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Marie Martin</h6>
+                                    <small class="text-muted">2024002</small>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Programme:</small>
+                                <div class="fw-bold">Gestion - L2</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Email:</small>
+                                <div>marie.martin@email.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Statut:</small>
+                                <span class="badge bg-success ms-1">Actif</span>
+                            </div>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Card 3 -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100" style="background: var(--primary-color); border-radius: 15px; box-shadow: 4px 4px 8px #b8b9be, -4px -4px 8px #fff;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-lg bg-info text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Pierre Durand</h6>
+                                    <small class="text-muted">2024003</small>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Programme:</small>
+                                <div class="fw-bold">Marketing - L3</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Email:</small>
+                                <div>pierre.durand@email.com</div>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Statut:</small>
+                                <span class="badge bg-warning ms-1">Suspendu</span>
+                            </div>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add more student cards as needed -->
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                    </li>
+                    <li class="page-item active">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-lg {
+        width: 60px;
+        height: 60px;
+        font-size: 18px;
+    }
+
+    .card {
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 6px 6px 15px #b8b9be, -6px -6px 15px #fff !important;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+
+    .badge {
+        border-radius: 20px;
+        padding: 0.4em 0.8em;
+    }
+
+    .btn-group .btn {
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        margin: 0 1px;
+    }
+
+    .pagination .page-link {
+        border-radius: 10px;
+        margin: 0 2px;
+        border: none;
+        background: var(--primary-color);
+        color: var(--text-color);
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        color: var(--text-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+</style>
+{% endblock %}

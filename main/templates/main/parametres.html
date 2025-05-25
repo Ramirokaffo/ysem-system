@@ -1,0 +1,429 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Paramètres - YSEM{% endblock %}
+
+{% block page_title %}Paramètres{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Settings Navigation -->
+    <div class="col-lg-3 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-cog me-2"></i>
+                Catégories
+            </h5>
+            <div class="list-group list-group-flush">
+                <a href="#general" class="list-group-item list-group-item-action border-0 bg-transparent active" data-bs-toggle="pill">
+                    <i class="fas fa-sliders-h me-2"></i>
+                    Général
+                </a>
+                <a href="#academic" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    Académique
+                </a>
+                <a href="#users" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-users me-2"></i>
+                    Utilisateurs
+                </a>
+                <a href="#documents" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Documents
+                </a>
+                <a href="#notifications" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-bell me-2"></i>
+                    Notifications
+                </a>
+                <a href="#security" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Sécurité
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="col-lg-9">
+        <div class="tab-content">
+            <!-- General Settings -->
+            <div class="tab-pane fade show active" id="general">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-sliders-h me-2"></i>
+                        Paramètres généraux
+                    </h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="institution-name" class="form-label">Nom de l'établissement</label>
+                                <input type="text" class="form-control" id="institution-name" value="YSEM - École Supérieure">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="academic-year" class="form-label">Année académique actuelle</label>
+                                <select class="form-select" id="academic-year">
+                                    <option value="2024-2025" selected>2024-2025</option>
+                                    <option value="2023-2024">2023-2024</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="timezone" class="form-label">Fuseau horaire</label>
+                                <select class="form-select" id="timezone">
+                                    <option value="Africa/Douala" selected>Africa/Douala (GMT+1)</option>
+                                    <option value="UTC">UTC (GMT+0)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="language" class="form-label">Langue par défaut</label>
+                                <select class="form-select" id="language">
+                                    <option value="fr" selected>Français</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Adresse de l'établissement</label>
+                            <textarea class="form-control" id="address" rows="3">123 Avenue de l'Université, Douala, Cameroun</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Academic Settings -->
+            <div class="tab-pane fade" id="academic">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Paramètres académiques
+                    </h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grading-scale" class="form-label">Échelle de notation</label>
+                                <select class="form-select" id="grading-scale">
+                                    <option value="20" selected>Sur 20</option>
+                                    <option value="100">Sur 100</option>
+                                    <option value="gpa">GPA (4.0)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="passing-grade" class="form-label">Note de passage</label>
+                                <input type="number" class="form-control" id="passing-grade" value="10" min="0" max="20">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="semester-system" class="form-label">Système semestriel</label>
+                                <select class="form-select" id="semester-system">
+                                    <option value="2" selected>2 semestres</option>
+                                    <option value="3">3 trimestres</option>
+                                    <option value="4">4 trimestres</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="max-credits" class="form-label">Crédits maximum par semestre</label>
+                                <input type="number" class="form-control" id="max-credits" value="30" min="1">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Options d'inscription</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto-enrollment" checked>
+                                <label class="form-check-label" for="auto-enrollment">
+                                    Inscription automatique après validation
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="late-enrollment">
+                                <label class="form-check-label" for="late-enrollment">
+                                    Autoriser les inscriptions tardives
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- User Settings -->
+            <div class="tab-pane fade" id="users">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-users me-2"></i>
+                        Gestion des utilisateurs
+                    </h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="default-role" class="form-label">Rôle par défaut</label>
+                                <select class="form-select" id="default-role">
+                                    <option value="student" selected>Étudiant</option>
+                                    <option value="teacher">Enseignant</option>
+                                    <option value="admin">Administrateur</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="password-policy" class="form-label">Politique de mot de passe</label>
+                                <select class="form-select" id="password-policy">
+                                    <option value="basic">Basique (8 caractères)</option>
+                                    <option value="medium" selected>Moyen (8 car. + majuscule + chiffre)</option>
+                                    <option value="strong">Fort (12 car. + symboles)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Permissions par défaut</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="view-grades" checked>
+                                        <label class="form-check-label" for="view-grades">
+                                            Consulter les notes
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="download-docs" checked>
+                                        <label class="form-check-label" for="download-docs">
+                                            Télécharger les documents
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="update-profile" checked>
+                                        <label class="form-check-label" for="update-profile">
+                                            Modifier le profil
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="contact-support">
+                                        <label class="form-check-label" for="contact-support">
+                                            Contacter le support
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Document Settings -->
+            <div class="tab-pane fade" id="documents">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Paramètres des documents
+                    </h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="doc-format" class="form-label">Format par défaut</label>
+                                <select class="form-select" id="doc-format">
+                                    <option value="pdf" selected>PDF</option>
+                                    <option value="docx">Word (.docx)</option>
+                                    <option value="both">PDF + Word</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="watermark" class="form-label">Filigrane</label>
+                                <select class="form-select" id="watermark">
+                                    <option value="none">Aucun</option>
+                                    <option value="logo" selected>Logo de l'établissement</option>
+                                    <option value="text">Texte personnalisé</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="signature" class="form-label">Signature numérique</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto-signature" checked>
+                                <label class="form-check-label" for="auto-signature">
+                                    Signature automatique des documents officiels
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="tab-pane fade" id="notifications">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-bell me-2"></i>
+                        Paramètres de notification
+                    </h5>
+                    <form>
+                        <div class="mb-4">
+                            <h6>Notifications par email</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="email-enrollment" checked>
+                                <label class="form-check-label" for="email-enrollment">
+                                    Nouvelles inscriptions
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="email-documents" checked>
+                                <label class="form-check-label" for="email-documents">
+                                    Documents générés
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="email-deadlines">
+                                <label class="form-check-label" for="email-deadlines">
+                                    Échéances importantes
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6>Notifications système</h6>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="system-errors" checked>
+                                <label class="form-check-label" for="system-errors">
+                                    Erreurs système
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="system-updates">
+                                <label class="form-check-label" for="system-updates">
+                                    Mises à jour système
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="tab-pane fade" id="security">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Paramètres de sécurité
+                    </h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="session-timeout" class="form-label">Délai d'expiration de session (minutes)</label>
+                                <input type="number" class="form-control" id="session-timeout" value="30" min="5" max="480">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="max-login-attempts" class="form-label">Tentatives de connexion max</label>
+                                <input type="number" class="form-control" id="max-login-attempts" value="5" min="1" max="10">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Options de sécurité</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="two-factor" checked>
+                                <label class="form-check-label" for="two-factor">
+                                    Authentification à deux facteurs
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="ip-restriction">
+                                <label class="form-check-label" for="ip-restriction">
+                                    Restriction par adresse IP
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="audit-log" checked>
+                                <label class="form-check-label" for="audit-log">
+                                    Journal d'audit
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+
+    .list-group-item {
+        border-radius: 10px !important;
+        margin-bottom: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .list-group-item {
+        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+    }
+
+    .list-group-item:hover, .list-group-item.active {
+        background: var(--primary-color) !important;
+        color: var(--text-color) !important;
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-check-input {
+        border-radius: 5px;
+        border: 1px solid rgba(0,0,0,0.2);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+
+    .tab-content {
+        min-height: 500px;
+    }
+</style>
+{% endblock %}

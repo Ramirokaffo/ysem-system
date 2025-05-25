@@ -1,0 +1,24 @@
+{% comment %}
+Composant réutilisable pour les cartes neumorphiques
+
+Usage:
+{% include 'components/neumorphic_card.html' with title="Mon titre" icon="fas fa-users" %}
+    <p>Contenu de la carte</p>
+{% endinclude %}
+
+Paramètres:
+- title: Titre de la carte (optionnel)
+- icon: Classe d'icône Font Awesome (optionnel)
+- class: Classes CSS supplémentaires (optionnel)
+{% endcomment %}
+
+<div class="card-neumorphic {% if class %}{{ class }}{% endif %}">
+    {% if title or icon %}
+    <h5 class="mb-4">
+        {% if icon %}<i class="{{ icon }} me-2"></i>{% endif %}
+        {{ title }}
+    </h5>
+    {% endif %}
+    
+    {{ content|default:"" }}
+</div>

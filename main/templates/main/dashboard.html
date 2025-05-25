@@ -1,0 +1,224 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Tableau de bord - YSEM{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-primary text-white rounded-circle p-3">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">1,234</h5>
+                    <p class="text-muted mb-0">Étudiants inscrits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-success text-white rounded-circle p-3">
+                        <i class="fas fa-user-plus fa-2x"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">89</h5>
+                    <p class="text-muted mb-0">Nouvelles inscriptions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-warning text-white rounded-circle p-3">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">456</h5>
+                    <p class="text-muted mb-0">Documents en attente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-info text-white rounded-circle p-3">
+                        <i class="fas fa-graduation-cap fa-2x"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">12</h5>
+                    <p class="text-muted mb-0">Programmes actifs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activities -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-clock me-2"></i>
+                Activités récentes
+            </h5>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle p-2">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Nouvelle inscription</h6>
+                            <p class="mb-1 text-muted">Jean Dupont s'est inscrit en Informatique</p>
+                            <small class="text-muted">Il y a 2 heures</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle p-2">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Document validé</h6>
+                            <p class="mb-1 text-muted">Certificat de scolarité approuvé pour Marie Martin</p>
+                            <small class="text-muted">Il y a 4 heures</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-white rounded-circle p-2">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Document en attente</h6>
+                            <p class="mb-1 text-muted">Relevé de notes en attente de validation</p>
+                            <small class="text-muted">Il y a 6 heures</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h5>
+            <div class="d-grid gap-3">
+                <a href="{% url 'main:inscriptions' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Nouvelle inscription
+                </a>
+                <a href="{% url 'main:etudiants' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Rechercher étudiant
+                </a>
+                <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Générer document
+                </a>
+                <a href="{% url 'main:statistiques' %}" class="btn btn-outline-info btn-lg">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Voir statistiques
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Widget -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Calendrier académique
+            </h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="text-primary">Inscriptions</h6>
+                        <p class="mb-1">Période d'inscription</p>
+                        <small class="text-muted">15 Sept - 30 Sept 2024</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="text-success">Examens</h6>
+                        <p class="mb-1">Session d'examens</p>
+                        <small class="text-muted">15 Déc - 20 Déc 2024</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="text-warning">Vacances</h6>
+                        <p class="mb-1">Vacances de Noël</p>
+                        <small class="text-muted">21 Déc - 8 Jan 2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-light {
+        background-color: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .btn {
+        border-radius: 15px;
+        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        transform: translateY(1px);
+    }
+    
+    .list-group-item {
+        padding: 1rem 0;
+    }
+    
+    .list-group-item:not(:last-child) {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
