@@ -1,0 +1,58 @@
+{% comment %}
+Composant réutilisable pour afficher les messages Django avec alerts dismissible
+
+Usage:
+{% include 'components/messages.html' %}
+
+Paramètres optionnels:
+- auto_dismiss: true/false (défaut: false) - Fermeture automatique après 5 secondes
+{% endcomment %}
+
+{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success{% if auto_dismiss %} data-auto-dismiss="true"{% endif %}" role="alert">
+                    <i class="fas fa-check-circle alert-icon"></i>
+                    <div class="alert-content">{{ message }}</div>
+                    <button type="button" class="btn-close" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% elif message.tags == 'error' %}
+                <div class="alert alert-danger{% if auto_dismiss %} data-auto-dismiss="true"{% endif %}" role="alert">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div class="alert-content">{{ message }}</div>
+                    <button type="button" class="btn-close" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% elif message.tags == 'warning' %}
+                <div class="alert alert-warning{% if auto_dismiss %} data-auto-dismiss="true"{% endif %}" role="alert">
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <div class="alert-content">{{ message }}</div>
+                    <button type="button" class="btn-close" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% elif message.tags == 'info' %}
+                <div class="alert alert-info{% if auto_dismiss %} data-auto-dismiss="true"{% endif %}" role="alert">
+                    <i class="fas fa-info-circle alert-icon"></i>
+                    <div class="alert-content">{{ message }}</div>
+                    <button type="button" class="btn-close" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% else %}
+                <!-- Message par défaut (info) -->
+                <div class="alert alert-info{% if auto_dismiss %} data-auto-dismiss="true"{% endif %}" role="alert">
+                    <i class="fas fa-info-circle alert-icon"></i>
+                    <div class="alert-content">{{ message }}</div>
+                    <button type="button" class="btn-close" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

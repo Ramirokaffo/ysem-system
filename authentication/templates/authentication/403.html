@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Accès refusé - YSEM Dashboard</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'neumorphism-ui-v1.0.0/html&css/assets/img/favicon/favicon.ico' %}">
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #e6e7ee;
+            --secondary-color: #31344b;
+            --accent-color: #262833;
+            --text-color: #44476a;
+            --bg-color: #e6e7ee;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-color);
+        }
+
+        .error-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .error-card {
+            background: var(--primary-color);
+            border-radius: 20px;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+            padding: 40px 30px;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+        }
+
+        .error-icon i {
+            font-size: 2.5rem;
+            color: #dc3545;
+        }
+
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .error-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .error-message {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 1rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .btn-home {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+            margin-right: 15px;
+        }
+
+        .btn-home:hover {
+            box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .btn-login {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+        }
+
+        .btn-login:hover {
+            box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        @media (max-width: 576px) {
+            .error-card {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .error-title {
+                font-size: 2rem;
+            }
+
+            .error-subtitle {
+                font-size: 1rem;
+            }
+
+            .btn-home, .btn-login {
+                display: block;
+                margin: 10px 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <!-- Error Icon -->
+            <div class="error-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+
+            <!-- Error Content -->
+            <h1 class="error-title">403</h1>
+            <h2 class="error-subtitle">Accès refusé</h2>
+            <p class="error-message">
+                Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+                <br>
+                Veuillez vous connecter avec un compte autorisé ou contacter l'administrateur.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="error-actions">
+                <a href="{% url 'authentication:login' %}" class="btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Se connecter
+                </a>
+                <a href="{% url 'main:dashboard' %}" class="btn-home">
+                    <i class="fas fa-home me-2"></i>
+                    Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

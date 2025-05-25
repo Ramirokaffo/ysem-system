@@ -1,0 +1,95 @@
+/* Logo YSEM */
+.sidebar-logo {
+    background: var(--primary-color);
+    border-radius: 15px;
+    box-shadow: 3px 3px 6px #b8b9be, -3px -3px 6px #fff;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.sidebar-logo:hover {
+    box-shadow: 8px 8px 16px #b8b9be, -8px -8px 16px #fff;
+    transform: translateY(-1px);
+}
+
+.sidebar-logo img {
+    /* max-width: 100%; */
+    /* height: auto; */
+    /* max-height: 60px; */
+    object-fit: fill;
+    box-sizing: border-box;
+
+}
+
+.sidebar-logo-text {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+
+/* Navigation sidebar */
+.nav-link {
+    color: var(--text-color);
+    padding: 12px 20px;
+    margin: 5px 0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    color: var(--text-color);
+    background: rgba(0,0,0,0.02);
+}
+
+.nav-link.active {
+    color: var(--text-color);
+    background: var(--primary-color);
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+}
+
+/* Bouton de déconnexion */
+.logout-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 10px;
+    color: #dc3545;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.logout-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* Responsive pour le logo */
+@media (max-width: 768px) {
+    .sidebar-logo {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .sidebar-logo img {
+        max-height: 45px;
+    }
+
+    .sidebar-logo-text {
+        font-size: 1rem;
+        margin-top: 8px;
+    }
+}

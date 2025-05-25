@@ -1,0 +1,75 @@
+/* Alerts dismissible avec icônes */
+.alert {
+    border: none;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    position: relative;
+    background: var(--primary-color);
+    box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.alert .alert-icon {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.alert .alert-content {
+    flex-grow: 1;
+}
+
+.alert .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 15px;
+    transition: opacity 0.3s ease;
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* Types d'alerts */
+.alert-success {
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.alert-success .alert-icon {
+    color: #28a745;
+}
+
+.alert-danger {
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-danger .alert-icon {
+    color: #dc3545;
+}
+
+.alert-warning {
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-warning .alert-icon {
+    color: #ffc107;
+}
+
+.alert-info {
+    color: #0c5460;
+    border-left: 4px solid #17a2b8;
+}
+
+.alert-info .alert-icon {
+    color: #17a2b8;
+}

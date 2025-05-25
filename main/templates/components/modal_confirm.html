@@ -1,0 +1,50 @@
+{% comment %}
+Modal de confirmation basé sur le template neumorphism
+
+Usage:
+{% include 'components/modal_confirm.html' with modal_id="confirmDelete" modal_title="Confirmer la suppression" modal_message="Êtes-vous sûr de vouloir supprimer cet élément ?" confirm_text="Supprimer" cancel_text="Annuler" confirm_action="deleteItem()" modal_icon="fas fa-exclamation-triangle" %}
+
+Paramètres:
+- modal_id: ID unique du modal (requis)
+- modal_title: Titre du modal (requis)
+- modal_message: Message à afficher (requis)
+- confirm_text: Texte du bouton de confirmation (défaut: "Confirmer")
+- cancel_text: Texte du bouton d'annulation (défaut: "Annuler")
+- confirm_action: Action JavaScript à exécuter lors de la confirmation (optionnel)
+- modal_icon: Classe de l'icône (défaut: "fas fa-exclamation-triangle")
+{% endcomment %}
+
+<!-- Modal Content -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog" aria-labelledby="{{ modal_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="h6 modal-title mb-0" id="modal-title-{{ modal_id }}">{{ modal_title }}</h2>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="py-3 text-center">
+                    <span class="modal-icon display-1-lg">
+                        <span class="{{ modal_icon|default:'fas fa-exclamation-triangle' }}"></span>
+                    </span>
+                    <div class="mt-4">
+                        <p>{{ modal_message }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                    {{ cancel_text|default:"Annuler" }}
+                </button>
+                <button type="button" class="btn btn-sm btn-primary text-danger ml-auto" 
+                        {% if confirm_action %}onclick="{{ confirm_action }}"{% endif %}
+                        data-dismiss="modal">
+                    {{ confirm_text|default:"Confirmer" }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Modal Content -->

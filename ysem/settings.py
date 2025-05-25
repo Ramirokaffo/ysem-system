@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "academic",
     "students",
     "schools",
+    "authentication",
 ]
 
 MIDDLEWARE = [
@@ -162,7 +163,6 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-LOGIN_URL = "/auth/login"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -171,3 +171,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Configuration du modèle User personnalisé
 AUTH_USER_MODEL = 'accounts.BaseUser'
+
+# Configuration de l'authentification
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/auth/login/'

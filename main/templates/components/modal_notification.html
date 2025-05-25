@@ -1,0 +1,45 @@
+{% comment %}
+Modal de notification basé sur le template neumorphism
+
+Usage:
+{% include 'components/modal_notification.html' with modal_id="notificationModal" modal_title="Information importante" modal_message="Votre action a été effectuée avec succès." button_text="OK" button_action="closeModal()" modal_icon="fas fa-check-circle" %}
+
+Paramètres:
+- modal_id: ID unique du modal (requis)
+- modal_title: Titre du modal (requis)
+- modal_message: Message à afficher (requis)
+- button_text: Texte du bouton (défaut: "OK")
+- button_action: Action JavaScript à exécuter lors du clic (optionnel)
+- modal_icon: Classe de l'icône (défaut: "fas fa-info-circle")
+{% endcomment %}
+
+<!-- Modal Content -->
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog" aria-labelledby="{{ modal_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-primary">
+            <div class="modal-header">
+                <p class="modal-title" id="modal-title-{{ modal_id }}">{{ modal_title }}</p>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="py-3 text-center">
+                    <span class="modal-icon display-1-lg">
+                        <span class="{{ modal_icon|default:'fas fa-info-circle' }}"></span>
+                    </span>
+                    <h2 class="h4 my-3">{{ modal_title }}</h2>
+                    <p>{{ modal_message }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-primary" 
+                        {% if button_action %}onclick="{{ button_action }}"{% endif %}
+                        data-dismiss="modal">
+                    {{ button_text|default:"OK" }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End of Modal Content -->

@@ -1,5 +1,7 @@
 {% extends 'main/base.html' %}
 
+{% load static %}
+
 {% block title %}Tableau de bord - YSEM{% endblock %}
 
 {% block page_title %}Tableau de bord{% endblock %}
@@ -10,9 +12,9 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic">
             <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                    <div class="bg-primary text-white rounded-circle p-3">
-                        <i class="fas fa-users fa-2x"></i>
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
@@ -26,9 +28,9 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic">
             <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                    <div class="bg-success text-white rounded-circle p-3">
-                        <i class="fas fa-user-plus fa-2x"></i>
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon success">
+                        <i class="fas fa-user-plus"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
@@ -42,9 +44,9 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic">
             <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                    <div class="bg-warning text-white rounded-circle p-3">
-                        <i class="fas fa-file-alt fa-2x"></i>
+                <div class="flex-shrink-0 mr-3 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-file-alt"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
@@ -58,9 +60,9 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic">
             <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                    <div class="bg-info text-white rounded-circle p-3">
-                        <i class="fas fa-graduation-cap fa-2x"></i>
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon info">
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
@@ -83,8 +85,8 @@
             <div class="list-group list-group-flush">
                 <div class="list-group-item border-0 bg-transparent">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-primary text-white rounded-circle p-2">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon primary">
                                 <i class="fas fa-user-plus"></i>
                             </div>
                         </div>
@@ -95,11 +97,11 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="list-group-item border-0 bg-transparent">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success text-white rounded-circle p-2">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon success">
                                 <i class="fas fa-check"></i>
                             </div>
                         </div>
@@ -110,11 +112,11 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="list-group-item border-0 bg-transparent">
                     <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-warning text-white rounded-circle p-2">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon warning">
                                 <i class="fas fa-exclamation"></i>
                             </div>
                         </div>
@@ -141,15 +143,15 @@
                     <i class="fas fa-user-plus me-2"></i>
                     Nouvelle inscription
                 </a>
-                <a href="{% url 'main:etudiants' %}" class="btn btn-outline-primary btn-lg">
+                <a href="{% url 'main:etudiants' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-search me-2"></i>
                     Rechercher étudiant
                 </a>
-                <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary btn-lg">
+                <a href="{% url 'main:documents' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-file-alt me-2"></i>
                     Générer document
                 </a>
-                <a href="{% url 'main:statistiques' %}" class="btn btn-outline-info btn-lg">
+                <a href="{% url 'main:statistiques' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-chart-bar me-2"></i>
                     Voir statistiques
                 </a>
@@ -169,7 +171,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <div class="p-3 bg-light rounded">
-                        <h6 class="text-primary">Inscriptions</h6>
+                        <h6 class="text-secondary">Inscriptions</h6>
                         <p class="mb-1">Période d'inscription</p>
                         <small class="text-muted">15 Sept - 30 Sept 2024</small>
                     </div>
@@ -195,30 +197,5 @@
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    .bg-light {
-        background-color: var(--primary-color) !important;
-        border: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .btn {
-        border-radius: 15px;
-        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    
-    .btn:hover {
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-        transform: translateY(1px);
-    }
-    
-    .list-group-item {
-        padding: 1rem 0;
-    }
-    
-    .list-group-item:not(:last-child) {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-</style>
+<link type="text/css" href="{% static 'main/css/dashboard.css' %}" rel="stylesheet">
 {% endblock %}

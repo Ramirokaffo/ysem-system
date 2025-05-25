@@ -6,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{% block title %}Dashboard YSEM{% endblock %}</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{% static 'neumorphism-ui-v1.0.0/html&css/assets/img/favicon/favicon.ico' %}">
-
     <!-- Font Awesome -->
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
 
@@ -16,267 +13,9 @@
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #e6e7ee;
-            --secondary-color: #31344b;
-            --accent-color: #262833;
-            --text-color: #44476a;
-            --bg-color: #e6e7ee;
-            --sidebar-width: 280px;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: var(--sidebar-width);
-            right: 0;
-            height: 80px;
-            background: var(--primary-color);
-            box-shadow: 0 4px 20px rgba(112, 144, 176, 0.1);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            transition: all 0.3s ease;
-        }
-
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-color);
-            margin: 0;
-        }
-
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .academic-year-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            text-align: center;
-            min-width: 120px;
-        }
-
-        .academic-year-label {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 16px;
-            border-radius: 25px;
-            background: rgba(255,255,255,0.1);
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .user-profile:hover {
-            box-shadow: 4px 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-1px);
-        }
-
-        .user-details {
-            text-align: right;
-            line-height: 1.2;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-color);
-            margin: 0;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--text-color);
-            opacity: 0.7;
-            margin: 0;
-        }
-
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: var(--primary-color);
-            box-shadow: 14px 17px 40px 4px rgba(112, 144, 176, 0.18);
-            border-radius: 0 20px 20px 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .sidebar-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
-            margin: 20px 0;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            margin-top: auto;
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 12px 20px;
-            background: transparent;
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            border-radius: 10px;
-            color: #dc3545;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .logout-btn:hover {
-            background: rgba(220, 53, 69, 0.1);
-            border-color: #dc3545;
-            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-            margin-top: 80px;
-            min-height: calc(100vh - 80px);
-            padding: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-color);
-        }
-
-        .nav-link {
-            color: var(--text-color);
-            padding: 12px 20px;
-            margin: 5px 0;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            background: transparent;
-            border: none;
-            text-decoration: none;
-        }
-
-        .nav-link:hover {
-            color: var(--text-color);
-            background: rgba(0,0,0,0.02);
-        }
-
-        .nav-link.active {
-            color: var(--text-color);
-            background: var(--primary-color);
-            box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-        }
-
-
-
-        .card-neumorphic {
-            background: var(--primary-color);
-            border-radius: 20px;
-            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
-            border: none;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .avatar-sm {
-            width: 40px;
-            height: 40px;
-            font-size: 14px;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                left: 0;
-                padding: 0 20px;
-                height: 70px;
-            }
-
-            .header-title {
-                font-size: 1.2rem;
-            }
-
-            .academic-year-badge {
-                display: none;
-            }
-
-            .user-details {
-                display: none;
-            }
-
-            .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-                margin-top: 70px;
-                min-height: calc(100vh - 70px);
-                padding: 20px;
-            }
-        }
-    </style>
+    <link type="text/css" href="{% static 'main/css/base.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/navigation.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/alerts.css' %}" rel="stylesheet">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -322,10 +61,10 @@
     <nav class="sidebar" id="sidebar">
         <!-- Sidebar Content -->
         <div class="sidebar-content">
-            <!-- Logo -->
-            <div class="navbar-brand text-center mb-4">
-                <i class="fas fa-graduation-cap me-2"></i>
-                YSEM
+            <!-- Logo YSEM -->
+            <div class="sidebar-logo">
+                <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo">
+                <!-- <div class="sidebar-logo-text">YSEM</div> -->
             </div>
 
             <!-- Divider -->
@@ -374,7 +113,7 @@
 
         <!-- Sidebar Footer -->
         <div class="sidebar-footer">
-            <button class="logout-btn" onclick="logout()">
+            <button class="logout-btn" data-toggle="modal" data-target="#logoutModal">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Déconnexion</span>
             </button>
@@ -383,6 +122,9 @@
 
     <!-- Main Content -->
     <main class="main-content">
+        <!-- Messages -->
+        {% include 'components/messages.html' with auto_dismiss=True %}
+
         <!-- Page Content -->
         {% block content %}
         {% endblock %}
@@ -425,11 +167,39 @@
         // Logout function
         function logout() {
             if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                // Rediriger vers la page de déconnexion Django
-                window.location.href = '/admin/logout/';
+                // Rediriger vers la page de déconnexion personnalisée
+                window.location.href = '{% url "authentication:logout" %}';
             }
         }
+
+        // Alert dismissible functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gérer la fermeture des alerts
+            document.querySelectorAll('.alert .btn-close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    const alert = this.closest('.alert');
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 300);
+                });
+            });
+
+            // Auto-dismiss des alerts après 5 secondes (optionnel)
+            document.querySelectorAll('.alert[data-auto-dismiss="true"]').forEach(function(alert) {
+                setTimeout(() => {
+                    const closeBtn = alert.querySelector('.btn-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    }
+                }, 5000);
+            });
+        });
     </script>
+
+    <!-- Modal de déconnexion -->
+    {% include 'components/modal_confirm.html' with modal_id="logoutModal" modal_title="Confirmer la déconnexion" modal_message="Êtes-vous sûr de vouloir vous déconnecter de votre session ?" confirm_text="Se déconnecter" cancel_text="Annuler" confirm_action="logout()" modal_icon="fas fa-sign-out-alt" %}
 
     {% block extra_js %}{% endblock %}
 </body>
