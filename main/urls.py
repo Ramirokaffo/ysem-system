@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from django.conf import settings 
+from django.conf import settings
 from django.views.generic.base import RedirectView
 from django.urls import re_path
 favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
@@ -14,6 +14,12 @@ urlpatterns = [
     path('documents/', views.DocumentsView.as_view(), name='documents'),
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
+
+    # Formulaire d'inscription public
+    path('inscription-externe/', views.InscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+
     re_path(r'^favicon\.ico$', favicon_view),
 
 ]

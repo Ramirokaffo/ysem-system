@@ -1,0 +1,424 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - YSEM</title>
+
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <style>
+        :root {
+            --neumorphism-bg: #e6ebf1;
+            --neumorphism-shadow-dark: #a3b1c6;
+            --neumorphism-shadow-light: #ffffff;
+            --primary-color: #31344b;
+            --primary-gradient: linear-gradient(45deg, #31344b, #8492a6);
+            --text-primary: #31344b;
+            --text-secondary: #8492a6;
+            --text-muted: #718096;
+        }
+
+        body {
+            background: var(--neumorphism-bg);
+            font-family: 'Nunito Sans', sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* .main-container {
+            min-height: 100vh;
+            padding: 2rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        } */
+
+        /* .content-wrapper {
+            width: 80%;
+            max-width: 1000px;
+            min-width: 320px;
+        } */
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .main-title {
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .content-section {
+            margin-bottom: 3rem;
+        }
+
+        .info-card {
+            background: var(--neumorphism-bg);
+            border-radius: 20px;
+            box-shadow: 9px 9px 16px var(--neumorphism-shadow-dark), -9px -9px 16px var(--neumorphism-shadow-light);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 12px 12px 20px var(--neumorphism-shadow-dark), -12px -12px 20px var(--neumorphism-shadow-light);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--neumorphism-shadow-dark);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            box-shadow: 4px 4px 8px var(--neumorphism-shadow-dark), -4px -4px 8px var(--neumorphism-shadow-light);
+        }
+
+        .card-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(163, 177, 198, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list li:hover {
+            background: rgba(24, 99, 75, 0.05);
+            border-radius: 8px;
+            padding-left: 0.5rem;
+        }
+
+        .info-list li i {
+            color: var(--primary-color);
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .info-list li span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+
+
+        .cta-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .btn-start {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            box-shadow: 8px 8px 16px var(--neumorphism-shadow-dark), -8px -8px 16px var(--neumorphism-shadow-light);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-start:hover::before {
+            left: 100%;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 10px 10px 20px var(--neumorphism-shadow-dark), -10px -10px 20px var(--neumorphism-shadow-light);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-start:active {
+            transform: translateY(-1px);
+            box-shadow: 6px 6px 12px var(--neumorphism-shadow-dark), -6px -6px 12px var(--neumorphism-shadow-light);
+        }
+
+        .footer-note {
+            background: var(--neumorphism-bg);
+            border-radius: 15px;
+            box-shadow: inset 4px 4px 8px var(--neumorphism-shadow-dark), inset -4px -4px 8px var(--neumorphism-shadow-light);
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .footer-note small {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+
+
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                width: 90%;
+            }
+
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .btn-start {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-wrapper {
+                width: 95%;
+            }
+
+            .main-container {
+                padding: 1rem 0;
+            }
+
+            .info-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="section bg-primary">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6">
+
+                    <!-- Logo seul -->
+                    <div class="text-center mb-5">
+                        <div class="card card-body shadow-soft border-light bg-primary d-inline-block">
+                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo" style="height: 50px; width: auto;">
+                        </div>
+                    </div>
+
+                    <!-- Section principale avec ombre -->
+                    <div class="card card-body shadow-soft border-light bg-primary">
+
+                        <!-- Header -->
+                        <div class="text-center mb-5">
+                            <h1 class="display-4 mb-3">PRE-INSCRIPTION</h1>
+                            <p class="lead mb-2">Licence Professionnelle « ELITE »</p>
+                            <p class="text-muted">Sciences et Techniques de l'Information et de la Communication</p>
+                        </div>
+
+                        <!-- Informations importantes -->
+                        <div class="mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon icon-shape icon-sm shadow-soft border border-light rounded-circle mr-3">
+                                    <span class="fas fa-info-circle"></span>
+                                </div>
+                                <h4 class="mb-0">Informations importantes</h4>
+                            </div>
+
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-clock"></span>
+                                    </div>
+                                    <span>Durée estimée : 15-20 minutes</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-save"></span>
+                                    </div>
+                                    <span>Sauvegarde automatique des données</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-file-alt"></span>
+                                    </div>
+                                    <span>Préparez vos documents à l'avance</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-money-bill-wave"></span>
+                                    </div>
+                                    <span>Frais d'étude de dossier : 20 000 FCFA</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-calendar-alt"></span>
+                                    </div>
+                                    <span>Inscription en 3 étapes simples</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents requis -->
+                        <div class="mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon icon-shape icon-sm shadow-soft border border-light rounded-circle mr-3">
+                                    <span class="fas fa-folder-open"></span>
+                                </div>
+                                <h4 class="mb-0">Documents requis</h4>
+                            </div>
+
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-certificate"></span>
+                                    </div>
+                                    <span>Preuve d'obtention du Baccalauréat</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-id-card"></span>
+                                    </div>
+                                    <span>Acte de naissance certifié</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-file-alt"></span>
+                                    </div>
+                                    <span>Relevé des notes du Baccalauréat</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-images"></span>
+                                    </div>
+                                    <span>4 photos d'identité 4x4 couleur</span>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center px-0 border-0">
+                                    <div class="icon icon-xs mr-3">
+                                        <span class="fas fa-copy"></span>
+                                    </div>
+                                    <span>Bulletins de la classe de Terminale</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CTA Section -->
+                        <div class="text-center mb-4">
+                            <a href="{% url 'main:inscription_externe_step' step=1 %}" class="btn btn-primary btn-lg">
+                                <span class="fas fa-rocket mr-2"></span>
+                                Commencer l'inscription
+                            </a>
+                            <p class="mt-3 text-muted">
+                                Processus simple et sécurisé en 3 étapes
+                            </p>
+                        </div>
+
+                        <!-- Footer Note -->
+                        <div class="alert alert-secondary" role="alert">
+                            <span class="alert-inner--icon">
+                                <span class="fas fa-shield-alt"></span>
+                            </span>
+                            <span class="alert-inner--text">
+                                <small>
+                                    En continuant, vous acceptez que vos informations soient traitées
+                                    conformément à notre politique de confidentialité et de protection des données.
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+
+    <script>
+        // Animation simple pour le bouton CTA
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctaButton = document.querySelector('.btn-primary');
+            if (ctaButton) {
+                ctaButton.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+
+                ctaButton.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

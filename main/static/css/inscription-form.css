@@ -1,0 +1,274 @@
+/* Styles personnalisés pour le formulaire d'inscription */
+
+/* Variables CSS pour la cohérence */
+:root {
+    --neumorphism-bg: #e6ebf1;
+    --neumorphism-shadow-dark: #a3b1c6;
+    --neumorphism-shadow-light: #ffffff;
+    --primary-color: #18634b;
+    --primary-gradient: linear-gradient(45deg, #18634b, #2dce89);
+    --text-primary: #31344b;
+    --text-secondary: #8492a6;
+    --text-muted: #d1d9e6;
+    --danger-color: #e74c3c;
+}
+
+/* Animations personnalisées */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(24, 99, 75, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(24, 99, 75, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(24, 99, 75, 0);
+    }
+}
+
+/* Animations d'entrée */
+.form-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.progress-container {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+/* Effets de focus améliorés */
+.form-control:focus {
+    animation: pulse 1.5s infinite;
+}
+
+.input-group.focused .input-group-text {
+    background: var(--neumorphism-bg);
+    box-shadow: inset 6px 6px 12px var(--neumorphism-shadow-dark), 
+                inset -6px -6px 12px var(--neumorphism-shadow-light);
+    color: var(--primary-color);
+}
+
+/* Styles pour les labels avec icônes */
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+    width: 16px;
+    text-align: center;
+}
+
+/* Amélioration des checkboxes */
+.form-check {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    margin-left: -2rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+.form-check-label {
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+/* Styles pour les messages d'erreur */
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+/* Amélioration des boutons */
+.btn-neumorphic,
+.btn-primary-neumorphic {
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-neumorphic::before,
+.btn-primary-neumorphic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-neumorphic:hover::before,
+.btn-primary-neumorphic:hover::before {
+    left: 100%;
+}
+
+/* Responsive design amélioré */
+@media (max-width: 576px) {
+    .form-card {
+        padding: 1.5rem;
+        border-radius: 15px;
+    }
+    
+    .progress-container {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    .step-number {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+    }
+    
+    .navigation-buttons {
+        padding-top: 1.5rem;
+    }
+    
+    .btn-neumorphic,
+    .btn-primary-neumorphic {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Styles pour l'impression */
+@media print {
+    body {
+        background: white !important;
+    }
+    
+    .form-card,
+    .progress-container,
+    .confirmation-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+    
+    .btn-neumorphic,
+    .btn-primary-neumorphic {
+        display: none;
+    }
+    
+    .navigation-buttons {
+        display: none;
+    }
+}
+
+/* Styles pour les tooltips personnalisés */
+.tooltip-custom {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip-custom::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip-custom:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Styles pour les indicateurs de progression */
+.step-indicator .step-item {
+    transition: all 0.3s ease;
+}
+
+.step-indicator .step-item:hover .step-number:not(.active):not(.completed) {
+    transform: scale(1.1);
+}
+
+/* Amélioration de l'accessibilité */
+.form-control:focus,
+.form-check-input:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Styles pour les états de validation */
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: inset 4px 4px 8px var(--neumorphism-shadow-dark), 
+                inset -4px -4px 8px var(--neumorphism-shadow-light),
+                0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger-color);
+    box-shadow: inset 4px 4px 8px var(--neumorphism-shadow-dark), 
+                inset -4px -4px 8px var(--neumorphism-shadow-light),
+                0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+}
+
+/* Styles pour les sections pliables */
+.collapsible-section {
+    transition: all 0.3s ease;
+}
+
+.collapsible-section.collapsed {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Styles pour le mode sombre (optionnel) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --neumorphism-bg: #2d3748;
+        --neumorphism-shadow-dark: #1a202c;
+        --neumorphism-shadow-light: #4a5568;
+        --text-primary: #e2e8f0;
+        --text-secondary: #a0aec0;
+        --text-muted: #718096;
+    }
+}
