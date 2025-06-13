@@ -8,7 +8,7 @@ favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
 app_name = 'main'
 
 urlpatterns = [
-    path('', views.DashboardView.as_view(), name='dashboard'),
+    path('scholar', views.DashboardView.as_view(), name='dashboard'),
     path('inscriptions/', views.InscriptionsView.as_view(), name='inscriptions'),
     path('etudiants/', views.EtudiantsView.as_view(), name='etudiants'),
     path('documents/', views.DocumentsView.as_view(), name='documents'),

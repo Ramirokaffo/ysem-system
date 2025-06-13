@@ -18,13 +18,22 @@ class BaseUser(AbstractUser):
         blank=True,
         null=True
     )
-    role = models.CharField(max_length=100, blank=True, null=True)
+    role = models.CharField(max_length=100, blank=True, null=True, default="student",
+        choices=[('scholar', 'Scolarité'), ('teaching', 'Suivie des Enseignement'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
+    )
     method_type = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = 'accounts_baseuser'
         verbose_name = "Utilisateur"
         verbose_name_plural = "Utilisateurs"
+
+    def is_scholar_admin(self):
+        return self.role == "scholar"
+
+    def is_study_admin(self):
+        return self.role == "teaching"
+
 
 class Godfather(models.Model):
     """
