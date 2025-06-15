@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "students",
     "schools",
     "authentication",
+    "Teaching",
 ]
 
 MIDDLEWARE = [
