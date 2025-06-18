@@ -19,7 +19,7 @@ class BaseUser(AbstractUser):
         null=True
     )
     role = models.CharField(max_length=100, blank=True, null=True, default="student",
-        choices=[('scholar', 'Scolarité'), ('teaching', 'Suivie des Enseignement'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
+        choices=[('scholar', 'Scolarité'), ('teaching', 'Suivie des Enseignements'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
     )
     method_type = models.CharField(max_length=100, blank=True, null=True)
 
