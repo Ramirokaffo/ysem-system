@@ -1,0 +1,349 @@
+{% extends 'Teaching/base.html' %}
+{% load static %}
+
+{% block title %}Statistiques - Enseignement-YSEM{% endblock %}
+
+{% block page_title %}Statistiques{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Period Selector -->
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Tableau de bord statistique du suivi des enseignements
+                    </h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <select class="form-select">
+                                <option value="2024">Année 2030</option>
+                                <option value="2024">Année 2029</option>
+                                <option value="2024">Année 2028</option>
+                                <option value="2024">Année 2027</option>
+                                <option value="2024">Année 2026</option>
+                                <option value="2024">Année 2025</option>
+                                <option value="2024">Année 2024</option>
+                                <option value="2023">Année 2023</option>
+                                <option value="2022">Année 2022</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select">
+                                <option value="all">Tous les programmes</option>
+                                <option value="info">IT Management</option>
+                                <option value="gestion">Gestion</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="marketing">Publicité-et-Marketing</option>
+                                <option value="marketing">Communication des organisations</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Key Metrics -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic text-center">
+            <div class="mb-3">
+                <i class="fas fa-users fa-3x text-primary"></i>
+            </div>
+            <h3 class="mb-1">34</h3>
+            <p class="text-muted mb-2">Total enseignant</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <span class="badge bg-success me-2">
+                    <i class="fas fa-arrow-up"></i> 20%
+                </span>
+                <small class="text-muted">vs année précédente</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic text-center">
+            <div class="mb-3">
+                <i class="fas fa-user-plus fa-3x text-success"></i>
+            </div>
+            <h3 class="mb-1">256</h3>
+            <p class="text-muted mb-2">Nouvelles inscriptions</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <span class="badge bg-success me-2">
+                    <i class="fas fa-arrow-up"></i> 8%
+                </span>
+                <small class="text-muted">vs année précédente</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic text-center">
+            <div class="mb-3">
+                <i class="fas fa-graduation-cap fa-3x text-warning"></i>
+            </div>
+            <h3 class="mb-1">89</h3>
+            <p class="text-muted mb-2">Diplômés</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <span class="badge bg-warning me-2">
+                    <i class="fas fa-arrow-down"></i> 3%
+                </span>
+                <small class="text-muted">vs année précédente</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic text-center">
+            <div class="mb-3">
+                <i class="fas fa-percentage fa-3x text-info"></i>
+            </div>
+            <h3 class="mb-1">92%</h3>
+            <p class="text-muted mb-2">Taux de réussite</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <span class="badge bg-success me-2">
+                    <i class="fas fa-arrow-up"></i> 5%
+                </span>
+                <small class="text-muted">vs année précédente</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Enrollment Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-line me-2"></i>
+                Évolution des inscriptions
+            </h5>
+            <div class="chart-container" style="height: 300px; background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; display: flex; align-items: center; justify-content: center;">
+                <div class="text-center text-muted">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <p>Graphique des inscriptions par mois</p>
+                    <small>Intégration Chart.js à venir</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-pie me-2"></i>
+                Répartition par programme
+            </h5>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Informatique</span>
+                    <span class="fw-bold">45%</span>
+                </div>
+                <div class="progress" style="height: 8px; border-radius: 10px;">
+                    <div class="progress-bar bg-primary" style="width: 45%; border-radius: 10px;"></div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Gestion</span>
+                    <span class="fw-bold">30%</span>
+                </div>
+                <div class="progress" style="height: 8px; border-radius: 10px;">
+                    <div class="progress-bar bg-success" style="width: 30%; border-radius: 10px;"></div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Marketing</span>
+                    <span class="fw-bold">25%</span>
+                </div>
+                <div class="progress" style="height: 8px; border-radius: 10px;">
+                    <div class="progress-bar bg-warning" style="width: 25%; border-radius: 10px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Performance by Level -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-layer-group me-2"></i>
+                Performance par niveau
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Étudiants</th>
+                            <th>Taux de réussite</th>
+                            <th>Moyenne</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-primary">L1</span></td>
+                            <td>345</td>
+                            <td>
+                                <span class="text-success fw-bold">88%</span>
+                            </td>
+                            <td>14.2/20</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">L2</span></td>
+                            <td>298</td>
+                            <td>
+                                <span class="text-success fw-bold">91%</span>
+                            </td>
+                            <td>14.8/20</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">L3</span></td>
+                            <td>267</td>
+                            <td>
+                                <span class="text-success fw-bold">94%</span>
+                            </td>
+                            <td>15.1/20</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success">M1</span></td>
+                            <td>189</td>
+                            <td>
+                                <span class="text-success fw-bold">96%</span>
+                            </td>
+                            <td>15.6/20</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success">M2</span></td>
+                            <td>135</td>
+                            <td>
+                                <span class="text-success fw-bold">98%</span>
+                            </td>
+                            <td>16.2/20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trends -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-trending-up me-2"></i>
+                Tendances récentes
+            </h5>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle p-2">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Augmentation des inscriptions</h6>
+                            <p class="mb-0 text-muted">+15% par rapport au mois dernier</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle p-2">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Amélioration des résultats</h6>
+                            <p class="mb-0 text-muted">Taux de réussite en hausse de 3%</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info text-white rounded-circle p-2">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Nouveau programme populaire</h6>
+                            <p class="mb-0 text-muted">Marketing digital en forte demande</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+    
+    .progress {
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .table {
+        background: transparent;
+    }
+    
+    .table th {
+        border-top: none;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .table td {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.4em 0.8em;
+    }
+    
+    .list-group-item {
+        padding: 1rem 0;
+    }
+    
+    .list-group-item:not(:last-child) {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .chart-container {
+        position: relative;
+    }
+</style>
+{% endblock %}

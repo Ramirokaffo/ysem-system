@@ -1,0 +1,195 @@
+{% extends 'Teaching/base.html' %}
+
+{% load static %}
+
+{% block title %}Tableau de bord - YSEM{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">34</h5>
+                    <p class="text-muted mb-0">Enseignants</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon success">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">89</h5>
+                    <p class="text-muted mb-0">Etat d'avancement</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">456</h5>
+                    <p class="text-muted mb-0">Cours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon info">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">12</h5>
+                    <p class="text-muted mb-0">Programmes actifs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Activities -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-clock me-2"></i>
+                Activités récentes
+            </h5>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon primary">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Nouveau cours</h6>
+                            <p class="mb-1 text-muted">Monsieur TAZO a commencé le cours d'anlyse des données en Master 2</p>
+                            <small class="text-muted">Il y a 30 minuites</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon success">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Prochain cours</h6>
+                            <p class="mb-1 text-muted">Monsieur MBUMBO commencera le cours de IT Project en Master 1</p>
+                            <small class="text-muted">Dans 20 minuites</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="activity-icon warning">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Cours à ratrapper</h6>
+                            <p class="mb-1 text-muted">Dr TARA ratrappera le cours de leadership en gestion niveau 3</p>
+                            <small class="text-muted">Samedi à 11H00</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h5>
+            <div class="d-grid gap-3">
+                <a href="{% url 'main:inscriptions' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Prochain cours
+                </a>
+                <a href="{% url 'main:etudiants' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Recherche Enseignant
+                </a>
+                <a href="{% url 'main:documents' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Etat d'avancement
+                </a>
+                <a href="{% url 'main:statistiques' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Voir statistiques
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar Widget -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Calendrier académique
+            </h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="text-secondary">Inscriptions</h6>
+                        <p class="mb-1">Période d'inscription</p>
+                        <small class="text-muted">15 Sept - 30 Sept 2024</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded">
+                        <h6 class="text-success">Examens</h6>
+                        <p class="mb-1">Session d'examens</p>
+                        <small class="text-muted">15 Déc - 20 Déc 2024</small>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link type="text/css" href="{% static 'main/css/dashboard.css' %}" rel="stylesheet">
+{% endblock %}
