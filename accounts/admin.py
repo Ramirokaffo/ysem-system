@@ -16,7 +16,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('phone_number', 'date_of_birth', 'address', 'gender')
         }),
         ('Informations professionnelles', {
-            'fields': ('role', 'method_type')
+            'fields': ('role', )
         }),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
@@ -24,7 +24,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('phone_number', 'date_of_birth', 'address', 'gender')
         }),
         ('Informations professionnelles', {
-            'fields': ('role', 'method_type')
+            'fields': ('role', )
         }),
     )
 
