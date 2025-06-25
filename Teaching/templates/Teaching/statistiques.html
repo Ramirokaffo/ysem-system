@@ -72,17 +72,17 @@
             <div class="mb-3">
                 <i class="fas fa-user-plus fa-3x text-success"></i>
             </div>
-            <h3 class="mb-1">256</h3>
-            <p class="text-muted mb-2">Nouvelles inscriptions</p>
+            <h3 class="mb-1">456</h3>
+            <p class="text-muted mb-2">Total cours</p>
             <div class="d-flex justify-content-center align-items-center">
                 <span class="badge bg-success me-2">
-                    <i class="fas fa-arrow-up"></i> 8%
+                    <!--  <i class="fas fa-arrow-up"></i> 8% --> 
                 </span>
-                <small class="text-muted">vs année précédente</small>
+                <small class="text-muted">pour cette année académique</small>
             </div>
         </div>
     </div>
-
+<!--
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
@@ -97,20 +97,20 @@
                 <small class="text-muted">vs année précédente</small>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
                 <i class="fas fa-percentage fa-3x text-info"></i>
             </div>
-            <h3 class="mb-1">92%</h3>
-            <p class="text-muted mb-2">Taux de réussite</p>
+            <h3 class="mb-1">80%</h3>
+            <p class="text-muted mb-2">Taux de converture des cours</p>
             <div class="d-flex justify-content-center align-items-center">
                 <span class="badge bg-success me-2">
-                    <i class="fas fa-arrow-up"></i> 5%
+                    <!-- <i class="fas fa-arrow-up"></i> 5% -->
                 </span>
-                <small class="text-muted">vs année précédente</small>
+                <small class="text-muted"> </small>
             </div>
         </div>
     </div>
@@ -122,28 +122,29 @@
         <div class="card-neumorphic">
             <h5 class="mb-4">
                 <i class="fas fa-chart-line me-2"></i>
-                Évolution des inscriptions
+                État d'avancement des cours
             </h5>
             <div class="chart-container" style="height: 300px; background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; display: flex; align-items: center; justify-content: center;">
                 <div class="text-center text-muted">
                     <i class="fas fa-chart-line fa-3x mb-3"></i>
-                    <p>Graphique des inscriptions par mois</p>
+                    <p>Graphique de l'état de couverture des cours par semestre</p>
                     <small>Intégration Chart.js à venir</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Program Distribution -->
+    <!-- Program Distribution 
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
                 <i class="fas fa-chart-pie me-2"></i>
-                Répartition par programme
+                Couverture des programmes de cours par niveau 
             </h5>
             <div class="mb-3">
+                <p>Licence Professionnelle Elite Bilingue en Gestion</p>
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Informatique</span>
+                    <span>L1</span>
                     <span class="fw-bold">45%</span>
                 </div>
                 <div class="progress" style="height: 8px; border-radius: 10px;">
@@ -153,7 +154,7 @@
             
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Gestion</span>
+                    <span>L2</span>
                     <span class="fw-bold">30%</span>
                 </div>
                 <div class="progress" style="height: 8px; border-radius: 10px;">
@@ -163,43 +164,67 @@
             
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Marketing</span>
+                    <span>L3</span>
                     <span class="fw-bold">25%</span>
                 </div>
                 <div class="progress" style="height: 8px; border-radius: 10px;">
                     <div class="progress-bar bg-warning" style="width: 25%; border-radius: 10px;"></div>
                 </div>
+            </div>    
+            
+        </div> -->
+    </div>
+
+    <!--Graphique évaluation des enseignants par semestre--> 
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-line me-2"></i>
+                Évaluation des enseignants
+            </h5>
+            <div class="chart-container" style="height: 300px; background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; display: flex; align-items: center; justify-content: center;">
+                <div class="text-center text-muted">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <p>Graphique de l'évaluation des enseignants pas semestre</p>
+                    <small>Intégration Chart.js à venir</small>
+                </div>
             </div>
         </div>
     </div>
+
+    
 </div>
 
 <div class="row">
-    <!-- Performance by Level -->
+    <!-- Etat de couverture des cours par niveau -->
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
                 <i class="fas fa-layer-group me-2"></i>
-                Performance par niveau
+                Couverture des cours par niveau
             </h5>
+            
             <div class="table-responsive">
                 <table class="table table-sm">
                     <thead>
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Elite Bilingue en Science de Gestion</td>
                         <tr>
                             <th>Niveau</th>
-                            <th>Étudiants</th>
-                            <th>Taux de réussite</th>
+                            <th>Cours</th>
+                            <th>Taux de couverture</th>
                             <th>Moyenne</th>
                         </tr>
                     </thead>
                     <tbody>
+
+                        
                         <tr>
                             <td><span class="badge bg-primary">L1</span></td>
                             <td>345</td>
                             <td>
                                 <span class="text-success fw-bold">88%</span>
                             </td>
-                            <td>14.2/20</td>
+                            <td>14.2</td>
                         </tr>
                         <tr>
                             <td><span class="badge bg-primary">L2</span></td>
@@ -207,7 +232,7 @@
                             <td>
                                 <span class="text-success fw-bold">91%</span>
                             </td>
-                            <td>14.8/20</td>
+                            <td>14.8</td>
                         </tr>
                         <tr>
                             <td><span class="badge bg-primary">L3</span></td>
@@ -215,31 +240,133 @@
                             <td>
                                 <span class="text-success fw-bold">94%</span>
                             </td>
-                            <td>15.1/20</td>
+                            <td>15.1</td>
+                        </tr>
+                        
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Avantage en Science de Gestion</td>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Cours</th>
+                            <th>Taux de couverture</th>
+                            <th>Moyenne</th>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-success">M1</span></td>
-                            <td>189</td>
+                            
+                            <td><span class="badge bg-primary">L1</span></td>
+                            <td>345</td>
                             <td>
-                                <span class="text-success fw-bold">96%</span>
+                                <span class="text-success fw-bold">88%</span>
                             </td>
-                            <td>15.6/20</td>
+                            <td>14.2</td>
                         </tr>
                         <tr>
-                            <td><span class="badge bg-success">M2</span></td>
-                            <td>135</td>
+                            <td><span class="badge bg-primary">L2</span></td>
+                            <td>298</td>
                             <td>
-                                <span class="text-success fw-bold">98%</span>
+                                <span class="text-success fw-bold">91%</span>
                             </td>
-                            <td>16.2/20</td>
+                            <td>14.8</td>
                         </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">L3</span></td>
+                            <td>267</td>
+                            <td>
+                                <span class="text-success fw-bold">94%</span>
+                            </td>
+                            <td>15.1</td>
+                        </tr>
+
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Elite en Communication des organisations</td>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Cours</th>
+                            <th>Taux de couverture</th>
+                            <th>Moyenne</th>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge bg-primary">L1</span></td>
+                            <td>345</td>
+                            <td>
+                                <span class="text-success fw-bold">88%</span>
+                            </td>
+                            <td>14.2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">L2</span></td>
+                            <td>298</td>
+                            <td>
+                                <span class="text-success fw-bold">91%</span>
+                            </td>
+                            <td>14.8</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">L3</span></td>
+                            <td>267</td>
+                            <td>
+                                <span class="text-success fw-bold">94%</span>
+                            </td>
+                            <td>15.1</td>
+                        </tr>
+
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Master Professionnel Elite en Science de Gestion</td>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Cours</th>
+                            <th>Taux de couverture</th>
+                            <th>Moyenne</th>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge bg-primary">M1</span></td>
+                            <td>345</td>
+                            <td>
+                                <span class="text-success fw-bold">88%</span>
+                            </td>
+                            <td>14.2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">M2</span></td>
+                            <td>298</td>
+                            <td>
+                                <span class="text-success fw-bold">91%</span>
+                            </td>
+                            <td>14.8</td>
+                        </tr>
+
+                        <td colspan="4" style="text-align:center; font-weight:bold;">Master Professionnel Elite en Communication</td>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Cours</th>
+                            <th>Taux de couverture</th>
+                            <th>Moyenne</th>
+                        </tr>
+                        
+                        <tr>
+                            <td><span class="badge bg-primary">M1</span></td>
+                            <td>345</td>
+                            <td>
+                                <span class="text-success fw-bold">88%</span>
+                            </td>
+                            <td>14.2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">M2</span></td>
+                            <td>298</td>
+                            <td>
+                                <span class="text-success fw-bold">91%</span>
+                            </td>
+                            <td>14.8</td>
+                        </tr>
+                        
+
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Recent Trends -->
+    <!-- Recent Trends 
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
@@ -290,7 +417,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 {% endblock %}
 
