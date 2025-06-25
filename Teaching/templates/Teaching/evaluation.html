@@ -1,0 +1,395 @@
+{% extends 'Teaching/base.html' %}
+{% load static %}
+
+{% block title %}Evaluation des Enseignants-YSEM{% endblock %}
+
+{% block page_title %}Evaluation-Enseignants{% endblock %}
+
+{% block content %}
+<header class="header-global">
+    <nav id="navbar-main" aria-label="Primary navigation" class="navbar navbar-main navbar-expand-lg navbar-theme-primary headroom navbar-light">
+        <div class="container position-relative">
+            <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4" href="../../index.html">
+                <img class="navbar-brand-dark" src="../../assets/img/brand/dark.svg" alt="Logo light">
+                <img class="navbar-brand-light" src="../../assets/img/brand/dark.svg" alt="Logo dark">
+            </a>
+            <div class="navbar-collapse collapse" id="navbar_global">
+                <div class="navbar-collapse-header">
+                    <div class="row">
+                        <div class="col-6 collapse-brand">
+                            <a href="../../index.html" class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                <img src="../../assets/img/brand/dark.svg" alt="Themesberg logo">
+                            </a>
+                        </div>
+                        <div class="col-6 collapse-close">
+                            <a href="#navbar_global" class="fas fa-times" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" title="close" aria-label="Toggle navigation"></a>
+                        </div>
+                    </div>
+                </div>
+                <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link" data-toggle="dropdown" >
+                            <span class="nav-link-inner-text">Pages</span>
+                            <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="../../html/pages/about.html">About</a></li>
+                            <li><a class="dropdown-item" href="../../html/pages/pricing.html">Pricing</a></li>
+                            <li><a class="dropdown-item" href="../../html/pages/contact.html">Contact</a></li>
+                            <li><a class="dropdown-item" href="../../html/pages/sign-in.html">Sign in</a></li>
+                            <li><a class="dropdown-item" href="../../html/pages/sign-up.html">Sign up</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown mega-dropdown">
+                        <a href="#" class="nav-link" data-toggle="dropdown" >
+                            <span class="nav-link-inner-text">Components</span>
+                            <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <div class="row">
+                                <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                    <div class="justify-content-center bg-primary text-white">
+                                        <div class="px-6 pb-5 pt-3">
+                                            <img src="../../assets/img/megamenu-image.jpg" alt="Pixel Components">
+                                        </div>
+                                        <div class="z-2 pb-4 text-center">
+                                            <a href="../../html/components/all.html"  class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                <span class="mr-1"><span class="fas fa-th-large"></span></span>
+                                                All components
+                                            </a>
+                                            <a href="https://themesberg.com/docs/neumorphism-ui/components/alerts" target="_blank" class="btn btn-primary mb-2 mb-sm-0">
+                                                <span class="mr-1"><span class="fas fa-book"></span></span>
+                                                Docs v1.0
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col pl-0">
+                                    <ul class="list-style-none">
+                                        <li><a class="dropdown-item" href="../../html/components/accordions.html">Accordions</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/alerts.html">Alerts</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/badges.html">Badges</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/bootstrap-carousels.html">Bootstrap Carousels</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/breadcrumbs.html">Breadcrumbs</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/buttons.html">Buttons</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/" target="_blank">Counters <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/cards.html">Cards</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/" target="_blank">E-commerce <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                    </ul>
+                                </div>
+                                <div class="col pl-0">
+                                    <ul class="list-style-none">
+                                        <li><a class="dropdown-item" href="../../html/components/forms.html">Forms</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/" target="_blank">Icon Boxes <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/modals.html">Modals</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/navs.html">Navs</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/" target="_blank">Owl Carousels <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/pagination.html">Pagination</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/popovers.html">Popovers</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/progress-bars.html">Progress Bars</a></li>
+
+                                    </ul>
+                                </div>
+                                <div class="col pl-0">
+                                    <ul class="list-style-none">
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps" target="_blank">Steps <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/tables.html">Tables</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/tabs.html">Tabs</a> </li>
+                                        <li><a class="dropdown-item" href="../../html/components/toasts.html">Toasts</a> </li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://themesberg.com/docs/neumorphism-ui/components/timelines/" target="_blank">Timelines <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/tooltips.html">Tooltips</a></li>
+                                        <li><a class="dropdown-item" href="../../html/components/typography.html">Typography</a></li>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html" target="_blank">Widgets <span class="badge badge-dark ml-3">Pro</span></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link" data-toggle="dropdown" >
+                            <span class="nav-link-inner-text">Support</span>
+                            <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg">
+                            <div class="col-auto px-0" data-dropdown-content>
+                                <div class="list-group list-group-flush">
+                                    <a href="https://themesberg.com/docs/neumorphism-ui/getting-started/quick-start/" target="_blank" class="list-group-item list-group-item-action d-flex align-items-center p-0 py-3 px-lg-4">
+                                        <span class="icon icon-sm icon-secondary"><span class="fas fa-file-alt"></span></span>
+                                        <div class="ml-4">
+                                            <span class="text-dark d-block">Documentation<span class="badge badge-sm badge-secondary ml-2">v1.0</span></span>
+                                            <span class="small">Examples and guides</span>
+                                        </div>
+                                    </a>
+                                    <a href="https://github.com/themesberg/neumorphism-ui/issues" target="_blank" class="list-group-item list-group-item-action d-flex align-items-center p-0 py-3 px-lg-4">
+                                        <span class="icon icon-sm icon-secondary"><span class="fas fa-microphone-alt"></span></span>
+                                        <div class="ml-4">
+                                            <span class="text-dark d-block">Support</span>
+                                            <span class="small">Looking for answers? Ask us!</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="https://themesberg.com/product/ui-kits/neumorphism-ui-pro" target="_blank" class="btn btn-primary text-secondary d-none d-md-inline-block mr-3"><i class="far fa-paper-plane mr-2"></i> Upgrade to PRO</a>
+                <a href="https://themesberg.com/docs/neumorphism-ui/getting-started/quick-start/" target="_blank" class="btn btn-primary"><i class="fas fa-book"></i> Docs v1.0</a>
+                <button class="navbar-toggler ml-2" type="button" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+</header>
+    <main>
+       
+
+    <!-- C'est ici que je commence à modifier en creant la table de suivi des enseignements de YSEM -->
+           
+<div class="section bg-primary text-dark section-lg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="mb-4">
+                    <span class="h5">Table d'évaluation</span>
+                </div>
+                <div class="mb-5">
+                    <table class="table shadow-soft rounded">
+                        <tr>
+                            <th class="border-0" scope="col" id="Date">Date</th>
+                            <th class="border-0" scope="col" id="etudiant">Nom-Prénom de l'étudiant</th>
+                            <th class="border-0" scope="col" id="CN">Cycle et niveau</th>
+                            <th class="border-0" scope="col" id="cours">Intitulé du cours</th>
+                            <th class="border-0" scope="col" id="support_cours">Support de cours acessible?</th>
+                            <th class="border-0" scope="col" id="BE">Bonne explication du cours?</th>
+                            <th class="border-0" scope="col" id="BR">Bonne réponse aux questions?</th>
+                            <th class="border-0" scope="col" id="CED">Comment l'enseignant dispense son cours?</th>
+                            <th class="border-0" scope="col" id="donne_TD">L'enseignant donne t-il assez de TD?</th>
+                            <th class="border-0" scope="col" id="PE">Projet de fin d'étude?</th>
+                            <th class="border-0" scope="col" id="DR">Difficultés rencontrées</th>
+                            <th class="border-0" scope="col" id="QDR">Quelles sont les difficultés rencontrées</th>
+                            <th class="border-0" scope="col" id="PE">Propositions étudiants</th>
+                            <th class="border-0" scope="col" id="OP">Observation et proposition SSAC</th>
+                            <th class="border-0" scope="col" id="action">Action menée SSAC</th>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="firstyear" rowspan="2">First Year</th>
+                            <th scope="row" id="Bolter" headers="firstyear teacher">D. Bolter</th>
+                            <td headers="firstyear Bolter males">5</td>
+                            <td headers="firstyear Bolter females">4</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Cheetham" headers="firstyear teacher">A. Cheetham</th>
+                            <td headers="firstyear Cheetham males">7</td>
+                            <td headers="firstyear Cheetham females">9</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="secondyear" rowspan="3">Second Year</th>
+                            <th scope="row" id="Lam" headers="secondyear teacher">M. Lam</th>
+                            <td headers="secondyear Lam males">3</td>
+                            <td headers="secondyear Lam females">9</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Crossy" headers="secondyear teacher">S. Crossy</th>
+                            <td headers="secondyear Crossy males">4</td>
+                            <td headers="secondyear Crossy females">3</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Forsyth" headers="secondyear teacher">A. Forsyth</th>
+                            <td headers="secondyear Forsyth males">6</td>
+                            <td headers="secondyear Forsyth females">9</td>
+                        </tr>
+                    </table>
+                </div>
+                <!--
+                <div class="mb-5">
+                    <div class="mb-4">
+                        <span class="h5">Hoverable rows</span>
+                    </div>
+                    <table class="table table-hover shadow-inset rounded">
+                        <tr>
+                            <th class="border-0" scope="col" id="class3">Class</th>
+                            <th class="border-0" scope="col" id="teacher3">Teacher</th>
+                            <th class="border-0" scope="col" id="males3">Males</th>
+                            <th class="border-0" scope="col" id="females3">Females</th>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="firstyear3" rowspan="2">First Year</th>
+                            <th scope="row" id="Bolter3" headers="firstyear3 teacher3">D. Bolter</th>
+                            <td headers="firstyear3 Bolter3 males3">5</td>
+                            <td headers="firstyear3 Bolter3 females3">4</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Cheetham3" headers="firstyear3 teacher3">A. Cheetham</th>
+                            <td headers="firstyear3 Cheetham3 males3">7</td>
+                            <td headers="firstyear3 Cheetham3 females3">9</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="secondyear3" rowspan="3">Second Year</th>
+                            <th scope="row" id="Lam3" headers="secondyear3 teacher3">M. Lam</th>
+                            <td headers="secondyear3 Lam3 males3">3</td>
+                            <td headers="secondyear3 Lam3 females3">9</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Crossy3" headers="secondyear3 teacher3">S. Crossy</th>
+                            <td headers="secondyear3 Crossy3 males3">4</td>
+                            <td headers="secondyear3 Crossy3 females3">3</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" id="Forsyth3" headers="secondyear3 teacher3">A. Forsyth</th>
+                            <td headers="secondyear3 Forsyth3 males3">6</td>
+                            <td headers="secondyear3 Forsyth3 females3">9</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="mb-5">
+                    <div class="mb-4">
+                        <span class="h5">Responsive Table</span>
+                    </div>
+                    <div class="table-responsive-sm shadow-soft rounded">
+                        <table class="table table-striped">
+                            <tr>
+                                <th class="border-0" scope="col" id="Date">Date</th>
+                            <th class="border-0" scope="col" id="enseignant">Nom-Prénom de l'enseignant</th>
+                            <th class="border-0" scope="col" id="cours">Intitulé du cours</th>
+                            <th class="border-0" scope="col" id="level">Niveau</th>
+                            <th class="border-0" scope="col" id="chapitreP">Chapitre Prévu</th>
+                            <th class="border-0" scope="col" id="chapitreF">Chapitre Fait</th>
+                            <th class="border-0" scope="col" id="contenus_seanceP">Contenus séance prevu dans le plan</th>
+                            <th class="border-0" scope="col" id="contenusE">Contenus effectif de séances</th>
+                            <th class="border-0" scope="col" id="taux">Taux de couverture de la séance</th>
+                            <th class="border-0" scope="col" id="TP">Travaux préparatoires</th>
+                            <th class="border-0" scope="col" id="TE">Travaux d'équipe</th>
+                            <th class="border-0" scope="col" id="TS">Travaux a faire en salle</th>
+                            <th class="border-0" scope="col" id="TM">Travaux a faire a la maison</th>
+                            <th class="border-0" scope="col" id="AP">Activité pédagogique</th>
+                            <th class="border-0" scope="col" id="TD_TP">Tavaux dirigés et Travaux pratiques</th>
+                            <th class="border-0" scope="col" id="PC">Projet de fin de cours</th>
+                            <th class="border-0" scope="col" id="APE">Association de la pratique aux enseignements</th>
+                            <th class="border-0" scope="col" id="OB">Observations</th>
+                            <th class="border-0" scope="col" id="Res">Résolutions</th>
+                            </tr>
+                            <tr>
+                                <th scope="row" id="firstyear2" rowspan="2">First Year</th>
+                                <th scope="row" id="Bolter2" headers="firstyear2 teacher2">D. Bolter</th>
+                                <td headers="firstyear2 Bolter2 males2">5</td>
+                                <td headers="firstyear2 Bolter2 females2">4</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" id="Cheetham2" headers="firstyear2 teacher2">A. Cheetham</th>
+                                <td headers="firstyear2 Cheetham2 males2">7</td>
+                                <td headers="firstyear2 Cheetham2 females2">9</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" id="secondyear2" rowspan="3">Second Year</th>
+                                <th scope="row" id="Lam2" headers="secondyear2 teacher2">M. Lam</th>
+                                <td headers="secondyear2 Lam2 males2">3</td>
+                                <td headers="secondyear2 Lam2 females2">9</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" id="Crossy2" headers="secondyear2 teacher2">S. Crossy</th>
+                                <td headers="secondyear2 Crossy2 males2">4</td>
+                                <td headers="secondyear2 Crossy2 females2">3</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" id="Forsyth2" headers="secondyear2 teacher2">A. Forsyth</th>
+                                <td headers="secondyear2 Forsyth2 males2">6</td>
+                                <td headers="secondyear2 Forsyth2 females2">9</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+    </main>
+    <a id="producthunt-badge" href="https://www.producthunt.com/posts/neumorphism-ui?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-neumorphism-ui" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=200908&theme=dark" alt="Neumorphism UI - Neumorphism inspired UI web components, sections and pages | Product Hunt Embed" style="width: 250px; height: 54px;" width="250px" height="54px" /></a>
+
+<footer class="d-flex pb-5 pt-6 pt-md-7 border-top border-light bg-primary">
+    <!--Bloc de texte-->
+    <div class="form-group">
+        <label for="exampleFormControlTextarea1">Actions menées par SSAC</label>
+        <textarea class="form-control" placeholder="Entrez les actionos menées..." id="exampleFormControlTextarea1" rows="15" ></textarea>
+      </div>
+</footer>
+
+    <!-- Core -->
+<script src="../../vendor/jquery/dist/jquery.min.js"></script>
+<script src="../../vendor/popper.js/dist/umd/popper.min.js"></script>
+<script src="../../vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="../../vendor/headroom.js/dist/headroom.min.js"></script>
+
+<!-- Vendor JS -->
+<script src="../../vendor/onscreen/dist/on-screen.umd.min.js"></script>
+<script src="../../vendor/nouislider/distribute/nouislider.min.js"></script>
+<script src="../../vendor/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="../../vendor/waypoints/lib/jquery.waypoints.min.js"></script>
+<script src="../../vendor/jarallax/dist/jarallax.min.js"></script>
+<script src="../../vendor/jquery.counterup/jquery.counterup.min.js"></script>
+<script src="../../vendor/jquery-countdown/dist/jquery.countdown.min.js"></script>
+<script src="../../vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+<script src="../../vendor/prismjs/prism.js"></script>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+<!-- Neumorphism JS -->
+<script src="../../assets/js/neumorphism.js"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+    
+    .progress {
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .table {
+        background: transparent;
+    }
+    
+    .table th {
+        border-top: none;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .table td {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        vertical-align: middle;
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.4em 0.8em;
+    }
+    
+    .list-group-item {
+        padding: 1rem 0;
+    }
+    
+    .list-group-item:not(:last-child) {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .chart-container {
+        position: relative;
+    }
+</style>
+{% endblock %}

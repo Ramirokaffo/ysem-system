@@ -97,4 +97,3 @@ class Evaluation(models.Model):
         verbose_name = "Evaluation"
         verbose_name_plural = "Evaluations"
 
-

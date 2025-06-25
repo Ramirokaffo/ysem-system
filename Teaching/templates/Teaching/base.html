@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Dashboard YSEM{% endblock %}</title>
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link type="text/css" href="{% static 'main/css/base.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/navigation.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/alerts.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="d-flex align-items-center">
+            <!-- Mobile Menu Toggle -->
+            <button class="btn d-md-none me-3" onclick="toggleSidebar()" style="background: transparent; border: none; color: var(--text-color);">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Page Title -->
+            <h1 class="header-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        </div>
+
+        <div class="header-user-info">
+            <!-- Academic Year -->
+            <div class="academic-year-badge">
+                <span class="academic-year-label">Année académique</span>
+                <div>2024-2025</div>
+            </div>
+
+            <!-- User Profile -->
+            <div class="user-profile">
+                <div class="user-details">
+                    <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="user-role">{{ user.role|default:"Administrateur" }}</div>
+                </div>
+                <div class="user-avatar">
+                    {% if user.first_name and user.last_name %}
+                        {{ user.first_name.0 }}{{ user.last_name.0 }}
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+            <!-- Logo YSEM -->
+            <div class="sidebar-logo">
+                <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo">
+                <!-- <div class="sidebar-logo-text">YSEM</div> -->
+            </div>
+
+            <!-- Divider -->
+            <div class="sidebar-divider"></div>
+
+            <!-- Navigation Menu -->
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'Teaching' %}active{% endif %}" href="{% url 'teaching:Teaching' %}">
+                        <i class="fas fa-home me-2"></i>
+                        Accueil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'enseignants' %}active{% endif %}" href="{% url 'teaching:enseignants' %}">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Enseignants
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'evaluations' %}active{% endif %}" href="{% url 'teaching:evaluations' %}">
+                        <i class="fas fa-users me-2"></i>
+                        Evaluations
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'suivi_cours' %}active{% endif %}" href="{% url 'teaching:suivi_cours' %}">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Suivi_cours
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}" href="{% url 'teaching:statistiques' %}">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parametres' %}active{% endif %}" href="{% url 'teaching:parametres' %}">
+                        <i class="fas fa-cog me-2"></i>
+                        Paramètres
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <button class="logout-btn" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Messages -->
+        {% include 'components/messages.html' with auto_dismiss=True %}
+
+        <!-- Page Content -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+
+    <script>
+        // Update current date
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        });
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isMenuButton = event.target.closest('.btn');
+
+            if (!isClickInsideSidebar && !isMenuButton && window.innerWidth <= 768) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                // Rediriger vers la page de déconnexion personnalisée
+                window.location.href = '{% url "authentication:logout" %}';
+            }
+        }
+
+        // Alert dismissible functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gérer la fermeture des alerts
+            document.querySelectorAll('.alert .btn-close').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    const alert = this.closest('.alert');
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 300);
+                });
+            });
+
+            // Auto-dismiss des alerts après 5 secondes (optionnel)
+            document.querySelectorAll('.alert[data-auto-dismiss="true"]').forEach(function(alert) {
+                setTimeout(() => {
+                    const closeBtn = alert.querySelector('.btn-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    }
+                }, 5000);
+            });
+        });
+    </script>
+
+    <!-- Modal de déconnexion -->
+    {% include 'components/modal_confirm.html' with modal_id="logoutModal" modal_title="Confirmer la déconnexion" modal_message="Êtes-vous sûr de vouloir vous déconnecter de votre session ?" confirm_text="Se déconnecter" cancel_text="Annuler" confirm_action="logout()" modal_icon="fas fa-sign-out-alt" %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
