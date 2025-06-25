@@ -14,12 +14,13 @@ urlpatterns = [
     path('documents/', views.DocumentsView.as_view(), name='documents'),
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
+    path('etudiant/<str:pk>/', views.etudiant_detail, name='etudiant_detail'),
 
     # Formulaire d'inscription public
     path('inscription-externe/', views.InscriptionExterneView.as_view(), name='inscription_externe'),
     path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
     path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/etape/<int:step>/', views.NouvelleInscriptionStepView.as_view(), name='nouvelle_inscription'),
 
     re_path(r'^favicon\.ico$', favicon_view),
-
 ]

@@ -1,0 +1,33 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Inscription - YSEM{% endblock %}
+
+{% block page_title %}Nouvelle Inscription - Étape {{ step }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-plus me-2"></i>Nouvelle Inscription - Étape {{ step }}</h5>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-flex justify-content-between">
+                    {% if prev_step %}
+                        <a href="{% url 'main:nouvelle_inscription' step=prev_step %}" class="btn btn-secondary">Précédent</a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Suivant</button>
+                </div>
+            </form>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

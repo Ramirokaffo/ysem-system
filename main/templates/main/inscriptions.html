@@ -7,63 +7,49 @@
 
 {% block content %}
 <div class="row">
-    <!-- Search and Filters -->
-    <div class="col-12 mb-4">
-        <div class="card-neumorphic">
-            <h5 class="mb-4">
-                <i class="fas fa-search me-2"></i>
-                Recherche et filtres
-            </h5>
-            <form class="row g-3">
-                <div class="col-md-4">
-                    <label for="search" class="form-label">Rechercher</label>
-                    <input type="text" class="form-control" id="search" placeholder="Nom, prénom, matricule...">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-filter me-2"></i>Filtres</h5>
+            <form method="get" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status">Status:</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="">Tous</option>
+                            <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>En attente</option>
+                            <option value="abandoned" {% if request.GET.status == 'abandoned' %}selected{% endif %}>Abandonné</option>
+                            <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejeté</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="status" class="form-label">Statut</label>
-                    <select class="form-select" id="status">
-                        <option value="">Tous les statuts</option>
-                        <option value="pending">En attente</option>
-                        <option value="approved">Approuvée</option>
-                        <option value="rejected">Rejetée</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="program" class="form-label">Programme</label>
-                    <select class="form-select" id="program">
-                        <option value="">Tous les programmes</option>
-                        <option value="info">Informatique</option>
-                        <option value="gestion">Gestion</option>
-                        <option value="marketing">Marketing</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <div class="row mt-3">
+                    <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
+                        <button type="submit" class="btn btn-primary px-5">Appliquer les filtres</button>
+                        <a href="?" class="btn btn-outline-danger px-4 ml-3">Réinitialiser les filtres</a>
+                    </div>
                 </div>
             </form>
+            {% if request.GET %}
+            <div class="mt-3 pt-2 border-top">
+                <strong>Filtres appliqués :</strong>
+                <ul class="list-inline mb-0">
+                    {% if request.GET.status %}
+                        <li class="list-inline-item"><span class="badge badge-success text-uppercase">Statut : {{ request.GET.status }}</span></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- Inscriptions List -->
     <div class="col-12">
-        <div class="card-neumorphic">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Liste des inscriptions
-                </h5>
-                <button class="btn btn-success">
-                    <i class="fas fa-plus me-2"></i>
-                    Nouvelle inscription
-                </button>
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des inscriptions</h5>
+                <a href="{% url 'main:nouvelle_inscription' step=1 %}" class="btn btn-success"><i class="fas fa-plus me-2"></i>Nouvelle inscription</a>
             </div>
-
-            <!-- Table -->
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
@@ -77,28 +63,29 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>2024001</strong></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
-                                        JD
+                        {% for student in students %}
+                            <tr>
+                                <td><strong>{{ student.matricule }}</strong></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                            {{ student.firstname|slice:":1" }}{{ student.lastname|slice:":1" }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ student.firstname }} {{ student.lastname }}</div>
+                                            <small class="text-muted">{{ student.email }}</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div class="fw-bold">Jean Dupont</div>
-                                        <small class="text-muted">jean.dupont@email.com</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Informatique - L1</td>
-                            <td>15/09/2024</td>
-                            <td>
-                                <span class="badge bg-warning">En attente</span>
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
-                                        <i class="fas fa-eye"></i>
+                                </td>
+                                <td>{{ student.program.name }}</td>
+                                <td>{{ student.date_naiss|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% endif %}">{{ student.get_status_display }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                            <i class="fas fa-eye"></i>
                                     </button>
                                     <button class="btn btn-sm btn-outline-success" title="Approuver">
                                         <i class="fas fa-check"></i>
@@ -106,78 +93,15 @@
                                     <button class="btn btn-sm btn-outline-danger" title="Rejeter">
                                         <i class="fas fa-times"></i>
                                     </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>2024002</strong></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm bg-success text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
-                                        MM
                                     </div>
-                                    <div>
-                                        <div class="fw-bold">Marie Martin</div>
-                                        <small class="text-muted">marie.martin@email.com</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Gestion - L2</td>
-                            <td>14/09/2024</td>
-                            <td>
-                                <span class="badge bg-success">Approuvée</span>
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-secondary" title="Imprimer">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><strong>2024003</strong></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-sm bg-info text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
-                                        PD
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold">Pierre Durand</div>
-                                        <small class="text-muted">pierre.durand@email.com</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Marketing - L3</td>
-                            <td>13/09/2024</td>
-                            <td>
-                                <span class="badge bg-warning">En attente</span>
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-outline-primary" title="Voir détails">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" title="Approuver">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" title="Rejeter">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
-
             <!-- Pagination -->
-            <nav aria-label="Page navigation" class="mt-4">
+            <!-- <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item disabled">
                         <a class="page-link" href="#" tabindex="-1">Précédent</a>
@@ -195,7 +119,64 @@
                         <a class="page-link" href="#">Suivant</a>
                     </li>
                 </ul>
-            </nav>
+            </nav> -->
+             <!-- Pagination Neumorphism avec icônes et choix par page -->
+            <div class="pt-3 border-top mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <form method="get" class="d-flex align-items-center">
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'per_page' and key != 'page' %}
+                                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                            <label for="per_page" class="me-2 mb-0">Éléments par page :</label>
+                            <select class="form-control w-auto" id="per_page" name="per_page" onchange="this.form.submit()">
+                                {% for n in per_page_choices %}
+                                    <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <nav aria-label="Blog page navigation">
+                            <ul class="pagination justify-content-end pagination-lg" style="gap: 0.5rem;">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="Première page" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page=1"><span class="fas fa-angle-double-left"></span></a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="Précédent" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"><span class="fas fa-angle-left"></span></a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link"><span class="fas fa-angle-double-left"></span></span></li>
+                                    <li class="page-item disabled"><span class="page-link"><span class="fas fa-angle-left"></span></span></li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                        {% else %}
+                                            <li class="page-item"><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a></li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="Suivant" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}"><span class="fas fa-angle-right"></span></a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="Dernière page" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}"><span class="fas fa-angle-double-right"></span></a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link"><span class="fas fa-angle-right"></span></span></li>
+                                    <li class="page-item disabled"><span class="page-link"><span class="fas fa-angle-double-right"></span></span></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

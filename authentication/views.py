@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
+from academic.models import AcademicYear
 
 
 @never_cache
@@ -25,10 +26,6 @@ def login_view(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    if user.is_study_admin():
-                        next_url = request.GET.get('next', 'teaching:Teaching')
-                        return redirect(next_url)
-
                     # Rediriger vers la page demandée ou le dashboard
                     next_url = request.GET.get('next', 'main:dashboard')
                     return redirect(next_url)

@@ -19,9 +19,8 @@ class BaseUser(AbstractUser):
         null=True
     )
     role = models.CharField(max_length=100, blank=True, null=True, default="student",
-        choices=[('scholar', 'Scolarité'), ('teaching', 'Suivie des Enseignement'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
+        choices=[('scholar', 'Scolarité'), ('teaching', 'Suivie des Enseignements'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
     )
-    method_type = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = 'accounts_baseuser'
@@ -45,6 +44,8 @@ class Godfather(models.Model):
     occupation = models.CharField(max_length=200, blank=True, null=True)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField()
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
