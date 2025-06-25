@@ -11,7 +11,7 @@ class Lecturer(models.Model):
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     date_naiss = models.DateField()
-    status = models.CharField(max_length=50)
+    grade = models.CharField(max_length=50)
     gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')])
     lang = models.CharField(max_length=50, default='fr')
     phone_number = models.CharField(max_length=20, blank=True, null=True)

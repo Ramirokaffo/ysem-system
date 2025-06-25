@@ -26,6 +26,10 @@ def login_view(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+                    if user.is_study_admin():
+                        next_url = request.GET.get('next', 'teaching:Teaching')
+                        return redirect(next_url)
+
                     # Rediriger vers la page demandée ou le dashboard
                     next_url = request.GET.get('next', 'main:dashboard')
                     return redirect(next_url)

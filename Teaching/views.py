@@ -10,6 +10,8 @@ from students.models import Student
 from accounts.models import BaseUser, Godfather
 import json
 
+from Teaching.models import Lecturer
+
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Vue principale du dashboard"""
@@ -27,6 +29,8 @@ class EnseignantsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Récupération de tous les enseignants
+        context['enseignants'] = Lecturer.objects.all()
         context['page_title'] = 'Visualisation des enseignants'
         return context
 

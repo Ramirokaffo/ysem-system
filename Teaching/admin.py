@@ -6,7 +6,7 @@ from .models import Lecturer, TeachingMonitoring, Evaluation
 
 @admin.register(Lecturer)
 class LecturerAdmin(admin.ModelAdmin):
-    list_display = ['matricule', 'firstname', 'lastname', 'date_naiss', 'status', 'gender', 'lang', 'phone_number','email']
+    list_display = ['matricule', 'firstname', 'lastname', 'date_naiss', 'grade', 'gender', 'lang', 'phone_number','email']
     search_fields = ['firstname']
 
 
