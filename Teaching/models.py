@@ -38,24 +38,28 @@ class TeachingMonitoring(models.Model):
     """
     Modèle pour le suivi de cours 
     """
-    totalChapterCount = models.IntegerField()
-    groupWork = models.BooleanField(default=True)
-    classWork = models.BooleanField(default=True)
-    homeWork = models.BooleanField(default=True)
-    pedagogicActivities = models.BooleanField(default=True)
-    TDandTP = models.BooleanField(default=True)
-    TDandTPContent = models.CharField(max_length=200)
+    date = models.DateField(null=True)
+    nom = models.CharField(max_length=200)
+    prenom = models.CharField(max_length=200)
+    intitule_cours = models.CharField(max_length=200)
+    niveau = models.CharField(max_length=200)
+    totalChapterCount = models.IntegerField(verbose_name="chapitre prevu")
+    chapitre_fait = models.IntegerField()
+    contenu_seance_prevu = models.IntegerField()
+    contenu_effectif_seance = models.IntegerField()
+    taux_couverture_seance = models.DecimalField(max_digits = 10, decimal_places= 10)
+    travaux_preparatoires = models.BooleanField (default=True)
+    groupWork = models.BooleanField(default=True, verbose_name="travaux_equipe")
+    classWork = models.BooleanField(default=True, verbose_name="travaux_salle")
+    homeWork = models.BooleanField(default=True, verbose_name="travaux_maison")
+    pedagogicActivities = models.BooleanField(default=True, verbose_name="activite_pedagogique")
+    TDandTP = models.BooleanField(default=True, verbose_name= "TD et TP")
+    projet_fin_cours = models.CharField(max_length=200)
+    association_pratique_aux_enseigements = models.CharField(max_length=200)
     observation = models.CharField(max_length=200)
-    solution = models.CharField(max_length=200)
-    generalObservation = models.CharField(max_length=200)
+    solution = models.CharField(max_length=200, verbose_name="resolution")
+    generalObservation = models.CharField(max_length=200, verbose_name="observation generale")
 
-    # Relations
-    # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='student_profile', null=True, blank=True)
-    """godfather = models.ForeignKey(Godfather, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student')
-    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-"""
 
     def __str__(self):
         return f"{self.course_code }"
@@ -69,29 +73,28 @@ class Evaluation(models.Model):
     """
     Modèle pour l'évaluation des enseignants' 
     """
-    courseSupportAvailable = models.BooleanField(default=True)
-    goodExplanation = models.BooleanField(default=True)
-    goodQuestionAnswer = models.BooleanField(default=True)
-    courseMethodology = models.CharField(max_length=200)
-    giveWork = models.BooleanField(default=True)
-    difficulty = models.BooleanField(default=True)
-    anyDifficulty = models.BooleanField(default=True)
-    difficulties = models.CharField(max_length=200)
-    ssacAction = models.CharField(max_length=200)
-    ssacObservation = models.CharField(max_length=200)
-    studentProposition = models.CharField(max_length=200)
+    evaluationDat = models.DateField(null=True, verbose_name="date")
+    nom_et_prenom_etudiant = models.CharField(max_length=200)
+    cycle = models.CharField(max_length=200)
+    niveau = models.IntegerField(default="")
+    intitule_cours = models.CharField(max_length=200)
+    support_cours_acessible = models.BooleanField(default=True)
+    bonne_explication_cours = models.BooleanField(default=True)
+    bonne_reponse_questions = models.BooleanField(default=True)
+    courseMethodology = models.CharField(max_length=200, verbose_name= "methodologie_cours", default="")
+    donne_TD = models.BooleanField(default=True)
+    donne_projet = models.BooleanField(default=True)
+    difficulte_rencontree = models.BooleanField(default=True)
+    quelles_difficultes_rencontrees = models.CharField(max_length=200, default="")
+    propositionEtudiants = models.CharField(max_length=200, default="")
+    observationSSAC = models.CharField(max_length=200, default="")
+    actionSSAC = models.CharField(max_length=200)
+   
+    
 
-
-    # Relations
-    # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='student_profile', null=True, blank=True)
-    """godfather = models.ForeignKey(Godfather, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student')
-    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-"""
 
     def __str__(self):
-        return f"{self.course_code }"
+        return f"{self.nom_et_prenom_etudiant }"
 
     class Meta:
         verbose_name = "Evaluation"

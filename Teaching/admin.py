@@ -12,12 +12,14 @@ class LecturerAdmin(admin.ModelAdmin):
 
 @admin.register(TeachingMonitoring)
 class TeachingMonitoringAdmin(admin.ModelAdmin):
-    list_display = ['totalChapterCount', 'groupWork', 'classWork', 'homeWork', 'pedagogicActivities', 'TDandTP', 'TDandTPContent', 'observation', 'solution', 'generalObservation']
+    list_display = ['totalChapterCount', 'groupWork', 'classWork', 'homeWork', 'pedagogicActivities', 'TDandTP', 'observation', 'solution', 'generalObservation']
     search_fields = ['homeWork']
 
 
 @admin.register(Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ['courseSupportAvailable', 'goodExplanation', 'goodQuestionAnswer', 'courseMethodology', 'giveWork', 'difficulty', 'anyDifficulty', 'difficulties', 'ssacAction', 'ssacObservation', 'studentProposition']
-    search_fields = ['studentProposition']
+    list_display = [
+        # 'evaluationDat', 
+                    'nom_et_prenom_etudiant', 'cycle', 'niveau', 'intitule_cours', 'support_cours_acessible', 'bonne_explication_cours', 'bonne_reponse_questions', 'donne_TD', 'donne_projet', 'difficulte_rencontree', 'quelles_difficultes_rencontrees', 'propositionEtudiants', 'observationSSAC', 'actionSSAC']
+    search_fields = ['propositionEtudiants']
 

@@ -10,7 +10,7 @@ from students.models import Student
 from accounts.models import BaseUser, Godfather
 import json
 
-from Teaching.models import Lecturer
+from Teaching.models import Evaluation, Lecturer
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -41,6 +41,8 @@ class EvaluationsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Récupération de tous les enseignants
+        context['evaluations'] = Evaluation.objects.all()
         context['page_title'] = 'Evaluation des enseignants'
         return context
 
