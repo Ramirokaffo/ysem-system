@@ -10,4 +10,7 @@ urlpatterns = [
     path('suivi_cours/', views.Suivi_CoursView.as_view(), name='suivi_cours'),
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
-]
+    path('enseignants/ajouter/', views.ajouter_enseignantView.as_view(), name='ajouter_enseignant'),
+    
+ ]
+"""path('enseignants/liste', views.liste_enseignants, name='liste_enseignants'),  # ta vue principale"""

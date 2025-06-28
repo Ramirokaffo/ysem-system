@@ -1,0 +1,33 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-white">
+      <h4 class="text-success mb-0">➕ Ajouter un enseignant</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+
+        {% for field in form.visible_fields %}
+          <div class="mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+              <div class="text-danger small">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        {{ form.as_p }}
+
+        <div class="d-flex justify-content-between mt-4">
+          <a href="{% url 'teaching:enseignants' %}" class="btn btn-secondary">Annuler</a>
+          <button type="submit" class="btn btn-success">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

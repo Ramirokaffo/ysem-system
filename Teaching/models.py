@@ -17,13 +17,6 @@ class Lecturer(models.Model):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
 
-    # Relations
-    # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='student_profile', null=True, blank=True)
-    """godfather = models.ForeignKey(Godfather, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student')
-    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-"""
 
     def __str__(self):
         return f"{self.matricule} - {self.firstname} {self.lastname}"
@@ -42,7 +35,8 @@ class TeachingMonitoring(models.Model):
     nom = models.CharField(max_length=200)
     prenom = models.CharField(max_length=200)
     intitule_cours = models.CharField(max_length=200)
-    niveau = models.CharField(max_length=200)
+    cycle = models.CharField(max_length=200)
+    niveau = models.IntegerField()
     totalChapterCount = models.IntegerField(verbose_name="chapitre prevu")
     chapitre_fait = models.IntegerField()
     contenu_seance_prevu = models.IntegerField()
@@ -61,8 +55,30 @@ class TeachingMonitoring(models.Model):
     generalObservation = models.CharField(max_length=200, verbose_name="observation generale")
 
 
-    def __str__(self):
-        return f"{self.course_code }"
+    def taux_couverture_seance(self):
+        if self.contenu_seance_prevu == 0:
+         return 0
+        return round((self.contenu_effectif_seance / self.contenu_seance_prevu) * 100, 1)
+    def couleur_barre(self):
+        if self.taux_couverture_seance() < 50:
+         return "bg-danger"
+        elif self.taux_couverture_seance() < 80:
+            return "bg-warning"
+        return "bg-success"
+    def statut_avancement(self):
+        if self.contenu_effectif_seance == 0:
+            return 'retard'
+        elif self.contenu_effectif_seance < self.contenu_seance_prevu:
+            return 'en_cours'
+        else:
+            return 'termine'
+    def couleur_barre(self):
+        statut = self.statut_avancement()
+        return {
+            'retard': 'bg-danger',
+            'en_cours': 'bg-primary',
+            'termine': 'bg-success'
+        }.get(statut, 'bg-secondary')
 
     class Meta:
         verbose_name = "Suivi_Cours"

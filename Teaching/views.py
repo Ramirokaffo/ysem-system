@@ -9,9 +9,11 @@ from django.http import JsonResponse
 from students.models import Student
 from accounts.models import BaseUser, Godfather
 import json
+from Teaching.models import TeachingMonitoring
+
 
 from Teaching.models import Evaluation, Lecturer
-
+from .forms import EnseignantForm
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Vue principale du dashboard"""
@@ -34,6 +36,24 @@ class EnseignantsView(LoginRequiredMixin, TemplateView):
         context['page_title'] = 'Visualisation des enseignants'
         return context
 
+class ajouter_enseignantView(LoginRequiredMixin, TemplateView):
+    """Vue pour l'ajout d'enseignants"""
+    model = Lecturer
+    form_class = EnseignantForm
+    template_name = 'Teaching/ajouter_enseignant.html'
+    success_url = '/enseignants/'
+
+    def ajouter_enseignant(request):
+        if request.method == 'POST':
+            form = EnseignantForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('teaching:enseignants')  # adapte à ton nom de vue principale
+        else:
+            form = EnseignantForm()
+        return render(request, 'Teaching/ajouter_enseignant.html', {'form': form})
+            
+
 
 class EvaluationsView(LoginRequiredMixin, TemplateView):
     """Vue pour l'évaluation des enseignants"""
@@ -52,7 +72,10 @@ class Suivi_CoursView(LoginRequiredMixin, TemplateView):
     template_name = 'Teaching/suivi_cours.html'
 
     def get_context_data(self, **kwargs):
+        # Récupération de tous les suivis
         context = super().get_context_data(**kwargs)
+        context['suivi_cours'] = TeachingMonitoring.objects.all()
+        context['avancements'] = TeachingMonitoring.objects.all()
         context['page_title'] = 'Cahier de texte'
         return context
 
