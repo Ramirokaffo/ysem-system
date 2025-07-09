@@ -15,6 +15,7 @@ from Teaching.models import TeachingMonitoring
 from Teaching.models import Evaluation, Lecturer
 from .forms import EnseignantForm
 
+
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Vue principale du dashboard"""
     template_name = 'Teaching/dashboard.html'
