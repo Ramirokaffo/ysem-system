@@ -44,16 +44,16 @@ class ajouter_enseignantView(LoginRequiredMixin, TemplateView):
     template_name = 'Teaching/ajouter_enseignant.html'
     success_url = '/enseignants/'
 
-    def ajouter_enseignant(request):
-        if request.method == 'POST':
-            form = EnseignantForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('teaching:enseignants')  # adapte à ton nom de vue principale
-        else:
-            form = EnseignantForm()
-        return render(request, 'Teaching/ajouter_enseignant.html', {'form': form})
-            
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = EnseignantForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = EnseignantForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('teaching:enseignants') 
 
 
 class EvaluationsView(LoginRequiredMixin, TemplateView):

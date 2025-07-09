@@ -109,8 +109,8 @@ class Evaluation(models.Model):
     
 
 
-    def __str__(self):
-        return f"{self.nom_et_prenom_etudiant }"
+    # def __str__(self):
+    #     return f"{self.nom_et_prenom_etudiant }"
 
     class Meta:
         verbose_name = "Evaluation"

@@ -21,6 +21,7 @@ class StudentMetaData(models.Model):
     father_full_name = models.CharField(max_length=200, blank=True, null=True)
     mother_phone_number = models.CharField(max_length=20, blank=True, null=True)
     last_alias = models.CharField(max_length=100, blank=True, null=True)
+    is_complete = models.BooleanField(default=True, verbose_name="Dossier complet")
 
     def __str__(self):
         return f"Métadonnées - {self.country}"
