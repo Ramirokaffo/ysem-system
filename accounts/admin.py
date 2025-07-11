@@ -34,9 +34,9 @@ class GodfatherAdmin(admin.ModelAdmin):
     """
     Administration pour le modèle Godfather
     """
-    list_display = ['firstname', 'lastname', 'occupation', 'phone_number', 'email']
+    list_display = ['full_name', 'occupation', 'phone_number', 'email']
     list_filter = ['occupation']
-    search_fields = ['firstname', 'lastname', 'email']
+    search_fields = ['full_name', 'email']
 
 
 

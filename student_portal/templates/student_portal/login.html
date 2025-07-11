@@ -1,0 +1,108 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Connexion Étudiant - YSEM{% endblock %}
+
+{% block content %}
+<main>
+    <!-- Section -->
+    <section class="min-vh-100 d-flex bg-primary align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6 justify-content-center">
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <div class="card-header text-center pb-0">
+                            <div class="mb-3">
+                                <i class="fas fa-graduation-cap fa-3x text-secondary"></i>
+                            </div>
+                            <h2 class="h4">Portail Étudiant YSEM</h2>
+                            <p class="text-muted">Consultez vos documents officiels en ligne</p>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" class="mt-4">
+                                {% csrf_token %}
+
+                                <!-- Form -->
+                                <div class="form-group">
+                                    <label for="matricule">Matricule</label>
+                                    <div class="input-group mb-4">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <span class="fas fa-id-card"></span>
+                                            </span>
+                                        </div>
+                                        <input class="form-control"
+                                               id="matricule"
+                                               name="matricule"
+                                               placeholder="Entrez votre matricule"
+                                               type="text"
+                                               aria-label="matricule"
+                                               required
+                                               autocomplete="username">
+                                    </div>
+                                </div>
+                                <!-- End of Form -->
+
+                                <div class="form-group">
+                                    <!-- Form -->
+                                    <div class="form-group">
+                                        <label for="password">Mot de passe</label>
+                                        <div class="input-group mb-4">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <span class="fas fa-lock"></span>
+                                                </span>
+                                            </div>
+                                            <input class="form-control"
+                                                   id="password"
+                                                   name="password"
+                                                   placeholder="Entrez votre mot de passe"
+                                                   type="password"
+                                                   aria-label="Password"
+                                                   required
+                                                   autocomplete="current-password">
+                                        </div>
+                                    </div>
+                                    <!-- End of Form -->
+                                </div>
+                                <button type="submit" class="btn btn-block btn-secondary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Se connecter
+                                </button>
+                            </form>
+
+                            <!-- Help Section -->
+                            <div class="mt-4 pt-4 border-top">
+                                <div class="text-center">
+                                    <h6 class="text-muted mb-3">Besoin d'aide ?</h6>
+                                    <div class="card bg-primary shadow-inset border-light p-3">
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                        <small class="text-muted">
+                                            Votre mot de passe vous a été communiqué par la scolarité.
+                                            Si vous ne l'avez pas reçu ou l'avez oublié, contactez le service scolarité.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="text-center mt-4">
+                                <p class="text-muted mb-0">
+                                    <small>© 2024 YSEM - Système de gestion académique</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+// Auto-focus sur le premier champ
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('matricule').focus();
+});
+</script>
+{% endblock %}

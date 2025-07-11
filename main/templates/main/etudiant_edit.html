@@ -1,0 +1,315 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Modifier l'étudiant - YSEM{% endblock %}
+
+{% block page_title %}Modifier l'étudiant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4><i class="fas fa-edit me-2"></i>Modification de {{ student.firstname }} {{ student.lastname }}</h4>
+            <div>
+                <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour aux détails
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    <!-- Informations principales -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic p-4 mb-4">
+                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-user me-2"></i>Informations principales</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Matricule :</strong></label>
+                            <input type="text" class="form-control" value="{{ student.matricule }}" readonly>
+                            <small class="text-muted">Le matricule ne peut pas être modifié</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.status.label_tag }}
+                            {{ student_form.status }}
+                            {% if student_form.status.errors %}
+                                <div class="text-danger small">{{ student_form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.firstname.label_tag }}
+                            {{ student_form.firstname }}
+                            {% if student_form.firstname.errors %}
+                                <div class="text-danger small">{{ student_form.firstname.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.lastname.label_tag }}
+                            {{ student_form.lastname }}
+                            {% if student_form.lastname.errors %}
+                                <div class="text-danger small">{{ student_form.lastname.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.date_naiss.label_tag }}
+                            {{ student_form.date_naiss }}
+                            {% if student_form.date_naiss.errors %}
+                                <div class="text-danger small">{{ student_form.date_naiss.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.gender.label_tag }}
+                            {{ student_form.gender }}
+                            {% if student_form.gender.errors %}
+                                <div class="text-danger small">{{ student_form.gender.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.lang.label_tag }}
+                            {{ student_form.lang }}
+                            {% if student_form.lang.errors %}
+                                <div class="text-danger small">{{ student_form.lang.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ student_form.phone_number.label_tag }}
+                            {{ student_form.phone_number }}
+                            {% if student_form.phone_number.errors %}
+                                <div class="text-danger small">{{ student_form.phone_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            {{ student_form.email.label_tag }}
+                            {{ student_form.email }}
+                            {% if student_form.email.errors %}
+                                <div class="text-danger small">{{ student_form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relations -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic p-4 mb-4">
+                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-link me-2"></i>Relations</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ student_form.school.label_tag }}
+                            {{ student_form.school }}
+                            {% if student_form.school.errors %}
+                                <div class="text-danger small">{{ student_form.school.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ student_form.program.label_tag }}
+                            {{ student_form.program }}
+                            {% if student_form.program.errors %}
+                                <div class="text-danger small">{{ student_form.program.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            {{ student_form.godfather.label_tag }}
+                            {{ student_form.godfather }}
+                            {% if student_form.godfather.errors %}
+                                <div class="text-danger small">{{ student_form.godfather.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations géographiques -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic p-4 mb-4">
+                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-map-marker-alt me-2"></i>Informations géographiques</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.original_country.label_tag }}
+                            {{ metadata_form.original_country }}
+                            {% if metadata_form.original_country.errors %}
+                                <div class="text-danger small">{{ metadata_form.original_country.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.original_region.label_tag }}
+                            {{ metadata_form.original_region }}
+                            {% if metadata_form.original_region.errors %}
+                                <div class="text-danger small">{{ metadata_form.original_region.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.original_department.label_tag }}
+                            {{ metadata_form.original_department }}
+                            {% if metadata_form.original_department.errors %}
+                                <div class="text-danger small">{{ metadata_form.original_department.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.original_district.label_tag }}
+                            {{ metadata_form.original_district }}
+                            {% if metadata_form.original_district.errors %}
+                                <div class="text-danger small">{{ metadata_form.original_district.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.residence_city.label_tag }}
+                            {{ metadata_form.residence_city }}
+                            {% if metadata_form.residence_city.errors %}
+                                <div class="text-danger small">{{ metadata_form.residence_city.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ metadata_form.residence_quarter.label_tag }}
+                            {{ metadata_form.residence_quarter }}
+                            {% if metadata_form.residence_quarter.errors %}
+                                <div class="text-danger small">{{ metadata_form.residence_quarter.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations familiales -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic p-4 mb-4">
+                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-users me-2"></i>Informations familiales</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Informations de la mère</h6>
+                        <div class="mb-3">
+                            {{ metadata_form.mother_full_name.label_tag }}
+                            {{ metadata_form.mother_full_name }}
+                            {% if metadata_form.mother_full_name.errors %}
+                                <div class="text-danger small">{{ metadata_form.mother_full_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.mother_live_city.label_tag }}
+                            {{ metadata_form.mother_live_city }}
+                            {% if metadata_form.mother_live_city.errors %}
+                                <div class="text-danger small">{{ metadata_form.mother_live_city.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.mother_email.label_tag }}
+                            {{ metadata_form.mother_email }}
+                            {% if metadata_form.mother_email.errors %}
+                                <div class="text-danger small">{{ metadata_form.mother_email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.mother_occupation.label_tag }}
+                            {{ metadata_form.mother_occupation }}
+                            {% if metadata_form.mother_occupation.errors %}
+                                <div class="text-danger small">{{ metadata_form.mother_occupation.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.mother_phone_number.label_tag }}
+                            {{ metadata_form.mother_phone_number }}
+                            {% if metadata_form.mother_phone_number.errors %}
+                                <div class="text-danger small">{{ metadata_form.mother_phone_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">Informations du père</h6>
+                        <div class="mb-3">
+                            {{ metadata_form.father_full_name.label_tag }}
+                            {{ metadata_form.father_full_name }}
+                            {% if metadata_form.father_full_name.errors %}
+                                <div class="text-danger small">{{ metadata_form.father_full_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.father_occupation.label_tag }}
+                            {{ metadata_form.father_occupation }}
+                            {% if metadata_form.father_occupation.errors %}
+                                <div class="text-danger small">{{ metadata_form.father_occupation.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            {{ metadata_form.father_phone_number.label_tag }}
+                            {{ metadata_form.father_phone_number }}
+                            {% if metadata_form.father_phone_number.errors %}
+                                <div class="text-danger small">{{ metadata_form.father_phone_number.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ metadata_form.is_complete }}
+                                {{ metadata_form.is_complete.label_tag }}
+                            </div>
+                            {% if metadata_form.is_complete.errors %}
+                                <div class="text-danger small">{{ metadata_form.is_complete.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2 mb-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                </button>
+                <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

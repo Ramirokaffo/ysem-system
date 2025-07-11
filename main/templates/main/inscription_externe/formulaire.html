@@ -1,18 +1,22 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }} - YSEM</title>
 
     <!-- Font Awesome -->
-    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css"
+        href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}"
+        rel="stylesheet">
 
     <!-- Neumorphism CSS -->
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
 
 </head>
+
 <body>
     <!-- Hero Section -->
     <section class="section section-lg bg-primary">
@@ -22,29 +26,30 @@
 
                     <!-- Messages -->
                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show" role="alert">
-                                <span class="alert-inner--icon">
-                                    {% if message.tags == 'success' %}
-                                        <span class="far fa-thumbs-up"></span>
-                                    {% elif message.tags == 'error' %}
-                                        <span class="fas fa-fire"></span>
-                                    {% else %}
-                                        <span class="fas fa-info-circle"></span>
-                                    {% endif %}
-                                </span>
-                                <span class="alert-inner--text">{{ message }}</span>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        {% endfor %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show" role="alert">
+                        <span class="alert-inner--icon">
+                            {% if message.tags == 'success' %}
+                            <span class="far fa-thumbs-up"></span>
+                            {% elif message.tags == 'error' %}
+                            <span class="fas fa-fire"></span>
+                            {% else %}
+                            <span class="fas fa-info-circle"></span>
+                            {% endif %}
+                        </span>
+                        <span class="alert-inner--text">{{ message }}</span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
                     {% endif %}
 
                     <!-- Logo -->
                     <div class="text-center mb-5">
                         <div class="card card-body shadow-soft border-light bg-primary d-inline-block">
-                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo" style="height: 50px; width: auto;">
+                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo"
+                                style="height: 50px; width: auto;">
                         </div>
                     </div>
 
@@ -52,32 +57,25 @@
                     <div class="card card-body shadow-soft border-light bg-primary mb-4">
                         <div class="row text-center">
                             {% for i in "123" %}
-                                <div class="col-4">
-                                    <div class="icon icon-shape
-                                        {% if forloop.counter0 < step|add:"-1" %}
-                                            icon-lg bg-success shadow-soft border border-light rounded-circle text-white
-                                        {% elif forloop.counter == step %}
-                                            icon-lg bg-soft shadow-soft border border-light rounded-circle text-dark
+                            <div class="col-4">
+                                <div class="icon icon-shape {% if forloop.counter0 < step|add:" -1" %} icon-lg bg-success shadow-soft border border-light rounded-circle text-white {% elif forloop.counter == step %}
+                                    icon-lg bg-soft shadow-soft border border-light rounded-circle text-dark {% else %}
+                                    icon-lg bg-soft shadow-soft border border-light rounded-circle text-muted {% endif %} mb-3">
+                                    {% if forloop.counter0 < step|add:"-1" %} <span class="fas fa-check"></span>
                                         {% else %}
-                                            icon-lg bg-soft shadow-soft border border-light rounded-circle text-muted
+                                        <span>{{ forloop.counter }}</span>
                                         {% endif %}
-                                        mb-3">
-                                        {% if forloop.counter0 < step|add:"-1" %}
-                                            <span class="fas fa-check"></span>
-                                        {% else %}
-                                            <span>{{ forloop.counter }}</span>
-                                        {% endif %}
-                                    </div>
-                                    <h6 class="text-sm font-weight-bold">
-                                        {% if forloop.counter == 1 %}
-                                            Identification
-                                        {% elif forloop.counter == 2 %}
-                                            Informations familiales
-                                        {% elif forloop.counter == 3 %}
-                                            Cursus et spécialité
-                                        {% endif %}
-                                    </h6>
                                 </div>
+                                <h6 class="text-sm font-weight-bold">
+                                    {% if forloop.counter == 1 %}
+                                    Identification
+                                    {% elif forloop.counter == 2 %}
+                                    Informations familiales
+                                    {% elif forloop.counter == 3 %}
+                                    Cursus et spécialité
+                                    {% endif %}
+                                </h6>
+                            </div>
                             {% endfor %}
                         </div>
 
@@ -85,10 +83,8 @@
                         <div class="progress-wrapper mt-3">
                             <div class="progress">
                                 <div class="progress-bar bg-success" role="progressbar"
-                                     style="width: {{ progress_percentage }}%"
-                                     aria-valuenow="{{ progress_percentage }}"
-                                     aria-valuemin="0"
-                                     aria-valuemax="100">
+                                    style="width: {{ progress_percentage }}%" aria-valuenow="{{ progress_percentage }}"
+                                    aria-valuemin="0" aria-valuemax="100">
                                 </div>
                             </div>
                         </div>
@@ -99,279 +95,555 @@
                         <div class="d-flex align-items-center mb-4">
                             <div class="icon icon-shape icon-sm shadow-soft border border-light rounded-circle mr-3">
                                 {% if step == 1 %}
-                                    <span class="fas fa-user"></span>
+                                <span class="fas fa-user"></span>
                                 {% elif step == 2 %}
-                                    <span class="fas fa-users"></span>
+                                <span class="fas fa-users"></span>
                                 {% elif step == 3 %}
-                                    <span class="fas fa-graduation-cap"></span>
+                                <span class="fas fa-graduation-cap"></span>
                                 {% endif %}
                             </div>
                             <h4 class="mb-0">{{ step_title }}</h4>
                         </div>
 
-                        <form method="post" id="inscriptionForm">
+                        <form method="post" id="inscriptionForm" enctype="multipart/form-data">
                             {% csrf_token %}
 
                             {% if step == 1 %}
-                                <!-- Étape 1: Identification du candidat -->
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card card-body border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-id-card mr-2"></span>Informations personnelles</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">{{ form.nom.label_tag }}{{ form.nom }}</div>
-                <div class="col-md-6 mb-3">{{ form.prenom.label_tag }}{{ form.prenom }}</div>
-                <div class="col-md-4 mb-3">{{ form.date_naissance.label_tag }}{{ form.date_naissance }}</div>
-                <div class="col-md-4 mb-3">{{ form.lieu_naissance.label_tag }}{{ form.lieu_naissance }}</div>
-                <div class="col-md-4 mb-3">{{ form.sexe.label_tag }}{{ form.sexe }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-envelope mr-2"></span>Coordonnées</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">{{ form.courriel.label_tag }}{{ form.courriel }}</div>
-                <div class="col-md-6 mb-3">{{ form.telephone.label_tag }}{{ form.telephone }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-globe mr-2"></span>Informations complémentaires</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">{{ form.nationalite.label_tag }}{{ form.nationalite }}</div>
-                <div class="col-md-6 mb-3">{{ form.premiere_langue_officielle.label_tag }}{{ form.premiere_langue_officielle }}</div>
-                <div class="col-md-4 mb-3">{{ form.region_origine.label_tag }}{{ form.region_origine }}</div>
-                <div class="col-md-4 mb-3">{{ form.departement_origine.label_tag }}{{ form.departement_origine }}</div>
-                <div class="col-md-4 mb-3">{{ form.arrondissement_origine.label_tag }}{{ form.arrondissement_origine }}</div>
-                <div class="col-md-6 mb-3">{{ form.ville_residence.label_tag }}{{ form.ville_residence }}</div>
-                <div class="col-md-6 mb-3">{{ form.situation_matrimoniale.label_tag }}{{ form.situation_matrimoniale }}</div>
-                <div class="col-md-12 mb-3">{{ form.profession_actuelle.label_tag }}{{ form.profession_actuelle }}</div>
-            </div>
-        </div>
-    </div>
-</div>
+                            <!-- Étape 1: Identification du candidat -->
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-id-card mr-2"></span>Informations
+                                            personnelles</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">{{ form.nom.label_tag }}{{ form.nom }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.prenom.label_tag }}{{ form.prenom }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">{{ form.lieu_naissance.label_tag }}{{ form.lieu_naissance }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.sexe.label_tag }}{{ form.sexe }}</div>
+                                            <div class="form-group col-md-12 mb-3">
+                                                {{ form.date_naissance.label_tag }}
+                                                <div class="input-group mb-4">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                                    </div>
+                                                    {{ form.date_naissance }}
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-4 mb-3">{{ form.date_naissance.label_tag }}{{ form.date_naissance }}</div> -->
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-envelope mr-2"></span>Coordonnées</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">{{ form.courriel.label_tag }}{{ form.courriel }}
+                                            </div>
+                                            <div class="col-md-6 mb-3">{{ form.telephone.label_tag }}{{ form.telephone }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-globe mr-2"></span>Informations
+                                            complémentaires</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">{{ form.nationalite.label_tag }}{{ form.nationalite }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.premiere_langue_officielle.label_tag }}{{ form.premiere_langue_officielle }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.region_origine.label_tag }}{{ form.region_origine }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.departement_origine.label_tag }}{{ form.departement_origine }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.arrondissement_origine.label_tag }}{{ form.arrondissement_origine }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.ville_residence.label_tag }}{{ form.ville_residence }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.situation_matrimoniale.label_tag }}{{ form.situation_matrimoniale }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.profession_actuelle.label_tag }}{{ form.profession_actuelle }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             {% elif step == 2 %}
-                                <!-- Étape 2: Informations familiales -->
-                                <div class="mb-4">
-                                    <h6 class="text-muted mb-3">
-                                        <span class="fas fa-male mr-2"></span>
-                                        Informations du père
-                                    </h6>
+                            <!-- Étape 2: Informations familiales -->
+                            <div class="mb-4 card card-body border-light">
+                                <h6 class="text-muted mb-3">
+                                    <span class="fas fa-male mr-2"></span>
+                                    Informations du père
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.nom_pere.id_for_label }}">
+                                                {{ form.nom_pere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-user"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.nom_pere }}
+                                            </div>
+                                            {% if form.nom_pere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.nom_pere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.profession_pere.id_for_label }}">
+                                                {{ form.profession_pere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-briefcase"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.profession_pere }}
+                                            </div>
+                                            {% if form.profession_pere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.profession_pere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.telephone_pere.id_for_label }}">
+                                                {{ form.telephone_pere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-phone"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.telephone_pere }}
+                                            </div>
+                                            {% if form.telephone_pere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.telephone_pere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.courriel_pere.id_for_label }}">
+                                                {{ form.courriel_pere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-envelope"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.courriel_pere }}
+                                            </div>
+                                            {% if form.courriel_pere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.courriel_pere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="{{ form.ville_residence_pere.id_for_label }}">
+                                                {{ form.ville_residence_pere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-city"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.ville_residence_pere }}
+                                            </div>
+                                            {% if form.ville_residence_pere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.ville_residence_pere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4 card card-body border-light">
+                                <h6 class="text-muted mb-3">
+                                    <span class="fas fa-female mr-2"></span>
+                                    Informations de la mère
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.nom_mere.id_for_label }}">
+                                                {{ form.nom_mere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-user"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.nom_mere }}
+                                            </div>
+                                            {% if form.nom_mere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.nom_mere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.profession_mere.id_for_label }}">
+                                                {{ form.profession_mere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-briefcase"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.profession_mere }}
+                                            </div>
+                                            {% if form.profession_mere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.profession_mere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.telephone_mere.id_for_label }}">
+                                                {{ form.telephone_mere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-phone"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.telephone_mere }}
+                                            </div>
+                                            {% if form.telephone_mere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.telephone_mere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.courriel_mere.id_for_label }}">
+                                                {{ form.courriel_mere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-envelope"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.courriel_mere }}
+                                            </div>
+                                            {% if form.courriel_mere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.courriel_mere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="{{ form.ville_residence_mere.id_for_label }}">
+                                                {{ form.ville_residence_mere.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-city"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.ville_residence_mere }}
+                                            </div>
+                                            {% if form.ville_residence_mere.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.ville_residence_mere.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4 card card-body border-light">
+                                <h6 class="text-muted mb-3">
+                                    <span class="fas fa-user-friends mr-2"></span>
+                                    Informations du tuteur ou parrain
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.nom_tuteur.id_for_label }}">
+                                                {{ form.nom_tuteur.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-user"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.nom_tuteur }}
+                                            </div>
+                                            {% if form.nom_tuteur.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.nom_tuteur.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.profession_tuteur.id_for_label }}">
+                                                {{ form.profession_tuteur.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-briefcase"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.profession_tuteur }}
+                                            </div>
+                                            {% if form.profession_tuteur.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.profession_tuteur.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.telephone_tuteur.id_for_label }}">
+                                                {{ form.telephone_tuteur.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-phone"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.telephone_tuteur }}
+                                            </div>
+                                            {% if form.telephone_tuteur.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.telephone_tuteur.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.courriel_tuteur.id_for_label }}">
+                                                {{ form.courriel_tuteur.label }}
+                                            </label>
+                                            <div class="input-group">
+                                                <!-- <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <span class="fas fa-envelope"></span>
+                                                    </span>
+                                                </div> -->
+                                                {{ form.courriel_tuteur }}
+                                            </div>
+                                            {% if form.courriel_tuteur.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.courriel_tuteur.errors.0 }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% elif step == 3 %}
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus scolaire</h5>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">{{ form.bepc_cap_serie.label_tag }}{{ form.bepc_cap_serie }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.bepc_cap_annee.label_tag }}{{ form.bepc_cap_annee }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.bepc_cap_mention.label_tag }}{{ form.bepc_cap_mention }}</div>
+                                            <div class="col-md-12 mb-3">{{ form.bepc_cap_etablissement.label_tag }}{{ form.bepc_cap_etablissement }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">{{ form.probatoire_serie.label_tag }}{{ form.probatoire_serie }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.probatoire_annee.label_tag }}{{ form.probatoire_annee }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.probatoire_mention.label_tag }}{{ form.probatoire_mention }}</div>
+                                            <div class="col-md-12 mb-3">{{ form.probatoire_etablissement.label_tag }}{{ form.probatoire_etablissement }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">{{ form.baccalaureat_serie.label_tag }}{{ form.baccalaureat_serie }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.baccalaureat_annee.label_tag }}{{ form.baccalaureat_annee }}</div>
+                                            <div class="col-md-4 mb-3">{{ form.baccalaureat_mention.label_tag }}{{ form.baccalaureat_mention }}</div>
+                                            <div class="col-md-12 mb-3">{{ form.baccalaureat_etablissement.label_tag }}{{ form.baccalaureat_etablissement }}</div>
+                                            <div class="col-md-12 mb-3">{{ form.centre_examen.label_tag }}{{ form.centre_examen }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-university mr-2"></span>Cursus
+                                            universitaire</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">{{ form.diplome_niveau_1.label_tag }}{{ form.diplome_niveau_1 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.specialite_1.label_tag }}{{ form.specialite_1 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.etablissement_1.label_tag }}{{ form.etablissement_1 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.annee_academique_1.label_tag }}{{ form.annee_academique_1 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.diplome_niveau_2.label_tag }}{{ form.diplome_niveau_2 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.specialite_2.label_tag }}{{ form.specialite_2 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.etablissement_2.label_tag }}{{ form.etablissement_2 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.annee_academique_2.label_tag }}{{ form.annee_academique_2 }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-graduation-cap mr-2"></span>Choix de
+                                            spécialité</h5>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">{{ form.specialite_choisie_1.label_tag }}{{ form.specialite_choisie_1 }}</div>
+                                            <div class="col-md-6 mb-3">{{ form.specialite_choisie_2.label_tag }}{{ form.specialite_choisie_2 }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <h5 class="mb-3"><span class="fas fa-folder-open mr-2"></span>Constitution du
+                                            dossier</h5>
 
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="{{ form.nom_pere.id_for_label }}">
-                                                    {{ form.nom_pere.label }}
+                                        <!-- Informations importantes -->
+                                        <div class="alert alert-info mb-4">
+                                            <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>IMPORTANT - Documents requis</h6>
+                                            <ul class="mb-0">
+                                                <li>Tous les documents doivent être <strong>lisibles et de bonne qualité</strong></li>
+                                                <li>Taille maximale par fichier : <strong>5 Mo</strong></li>
+                                                <li>Formats acceptés uniquement : <strong>PNG, JPG, PDF</strong></li>
+                                                <li class="text-warning"><strong>Les originaux de ces documents seront demandés après l'inscription</strong></li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="{{ form.preuve_baccalaureat.id_for_label }}" class="form-label">
+                                                    {{ form.preuve_baccalaureat.label }} <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text">
-                                                            <span class="fas fa-user"></span>
-                                                        </span>
-                                                    </div>
-                                                    {{ form.nom_pere }}
-                                                </div>
-                                                {% if form.nom_pere.errors %}
-                                                    <div class="invalid-feedback d-block">
-                                                        {{ form.nom_pere.errors.0 }}
-                                                    </div>
+                                                {{ form.preuve_baccalaureat }}
+                                                {% if form.preuve_baccalaureat.help_text %}
+                                                    <small class="form-text text-muted">{{ form.preuve_baccalaureat.help_text }}</small>
+                                                {% endif %}
+                                                {% if form.preuve_baccalaureat.errors %}
+                                                    <div class="text-danger">{{ form.preuve_baccalaureat.errors }}</div>
                                                 {% endif %}
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="{{ form.profession_pere.id_for_label }}">
-                                                    {{ form.profession_pere.label }}
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="{{ form.acte_naissance.id_for_label }}" class="form-label">
+                                                    {{ form.acte_naissance.label }} <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text">
-                                                            <span class="fas fa-briefcase"></span>
-                                                        </span>
-                                                    </div>
-                                                    {{ form.profession_pere }}
-                                                </div>
-                                                {% if form.profession_pere.errors %}
-                                                    <div class="invalid-feedback d-block">
-                                                        {{ form.profession_pere.errors.0 }}
-                                                    </div>
+                                                {{ form.acte_naissance }}
+                                                {% if form.acte_naissance.help_text %}
+                                                    <small class="form-text text-muted">{{ form.acte_naissance.help_text }}</small>
                                                 {% endif %}
+                                                {% if form.acte_naissance.errors %}
+                                                    <div class="text-danger">{{ form.acte_naissance.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="{{ form.releve_notes_bac.id_for_label }}" class="form-label">
+                                                    {{ form.releve_notes_bac.label }} <span class="text-danger">*</span>
+                                                </label>
+                                                {{ form.releve_notes_bac }}
+                                                {% if form.releve_notes_bac.help_text %}
+                                                    <small class="form-text text-muted">{{ form.releve_notes_bac.help_text }}</small>
+                                                {% endif %}
+                                                {% if form.releve_notes_bac.errors %}
+                                                    <div class="text-danger">{{ form.releve_notes_bac.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="{{ form.bulletins_terminale.id_for_label }}" class="form-label">
+                                                    {{ form.bulletins_terminale.label }} <span class="text-danger">*</span>
+                                                </label>
+                                                {{ form.bulletins_terminale }}
+                                                {% if form.bulletins_terminale.help_text %}
+                                                    <small class="form-text text-muted">{{ form.bulletins_terminale.help_text }}</small>
+                                                {% endif %}
+                                                {% if form.bulletins_terminale.errors %}
+                                                    <div class="text-danger">{{ form.bulletins_terminale.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12 col-md-6 col-lg-4 mb-2">
+                                                <div class="form-check">{{ form.photos_identite }}<label
+                                                        class="form-check-label"
+                                                        for="{{ form.photos_identite.id_for_label }}">{{ form.photos_identite.label }}</label></div>
+                                            </div>
+                                            <div class="col-12 col-md-6 col-lg-4 mb-2">
+                                                <div class="form-check">{{ form.frais_etude_dossier }}<label
+                                                        class="form-check-label"
+                                                        for="{{ form.frais_etude_dossier.id_for_label }}">{{ form.frais_etude_dossier.label }}</label></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="mb-4">
-                                    <h6 class="text-muted mb-3">
-                                        <span class="fas fa-female mr-2"></span>
-                                        Informations de la mère
-                                    </h6>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="{{ form.nom_mere.id_for_label }}">
-                                                    {{ form.nom_mere.label }}
-                                                </label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text">
-                                                            <span class="fas fa-user"></span>
-                                                        </span>
-                                                    </div>
-                                                    {{ form.nom_mere }}
-                                                </div>
-                                                {% if form.nom_mere.errors %}
-                                                    <div class="invalid-feedback d-block">
-                                                        {{ form.nom_mere.errors.0 }}
-                                                    </div>
-                                                {% endif %}
+                                <div class="col-12 mb-4">
+                                    <div class="card card-body border-light">
+                                        <div class="form-check">
+                                            {{ form.attestation_veracite }}
+                                            <label class="form-check-label"
+                                                for="{{ form.attestation_veracite.id_for_label }}">
+                                                {{ form.attestation_veracite.label }}
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            {% if form.attestation_veracite.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.attestation_veracite.errors.0 }}
                                             </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="{{ form.profession_mere.id_for_label }}">
-                                                    {{ form.profession_mere.label }}
-                                                </label>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text">
-                                                            <span class="fas fa-briefcase"></span>
-                                                        </span>
-                                                    </div>
-                                                    {{ form.profession_mere }}
-                                                </div>
-                                                {% if form.profession_mere.errors %}
-                                                    <div class="invalid-feedback d-block">
-                                                        {{ form.profession_mere.errors.0 }}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
-{% elif step == 3 %}
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card card-body shadow-soft border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus scolaire</h5>
-            <div class="row">
-                <div class="col-md-4 mb-3">{{ form.bepc_cap_serie.label_tag }}{{ form.bepc_cap_serie }}</div>
-                <div class="col-md-4 mb-3">{{ form.bepc_cap_annee.label_tag }}{{ form.bepc_cap_annee }}</div>
-                <div class="col-md-4 mb-3">{{ form.bepc_cap_mention.label_tag }}{{ form.bepc_cap_mention }}</div>
-                <div class="col-md-12 mb-3">{{ form.bepc_cap_etablissement.label_tag }}{{ form.bepc_cap_etablissement }}</div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">{{ form.probatoire_serie.label_tag }}{{ form.probatoire_serie }}</div>
-                <div class="col-md-4 mb-3">{{ form.probatoire_annee.label_tag }}{{ form.probatoire_annee }}</div>
-                <div class="col-md-4 mb-3">{{ form.probatoire_mention.label_tag }}{{ form.probatoire_mention }}</div>
-                <div class="col-md-12 mb-3">{{ form.probatoire_etablissement.label_tag }}{{ form.probatoire_etablissement }}</div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">{{ form.baccalaureat_serie.label_tag }}{{ form.baccalaureat_serie }}</div>
-                <div class="col-md-4 mb-3">{{ form.baccalaureat_annee.label_tag }}{{ form.baccalaureat_annee }}</div>
-                <div class="col-md-4 mb-3">{{ form.baccalaureat_mention.label_tag }}{{ form.baccalaureat_mention }}</div>
-                <div class="col-md-12 mb-3">{{ form.baccalaureat_etablissement.label_tag }}{{ form.baccalaureat_etablissement }}</div>
-                <div class="col-md-12 mb-3">{{ form.centre_examen.label_tag }}{{ form.centre_examen }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body shadow-soft border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-university mr-2"></span>Cursus universitaire</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">{{ form.diplome_niveau_1.label_tag }}{{ form.diplome_niveau_1 }}</div>
-                <div class="col-md-6 mb-3">{{ form.specialite_1.label_tag }}{{ form.specialite_1 }}</div>
-                <div class="col-md-6 mb-3">{{ form.etablissement_1.label_tag }}{{ form.etablissement_1 }}</div>
-                <div class="col-md-6 mb-3">{{ form.annee_academique_1.label_tag }}{{ form.annee_academique_1 }}</div>
-                <div class="col-md-6 mb-3">{{ form.diplome_niveau_2.label_tag }}{{ form.diplome_niveau_2 }}</div>
-                <div class="col-md-6 mb-3">{{ form.specialite_2.label_tag }}{{ form.specialite_2 }}</div>
-                <div class="col-md-6 mb-3">{{ form.etablissement_2.label_tag }}{{ form.etablissement_2 }}</div>
-                <div class="col-md-6 mb-3">{{ form.annee_academique_2.label_tag }}{{ form.annee_academique_2 }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body shadow-soft border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-graduation-cap mr-2"></span>Choix de spécialité</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3">{{ form.specialite_choisie_1.label_tag }}{{ form.specialite_choisie_1 }}</div>
-                <div class="col-md-6 mb-3">{{ form.specialite_choisie_2.label_tag }}{{ form.specialite_choisie_2 }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body shadow-soft border-light bg-white">
-            <h5 class="mb-3"><span class="fas fa-folder-open mr-2"></span>Constitution du dossier</h5>
-            <div class="row">
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.preuve_baccalaureat }}<label class="form-check-label" for="{{ form.preuve_baccalaureat.id_for_label }}">{{ form.preuve_baccalaureat.label }}</label></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.photocopie_acte_naissance }}<label class="form-check-label" for="{{ form.photocopie_acte_naissance.id_for_label }}">{{ form.photocopie_acte_naissance.label }}</label></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.photocopie_releve_notes }}<label class="form-check-label" for="{{ form.photocopie_releve_notes.id_for_label }}">{{ form.photocopie_releve_notes.label }}</label></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.photocopie_bulletins }}<label class="form-check-label" for="{{ form.photocopie_bulletins.id_for_label }}">{{ form.photocopie_bulletins.label }}</label></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.photos_identite }}<label class="form-check-label" for="{{ form.photos_identite.id_for_label }}">{{ form.photos_identite.label }}</label></div>
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-2">
-                    <div class="form-check">{{ form.frais_etude_dossier }}<label class="form-check-label" for="{{ form.frais_etude_dossier.id_for_label }}">{{ form.frais_etude_dossier.label }}</label></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 mb-4">
-        <div class="card card-body shadow-soft border-light bg-white">
-            <div class="form-check">
-                {{ form.attestation_veracite }}
-                <label class="form-check-label" for="{{ form.attestation_veracite.id_for_label }}">
-                    {{ form.attestation_veracite.label }}
-                    <span class="text-danger">*</span>
-                </label>
-                {% if form.attestation_veracite.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.attestation_veracite.errors.0 }}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+                            </div>
+                            {% endif %}
 
                             <!-- Navigation Buttons -->
                             <div class="d-flex justify-content-between mt-4">
                                 {% if prev_step %}
-                                    <a href="{% url 'main:inscription_externe_step' step=prev_step %}" class="btn btn-secondary">
-                                        <span class="fas fa-arrow-left mr-2"></span>
-                                        Précédent
-                                    </a>
+                                <a href="{% url 'main:inscription_externe_step' step=prev_step %}"
+                                    class="btn btn-secondary">
+                                    <span class="fas fa-arrow-left mr-2"></span>
+                                    Précédent
+                                </a>
                                 {% else %}
-                                    <a href="{% url 'main:inscription_externe' %}" class="btn btn-secondary">
-                                        <span class="fas fa-arrow-left mr-2"></span>
-                                        Retour
-                                    </a>
+                                <a href="{% url 'main:inscription_externe' %}" class="btn btn-danger">
+                                    <span class="fas fa-arrow-left mr-2"></span>
+                                    Retour
+                                </a>
                                 {% endif %}
 
                                 {% if next_step %}
-                                    <button type="submit" class="btn btn-primary">
-                                        Suivant
-                                        <span class="fas fa-arrow-right ml-2"></span>
-                                    </button>
+                                <button type="submit" class="btn btn-primary">
+                                    Suivant
+                                    <span class="fas fa-arrow-right ml-2"></span>
+                                </button>
                                 {% else %}
-                                    <button type="submit" class="btn btn-success">
-                                        Confirmer
-                                        <span class="fas fa-check ml-2"></span>
-                                    </button>
+                                <button type="submit" class="btn btn-success">
+                                    Confirmer
+                                    <span class="fas fa-check ml-2"></span>
+                                </button>
                                 {% endif %}
                             </div>
                         </form>
@@ -383,8 +655,11 @@
 
     <!-- Core -->
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script
+        src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+    <!-- <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script> -->
 
 </body>
+
 </html>

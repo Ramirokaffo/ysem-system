@@ -43,11 +43,12 @@
                         <select class="form-control" id="program" name="program">
                             <option value="">Tous</option>
                             {% for program in programs %}
-                            <option value="{{ program.pk }}" 
+                            <option value="{{ program.pk }}"
                             {% if request.GET.program == program.pk|stringformat:'s' %}selected{% endif %}>{{ program.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
@@ -72,7 +73,7 @@
                     <li class="list-inline-item"><span class="badge badge-warning text-uppercase">Langue : {{ request.GET.language }}</span></li>
                     {% endif %}
                     {% if request.GET.program %}
-                    <li class="list-inline-item"><span class="badge badge-secondary text-uppercase">Programme : 
+                    <li class="list-inline-item"><span class="badge badge-secondary text-uppercase">Programme :
                         {% for program in programs %}{% if program.pk|stringformat:'s' == request.GET.program %}
                         {{ program.name }}{% endif %}{% endfor %}</span></li>
                     {% endif %}
@@ -96,6 +97,7 @@
                             <th>Genre</th>
                             <th>Téléphone</th>
                             <th>Email</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,6 +108,16 @@
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}">{{ student.get_gender_display }}</a></td>
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}">{{ student.phone_number }}</a></td>
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}">{{ student.email }}</a></td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-outline-primary btn-sm" title="Voir les détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'main:etudiant_edit' pk=student.matricule %}" class="btn btn-outline-warning btn-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                 </table>

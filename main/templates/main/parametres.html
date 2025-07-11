@@ -27,6 +27,10 @@
                     <i class="fas fa-users me-2"></i>
                     Utilisateurs
                 </a>
+                <a href="#programs" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
+                    <i class="fas fa-layer-group me-2"></i>
+                    Programmes & Niveaux
+                </a>
                 <a href="#documents" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
                     <i class="fas fa-file-alt me-2"></i>
                     Documents
@@ -36,8 +40,8 @@
                     Notifications
                 </a>
                 <a href="#security" class="list-group-item list-group-item-action border-0 bg-transparent" data-bs-toggle="pill">
-                    <i class="fas fa-shield-alt me-2"></i>
-                    Sécurité
+                    <i class="fas fa-database me-2"></i>
+                    Gestion des données
                 </a>
             </div>
         </div>
@@ -53,41 +57,51 @@
                         <i class="fas fa-sliders-h me-2"></i>
                         Paramètres généraux
                     </h5>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="general">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="institution-name" class="form-label">Nom de l'établissement</label>
-                                <input type="text" class="form-control" id="institution-name" value="YSEM - École Supérieure">
+                                <label for="{{ general_form.institution_name.id_for_label }}" class="form-label">{{ general_form.institution_name.label }}</label>
+                                {{ general_form.institution_name }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="academic-year" class="form-label">Année académique actuelle</label>
-                                <select class="form-select" id="academic-year">
-                                    <option value="2024-2025" selected>2024-2025</option>
-                                    <option value="2023-2024">2023-2024</option>
-                                </select>
+                                <label for="{{ general_form.institution_code.id_for_label }}" class="form-label">{{ general_form.institution_code.label }}</label>
+                                {{ general_form.institution_code }}
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="timezone" class="form-label">Fuseau horaire</label>
-                                <select class="form-select" id="timezone">
-                                    <option value="Africa/Douala" selected>Africa/Douala (GMT+1)</option>
-                                    <option value="UTC">UTC (GMT+0)</option>
-                                </select>
+                                <label for="{{ general_form.timezone.id_for_label }}" class="form-label">{{ general_form.timezone.label }}</label>
+                                {{ general_form.timezone }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="language" class="form-label">Langue par défaut</label>
-                                <select class="form-select" id="language">
-                                    <option value="fr" selected>Français</option>
-                                    <option value="en">English</option>
-                                </select>
+                                <label for="{{ general_form.language.id_for_label }}" class="form-label">{{ general_form.language.label }}</label>
+                                {{ general_form.language }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ general_form.phone.id_for_label }}" class="form-label">{{ general_form.phone.label }}</label>
+                                {{ general_form.phone }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ general_form.email.id_for_label }}" class="form-label">{{ general_form.email.label }}</label>
+                                {{ general_form.email }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="address" class="form-label">Adresse de l'établissement</label>
-                            <textarea class="form-control" id="address" rows="3">123 Avenue de l'Université, Douala, Cameroun</textarea>
+                            <label for="{{ general_form.address.id_for_label }}" class="form-label">{{ general_form.address.label }}</label>
+                            {{ general_form.address }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ general_form.website.id_for_label }}" class="form-label">{{ general_form.website.label }}</label>
+                            {{ general_form.website }}
                         </div>
 
                         <button type="submit" class="btn btn-primary">
@@ -105,49 +119,92 @@
                         <i class="fas fa-graduation-cap me-2"></i>
                         Paramètres académiques
                     </h5>
-                    <form>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="grading-scale" class="form-label">Échelle de notation</label>
-                                <select class="form-select" id="grading-scale">
-                                    <option value="20" selected>Sur 20</option>
-                                    <option value="100">Sur 100</option>
-                                    <option value="gpa">GPA (4.0)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="passing-grade" class="form-label">Note de passage</label>
-                                <input type="number" class="form-control" id="passing-grade" value="10" min="0" max="20">
-                            </div>
-                        </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="academic">
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="semester-system" class="form-label">Système semestriel</label>
-                                <select class="form-select" id="semester-system">
-                                    <option value="2" selected>2 semestres</option>
-                                    <option value="3">3 trimestres</option>
-                                    <option value="4">4 trimestres</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="max-credits" class="form-label">Crédits maximum par semestre</label>
-                                <input type="number" class="form-control" id="max-credits" value="30" min="1">
+                                <label for="{{ academic_form.inscription_period.id_for_label }}" class="form-label">{{ academic_form.inscription_period.label }}</label>
+                                {{ academic_form.inscription_period }}
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Options d'inscription</label>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="auto-enrollment" checked>
-                                <label class="form-check-label" for="auto-enrollment">
-                                    Inscription automatique après validation
+                                {{ academic_form.auto_approval }}
+                                <label class="form-check-label" for="{{ academic_form.auto_approval.id_for_label }}">
+                                    {{ academic_form.auto_approval.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="late-enrollment">
-                                <label class="form-check-label" for="late-enrollment">
-                                    Autoriser les inscriptions tardives
+                                {{ academic_form.require_documents }}
+                                <label class="form-check-label" for="{{ academic_form.require_documents.id_for_label }}">
+                                    {{ academic_form.require_documents.label }}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ academic_form.allow_external_registration }}
+                                <label class="form-check-label" for="{{ academic_form.allow_external_registration.id_for_label }}">
+                                    {{ academic_form.allow_external_registration.label }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Programs & Levels Settings -->
+            <div class="tab-pane fade" id="programs">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Gestion des programmes et niveaux
+                    </h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="program_level">
+
+                        <div class="mb-3">
+                            <label class="form-label">Configuration des niveaux</label>
+                            <div class="form-check">
+                                {{ program_level_form.auto_level_progression }}
+                                <label class="form-check-label" for="{{ program_level_form.auto_level_progression.id_for_label }}">
+                                    {{ program_level_form.auto_level_progression.label }}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ program_level_form.allow_level_change }}
+                                <label class="form-check-label" for="{{ program_level_form.allow_level_change.id_for_label }}">
+                                    {{ program_level_form.allow_level_change.label }}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ program_level_form.require_level_validation }}
+                                <label class="form-check-label" for="{{ program_level_form.require_level_validation.id_for_label }}">
+                                    {{ program_level_form.require_level_validation.label }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Gestion des programmes</label>
+                            <div class="form-check">
+                                {{ program_level_form.allow_program_change }}
+                                <label class="form-check-label" for="{{ program_level_form.allow_program_change.id_for_label }}">
+                                    {{ program_level_form.allow_program_change.label }}
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ program_level_form.require_program_validation }}
+                                <label class="form-check-label" for="{{ program_level_form.require_program_validation.id_for_label }}">
+                                    {{ program_level_form.require_program_validation.label }}
                                 </label>
                             </div>
                         </div>
@@ -167,23 +224,18 @@
                         <i class="fas fa-users me-2"></i>
                         Gestion des utilisateurs
                     </h5>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="user">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="default-role" class="form-label">Rôle par défaut</label>
-                                <select class="form-select" id="default-role">
-                                    <option value="student" selected>Étudiant</option>
-                                    <option value="teacher">Enseignant</option>
-                                    <option value="admin">Administrateur</option>
-                                </select>
+                                <label for="{{ user_form.default_role.id_for_label }}" class="form-label">{{ user_form.default_role.label }}</label>
+                                {{ user_form.default_role }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="password-policy" class="form-label">Politique de mot de passe</label>
-                                <select class="form-select" id="password-policy">
-                                    <option value="basic">Basique (8 caractères)</option>
-                                    <option value="medium" selected>Moyen (8 car. + majuscule + chiffre)</option>
-                                    <option value="strong">Fort (12 car. + symboles)</option>
-                                </select>
+                                <label for="{{ user_form.session_timeout.id_for_label }}" class="form-label">{{ user_form.session_timeout.label }}</label>
+                                {{ user_form.session_timeout }}
                             </div>
                         </div>
 
@@ -192,29 +244,29 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="view-grades" checked>
-                                        <label class="form-check-label" for="view-grades">
-                                            Consulter les notes
+                                        {{ user_form.view_documents }}
+                                        <label class="form-check-label" for="{{ user_form.view_documents.id_for_label }}">
+                                            {{ user_form.view_documents.label }}
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="download-docs" checked>
-                                        <label class="form-check-label" for="download-docs">
-                                            Télécharger les documents
+                                        {{ user_form.download_docs }}
+                                        <label class="form-check-label" for="{{ user_form.download_docs.id_for_label }}">
+                                            {{ user_form.download_docs.label }}
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="update-profile" checked>
-                                        <label class="form-check-label" for="update-profile">
-                                            Modifier le profil
+                                        {{ user_form.update_profile }}
+                                        <label class="form-check-label" for="{{ user_form.update_profile.id_for_label }}">
+                                            {{ user_form.update_profile.label }}
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="contact-support">
-                                        <label class="form-check-label" for="contact-support">
-                                            Contacter le support
+                                        {{ user_form.view_statistics }}
+                                        <label class="form-check-label" for="{{ user_form.view_statistics.id_for_label }}">
+                                            {{ user_form.view_statistics.label }}
                                         </label>
                                     </div>
                                 </div>
@@ -236,32 +288,60 @@
                         <i class="fas fa-file-alt me-2"></i>
                         Paramètres des documents
                     </h5>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="document">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="doc-format" class="form-label">Format par défaut</label>
-                                <select class="form-select" id="doc-format">
-                                    <option value="pdf" selected>PDF</option>
-                                    <option value="docx">Word (.docx)</option>
-                                    <option value="both">PDF + Word</option>
-                                </select>
+                                <label for="{{ document_form.max_file_size.id_for_label }}" class="form-label">{{ document_form.max_file_size.label }}</label>
+                                {{ document_form.max_file_size }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="watermark" class="form-label">Filigrane</label>
-                                <select class="form-select" id="watermark">
-                                    <option value="none">Aucun</option>
-                                    <option value="logo" selected>Logo de l'établissement</option>
-                                    <option value="text">Texte personnalisé</option>
-                                </select>
+                                <label for="{{ document_form.allowed_formats.id_for_label }}" class="form-label">{{ document_form.allowed_formats.label }}</label>
+                                {{ document_form.allowed_formats }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="signature" class="form-label">Signature numérique</label>
+                            <label class="form-label">Types de documents officiels</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        {{ document_form.student_card_enabled }}
+                                        <label class="form-check-label" for="{{ document_form.student_card_enabled.id_for_label }}">
+                                            {{ document_form.student_card_enabled.label }}
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        {{ document_form.transcript_enabled }}
+                                        <label class="form-check-label" for="{{ document_form.transcript_enabled.id_for_label }}">
+                                            {{ document_form.transcript_enabled.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        {{ document_form.certificate_enabled }}
+                                        <label class="form-check-label" for="{{ document_form.certificate_enabled.id_for_label }}">
+                                            {{ document_form.certificate_enabled.label }}
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        {{ document_form.diploma_enabled }}
+                                        <label class="form-check-label" for="{{ document_form.diploma_enabled.id_for_label }}">
+                                            {{ document_form.diploma_enabled.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="auto-signature" checked>
-                                <label class="form-check-label" for="auto-signature">
-                                    Signature automatique des documents officiels
+                                {{ document_form.require_original_docs }}
+                                <label class="form-check-label" for="{{ document_form.require_original_docs.id_for_label }}">
+                                    {{ document_form.require_original_docs.label }}
                                 </label>
                             </div>
                         </div>
@@ -281,25 +361,28 @@
                         <i class="fas fa-bell me-2"></i>
                         Paramètres de notification
                     </h5>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="notification">
+
                         <div class="mb-4">
                             <h6>Notifications par email</h6>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="email-enrollment" checked>
-                                <label class="form-check-label" for="email-enrollment">
-                                    Nouvelles inscriptions
+                                {{ notification_form.email_enrollment }}
+                                <label class="form-check-label" for="{{ notification_form.email_enrollment.id_for_label }}">
+                                    {{ notification_form.email_enrollment.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="email-documents" checked>
-                                <label class="form-check-label" for="email-documents">
-                                    Documents générés
+                                {{ notification_form.email_documents }}
+                                <label class="form-check-label" for="{{ notification_form.email_documents.id_for_label }}">
+                                    {{ notification_form.email_documents.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="email-deadlines">
-                                <label class="form-check-label" for="email-deadlines">
-                                    Échéances importantes
+                                {{ notification_form.email_deadlines }}
+                                <label class="form-check-label" for="{{ notification_form.email_deadlines.id_for_label }}">
+                                    {{ notification_form.email_deadlines.label }}
                                 </label>
                             </div>
                         </div>
@@ -307,15 +390,15 @@
                         <div class="mb-4">
                             <h6>Notifications système</h6>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="system-errors" checked>
-                                <label class="form-check-label" for="system-errors">
-                                    Erreurs système
+                                {{ notification_form.system_errors }}
+                                <label class="form-check-label" for="{{ notification_form.system_errors.id_for_label }}">
+                                    {{ notification_form.system_errors.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="system-updates">
-                                <label class="form-check-label" for="system-updates">
-                                    Mises à jour système
+                                {{ notification_form.system_updates }}
+                                <label class="form-check-label" for="{{ notification_form.system_updates.id_for_label }}">
+                                    {{ notification_form.system_updates.label }}
                                 </label>
                             </div>
                         </div>
@@ -328,43 +411,46 @@
                 </div>
             </div>
 
-            <!-- Security Settings -->
+            <!-- Data Management Settings -->
             <div class="tab-pane fade" id="security">
                 <div class="card-neumorphic">
                     <h5 class="mb-4">
-                        <i class="fas fa-shield-alt me-2"></i>
-                        Paramètres de sécurité
+                        <i class="fas fa-database me-2"></i>
+                        Gestion des données
                     </h5>
-                    <form>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="data_management">
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="session-timeout" class="form-label">Délai d'expiration de session (minutes)</label>
-                                <input type="number" class="form-control" id="session-timeout" value="30" min="5" max="480">
+                                <label for="{{ data_management_form.backup_frequency.id_for_label }}" class="form-label">{{ data_management_form.backup_frequency.label }}</label>
+                                {{ data_management_form.backup_frequency }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="max-login-attempts" class="form-label">Tentatives de connexion max</label>
-                                <input type="number" class="form-control" id="max-login-attempts" value="5" min="1" max="10">
+                                <label for="{{ data_management_form.data_retention.id_for_label }}" class="form-label">{{ data_management_form.data_retention.label }}</label>
+                                {{ data_management_form.data_retention }}
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Options de sécurité</label>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="two-factor" checked>
-                                <label class="form-check-label" for="two-factor">
-                                    Authentification à deux facteurs
+                                {{ data_management_form.audit_log }}
+                                <label class="form-check-label" for="{{ data_management_form.audit_log.id_for_label }}">
+                                    {{ data_management_form.audit_log.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="ip-restriction">
-                                <label class="form-check-label" for="ip-restriction">
-                                    Restriction par adresse IP
+                                {{ data_management_form.data_encryption }}
+                                <label class="form-check-label" for="{{ data_management_form.data_encryption.id_for_label }}">
+                                    {{ data_management_form.data_encryption.label }}
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="audit-log" checked>
-                                <label class="form-check-label" for="audit-log">
-                                    Journal d'audit
+                                {{ data_management_form.auto_cleanup }}
+                                <label class="form-check-label" for="{{ data_management_form.auto_cleanup.id_for_label }}">
+                                    {{ data_management_form.auto_cleanup.label }}
                                 </label>
                             </div>
                         </div>
@@ -399,22 +485,31 @@
         border-radius: 10px !important;
         margin-bottom: 5px;
         transition: all 0.3s ease;
-    }
-
-    .list-group-item {
-        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
-    }
-
-    .list-group-item:hover, .list-group-item.active {
         background: var(--primary-color) !important;
         color: var(--text-color) !important;
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        box-shadow: none; /* Plat par défaut */
+        border: 1px solid transparent;
+    }
+
+    .list-group-item:hover {
+        background: var(--primary-color) !important;
+        color: var(--text-color) !important;
+        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff; /* Ombre neumorphique au survol */
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .list-group-item.active {
+        background: var(--primary-color) !important;
+        color: var(--text-color) !important;
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; /* Enfoncé quand actif */
+        border: 1px solid rgba(0,0,0,0.1);
     }
 
     .form-check-input {
         border-radius: 5px;
         border: 1px solid rgba(0,0,0,0.2);
         box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+        background: var(--primary-color);
     }
 
     .form-check-input:checked {
@@ -423,8 +518,58 @@
         box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
     }
 
+    .form-check-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+
     .tab-content {
         min-height: 500px;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des onglets
+    const tabLinks = document.querySelectorAll('[data-bs-toggle="pill"]');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Retirer la classe active de tous les liens
+            tabLinks.forEach(l => l.classList.remove('active'));
+
+            // Retirer les classes active et show de tous les panneaux
+            tabPanes.forEach(pane => {
+                pane.classList.remove('active', 'show');
+            });
+
+            // Ajouter la classe active au lien cliqué
+            this.classList.add('active');
+
+            // Afficher le panneau correspondant
+            const targetId = this.getAttribute('href').substring(1);
+            const targetPane = document.getElementById(targetId);
+            if (targetPane) {
+                targetPane.classList.add('active', 'show');
+            }
+        });
+    });
+
+    // Activer le premier onglet par défaut si aucun n'est actif
+    if (!document.querySelector('.list-group-item.active')) {
+        const firstTab = document.querySelector('[data-bs-toggle="pill"]');
+        const firstPane = document.querySelector('.tab-pane');
+
+        if (firstTab && firstPane) {
+            firstTab.classList.add('active');
+            firstPane.classList.add('active', 'show');
+        }
+    }
+});
+</script>
 {% endblock %}

@@ -95,16 +95,28 @@
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-list me-2 mr-2"></i>Liste des documents</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des documents</h5>
+                <div class="btn-group">
+                    <a href="{% url 'main:document_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nouveau document
+                    </a>
+                    <a href="{% url 'main:document_bulk_create' %}" class="btn btn-success">
+                        <i class="fas fa-copy me-2"></i>Création en masse
+                    </a>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Matricule</th>
                             <th>Nom complet</th>
+                            <th>Niveau</th>
                             <th>Type de document</th>
                             <th>Status</th>
                             <th>Date de décharge</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,14 +124,48 @@
                         <tr>
                             <td><strong>{{ document.student_level.student.matricule }}</strong></td>
                             <td>{{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}</td>
+                            <td>{{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})</td>
                             <td>{{ document.get_type_display }}</td>
-                            <td>{{ document.get_status_display }}</td>
+                            <td>
+                                {% if document.status == 'available' %}
+                                    <span class="badge bg-success">{{ document.get_status_display }}</span>
+                                {% elif document.status == 'withdrawn' %}
+                                    <span class="badge bg-warning">{{ document.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ document.get_status_display }}</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if document.withdrawn_date %}
-                                    {{ document.withdrawn_date }}
+                                    {{ document.withdrawn_date|date:"d/m/Y" }}
                                 {% else %}
                                     --
                                 {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'main:document_edit' document.pk %}"
+                                       class="btn btn-outline-primary"
+                                       title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'main:document_delete' document.pk %}"
+                                       class="btn btn-outline-danger"
+                                       title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-file-alt fa-3x mb-3 d-block"></i>
+                                Aucun document trouvé avec les critères sélectionnés.
+                                <br>
+                                <a href="{% url 'main:document_create' %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus me-2"></i>Créer le premier document
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}

@@ -19,7 +19,7 @@
     <section class="section bg-primary">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-12 col-md-8">
+                <div class="col-12 col-md-8 col-lg-6">
 
                     <!-- Logo seul -->
                     <div class="text-center mb-5">
@@ -39,14 +39,15 @@
                         </div>
 
                         <!-- Informations importantes -->
-                        <div class="mb-5">
-                            <div class="d-flex align-items-center mb-4">
+                        <div class="mb-5 text-center ">
+                            <div class="d-flex align-items-center justify-content-start mb-4">
                                 <div class="icon icon-shape icon-sm shadow-soft border border-light rounded-circle mr-3">
                                     <span class="fas fa-info-circle"></span>
                                 </div>
                                 <h4 class="mb-0">Informations importantes</h4>
                             </div>
 
+                            <div class="card card-body border-light">
                             <div class="list-group list-group-flush">
                                 <div class="list-group-item d-flex align-items-center px-0 border-0">
                                     <div class="icon icon-xs mr-3">
@@ -79,6 +80,8 @@
                                     <span>Inscription en 3 étapes simples</span>
                                 </div>
                             </div>
+                            </div>
+                            
                         </div>
 
                         <!-- Documents requis -->
@@ -89,6 +92,7 @@
                                 </div>
                                 <h4 class="mb-0">Documents requis</h4>
                             </div>
+                            <div class="card card-body border-light">
 
                             <div class="list-group list-group-flush">
                                 <div class="list-group-item d-flex align-items-center px-0 border-0">
@@ -122,10 +126,11 @@
                                     <span>Bulletins de la classe de Terminale</span>
                                 </div>
                             </div>
+                            </div>
                         </div>
 
                         <!-- CTA Section -->
-                        <div class="mb-4">
+                        <div class="mb-4 text-center">
                             <a href="{% url 'main:inscription_externe_step' step=1 %}" class="btn btn-primary btn-lg">
                                 <span class="fas fa-rocket mr-2"></span>
                                 Commencer l'inscription

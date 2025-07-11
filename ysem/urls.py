@@ -25,6 +25,7 @@ urlpatterns = [
     path("auth/", include("authentication.urls")),
     path("", include("main.urls")),
     path("teach/", include("Teaching.urls")),
+    path("portail-etudiant/", include("student_portal.urls")),
 ]
 
 # Serve static files during development

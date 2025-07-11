@@ -41,17 +41,28 @@
             </div>
 
             <!-- User Profile -->
-            <div class="user-profile">
+            <div class="user-profile dropdown">
                 <div class="user-details">
                     <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
                     <div class="user-role">{{ user.role|default:"Administrateur" }}</div>
                 </div>
-                <div class="user-avatar">
+                <div class="user-avatar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;" id="userDropdown">
                     {% if user.first_name and user.last_name %}
                         {{ user.first_name.0 }}{{ user.last_name.0 }}
                     {% else %}
                         <i class="fas fa-user"></i>
                     {% endif %}
+                </div>
+
+                <!-- Menu déroulant -->
+                <div class="dropdown-menu dropdown-menu-right user-dropdown-menu" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="{% url 'main:profil' %}">
+                        <i class="fas fa-user mr-2"></i>Voir le profil
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                    </a>
                 </div>
             </div>
         </div>
@@ -195,6 +206,47 @@
                     }
                 }, 5000);
             });
+
+            // User dropdown functionality
+            const userDropdown = document.getElementById('userDropdown');
+            const userDropdownMenu = document.querySelector('.user-dropdown-menu');
+
+            if (userDropdown && userDropdownMenu) {
+                // Toggle dropdown on click
+                userDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Fermer tous les autres dropdowns ouverts
+                    document.querySelectorAll('.user-dropdown-menu.show').forEach(function(menu) {
+                        if (menu !== userDropdownMenu) {
+                            menu.classList.remove('show');
+                        }
+                    });
+
+                    // Toggle le dropdown actuel
+                    userDropdownMenu.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.user-profile')) {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+
+                // Close dropdown when pressing Escape
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+
+                // Prevent dropdown from closing when clicking inside it
+                userDropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
         });
     </script>
 

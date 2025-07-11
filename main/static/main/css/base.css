@@ -74,6 +74,7 @@ body {
     background: rgba(255,255,255,0.1);
     box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .user-profile:hover {
@@ -111,6 +112,67 @@ body {
     color: white;
     font-size: 1.1rem;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Menu déroulant du profil utilisateur */
+.user-dropdown-menu {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 15px;
+    box-shadow: 9px 9px 16px #b8b9be, -9px -9px 16px #fff;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    min-width: 200px;
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.user-dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.user-dropdown-menu .dropdown-item {
+    padding: 0.75rem 1.5rem;
+    color: var(--text-color);
+    border-radius: 0;
+    transition: all 0.3s ease;
+    border: none;
+    background: transparent;
+}
+
+.user-dropdown-menu .dropdown-item:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--accent-color);
+    transform: translateX(5px);
+}
+
+.user-dropdown-menu .dropdown-item:focus {
+    background: rgba(0,0,0,0.05);
+    color: var(--accent-color);
+}
+
+.user-dropdown-menu .dropdown-divider {
+    border-color: rgba(0,0,0,0.1);
+    margin: 0.5rem 1rem;
+}
+
+.user-dropdown-menu .dropdown-item.text-danger:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
 }
 
 /* Sidebar */

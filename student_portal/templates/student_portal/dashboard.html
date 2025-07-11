@@ -1,0 +1,198 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - Portail Étudiant{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="h4 mb-2">Bienvenue, {{ student.firstname }} {{ student.lastname }}</h2>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-id-card me-2"></i>Matricule : {{ student.matricule }}
+                            {% if student.program %}
+                            <span class="ms-3"><i class="fas fa-graduation-cap me-2"></i>{{ student.program.name }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="text-muted">
+                            <small>Dernière connexion</small><br>
+                            <span class="fw-bold">{{ "now"|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary shadow-soft border-light p-4 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                </div>
+                <h3 class="h4 mb-1">{{ document_stats.total }}</h3>
+                <p class="text-muted mb-0">Documents au total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary shadow-soft border-light p-4 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                </div>
+                <h3 class="h4 mb-1">{{ document_stats.available }}</h3>
+                <p class="text-muted mb-0">Disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary shadow-soft border-light p-4 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-download fa-2x text-info"></i>
+                </div>
+                <h3 class="h4 mb-1">{{ document_stats.withdrawn }}</h3>
+                <p class="text-muted mb-0">Retirés</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary shadow-soft border-light p-4 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                </div>
+                <h3 class="h4 mb-1">{{ document_stats.lost }}</h3>
+                <p class="text-muted mb-0">Perdus</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="fas fa-bolt me-2"></i>Actions rapides</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="{% url 'student_portal:documents' %}" class="btn btn-outline-secondary w-100 py-3">
+                            <i class="fas fa-file-alt fa-lg me-2"></i>
+                            <div>
+                                <div class="fw-bold">Consulter mes documents</div>
+                                <small class="text-muted">Voir tous vos documents officiels</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'student_portal:documents' %}?status=available" class="btn btn-outline-success w-100 py-3">
+                            <i class="fas fa-download fa-lg me-2"></i>
+                            <div>
+                                <div class="fw-bold">Documents disponibles</div>
+                                <small class="text-muted">{{ document_stats.available }} document(s) à retirer</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents by Level -->
+{% if student_levels %}
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <h5 class="mb-4"><i class="fas fa-layer-group me-2"></i>Documents par niveau</h5>
+
+                {% for level in student_levels %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">
+                            <i class="fas fa-graduation-cap me-2 text-secondary"></i>
+                            {{ level.level.name }} - {{ level.academic_year.name }}
+                        </h6>
+                        <span class="badge badge-light">
+                            {{ level.official_documents.count }} document(s)
+                        </span>
+                    </div>
+
+                    {% if level.official_documents.all %}
+                    <div class="row g-2">
+                        {% for document in level.official_documents.all %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card bg-primary shadow-inset border-light p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="fw-bold mb-1">{{ document.get_type_display }}</div>
+                                        <small class="text-muted">
+                                            Créé le {{ document.created_at|date:"d/m/Y" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge
+                                        {% if document.status == 'available' %}badge-success
+                                        {% elif document.status == 'withdrawn' %}badge-info
+                                        {% else %}badge-warning{% endif %}">
+                                        {{ document.get_status_display }}
+                                    </span>
+                                </div>
+                                {% if document.withdrawn_date %}
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Retiré le {{ document.withdrawn_date|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Aucun document pour ce niveau</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if not forloop.last %}
+                <hr class="my-4">
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4 text-center">
+            <div class="card-body">
+                <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Aucun niveau enregistré</h5>
+                <p class="text-muted mb-0">Contactez la scolarité pour plus d'informations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

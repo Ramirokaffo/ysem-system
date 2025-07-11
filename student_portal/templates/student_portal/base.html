@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Portail Étudiant - YSEM{% endblock %}</title>
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% if request.session.student_authenticated %}
+    <!-- Header -->
+    <header class="header-global">
+        <nav class="navbar navbar-expand-lg shadow-soft border-light navbar-light">
+            <div class="container position-relative">
+                <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light" href="{% url 'student_portal:dashboard' %}">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    <span class="fw-bold">YSEM</span>
+                    <small class="text-muted ms-2">Portail Étudiant</small>
+                </a>
+
+                <div class="navbar-collapse collapse" id="navbar_global">
+                    <div class="navbar-collapse-header">
+                        <div class="row">
+                            <div class="col-6 collapse-brand">
+                                <a href="{% url 'student_portal:dashboard' %}" class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    <span class="fw-bold">YSEM</span>
+                                </a>
+                            </div>
+                            <div class="col-6 collapse-close">
+                                <a href="#navbar_global" class="fas fa-times" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" title="close" aria-label="Toggle navigation"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="navbar-nav navbar-nav-hover align-items-lg-center ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">
+                                <i class="fas fa-user-circle me-2"></i>
+                                {{ request.session.student_name }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'student_portal:dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_portal:documents' %}">
+                                    <i class="fas fa-file-alt me-2"></i>Mes documents
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'student_portal:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Se déconnecter
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <button class="navbar-toggler ml-2" type="button" data-toggle="collapse" data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if request.session.student_authenticated %}
+        <div class="container-fluid px-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center py-4">
+                        <h1 class="h3 mb-0">{% block page_title %}Portail Étudiant{% endblock %}</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'student_portal:dashboard' %}">Accueil</a></li>
+                                {% block breadcrumb %}{% endblock %}
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle me-2"></i>
+                                {% elif message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle me-2"></i>
+                                {% endif %}
+                                {{ message|safe }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% else %}
+            <!-- Messages pour pages non authentifiées -->
+            {% if messages %}
+                <div class="container mt-4">
+                    <div class="row">
+                        <div class="col-12">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                                    {{ message|safe }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-4 bg-light border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">© 2024 YSEM - Portail Étudiant</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">
+                        <small>Pour toute assistance, contactez la scolarité</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/popper.js/dist/umd/popper.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/headroom.js/dist/headroom.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/prismjs/prism.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery-countdown/dist/jquery.countdown.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery.counterup/jquery.counterup.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jarallax/dist/jarallax.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/waypoints/lib/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+    
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

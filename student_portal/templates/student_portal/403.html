@@ -1,0 +1,107 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Accès Interdit - Portail Étudiant{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card-neumorphic p-5 text-center">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <i class="fas fa-shield-alt fa-4x text-danger"></i>
+                    </div>
+
+                    <!-- Error Content -->
+                    <h1 class="display-4 fw-bold text-danger mb-3">403</h1>
+                    <h2 class="h4 mb-3">Accès Interdit</h2>
+                    <p class="text-muted mb-4">
+                        Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+                        <br>
+                        Cette section est réservée aux administrateurs et responsables de scolarité.
+                    </p>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        {% if request.session.student_authenticated %}
+                        <a href="{% url 'student_portal:dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>
+                            Retour au portail étudiant
+                        </a>
+                        <a href="{% url 'student_portal:logout' %}" class="btn btn-secondary">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Se déconnecter
+                        </a>
+                        {% else %}
+                        <a href="{% url 'student_portal:login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Se connecter
+                        </a>
+                        <a href="{% url 'main:home' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-2"></i>
+                            Page d'accueil
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Help Section -->
+                    <div class="mt-4 pt-4 border-top">
+                        <p class="text-muted mb-0">
+                            <small>
+                                <i class="fas fa-info-circle me-2"></i>
+                                Si vous pensez qu'il s'agit d'une erreur, contactez le service scolarité.
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-neumorphic {
+    background: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 
+        20px 20px 60px #d1d9e6,
+        -20px -20px 60px #ffffff;
+    border: none;
+}
+
+.btn-primary, .btn-secondary {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 
+        8px 8px 16px #d1d9e6,
+        -8px -8px 16px #ffffff;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    padding: 12px 24px;
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        12px 12px 20px #d1d9e6,
+        -12px -12px 20px #ffffff;
+}
+
+.btn-primary:active, .btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 
+        inset 4px 4px 8px #d1d9e6,
+        inset -4px -4px 8px #ffffff;
+}
+
+.btn-primary {
+    background: linear-gradient(145deg, #5a6acf, #4e73df);
+}
+
+.btn-secondary {
+    background: linear-gradient(145deg, #858796, #6c757d);
+}
+</style>
+{% endblock %}

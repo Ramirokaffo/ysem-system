@@ -9,298 +9,42 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
     
-    <!-- Fontawesome -->
-    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
-    
+    <!-- Font Awesome -->
+    <link type="text/css"
+        href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}"
+        rel="stylesheet">
+
     <!-- Neumorphism CSS -->
-    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/css/neumorphism.css' %}" rel="stylesheet">
-    
-    <style>
-        body {
-            background: #e6ebf1;
-            font-family: 'Nunito Sans', sans-serif;
-        }
-        
-        .confirmation-container {
-            min-height: 100vh;
-            padding: 2rem 0;
-        }
-        
-        .confirmation-card {
-            background: #e6ebf1;
-            border-radius: 20px;
-            box-shadow: 9px 9px 16px #a3b1c6, -9px -9px 16px #ffffff;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, #18634b, #2dce89);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 2rem;
-            box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
-        }
-        
-        .success-icon i {
-            color: white;
-            font-size: 2rem;
-        }
-        
-        .confirmation-title {
-            color: #31344b;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        .confirmation-subtitle {
-            color: #8492a6;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .info-card {
-            background: #e6ebf1;
-            border-radius: 15px;
-            box-shadow: inset 6px 6px 12px #a3b1c6, inset -6px -6px 12px #ffffff;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-        
-        .info-title {
-            color: #31344b;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .info-title i {
-            margin-right: 0.5rem;
-            color: #18634b;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #d1d9e6;
-        }
-        
-        .info-item:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            color: #8492a6;
-            font-weight: 500;
-        }
-        
-        .info-value {
-            color: #31344b;
-            font-weight: 600;
-        }
-        
-        .btn-neumorphic {
-            background: #e6ebf1;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
-            padding: 0.75rem 2rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            color: #31344b;
-            text-decoration: none;
-            display: inline-block;
-            margin: 0.5rem;
-        }
-        
-        .btn-neumorphic:hover {
-            box-shadow: 4px 4px 8px #a3b1c6, -4px -4px 8px #ffffff;
-            transform: translateY(1px);
-            color: #31344b;
-            text-decoration: none;
-        }
-        
-        .btn-primary-neumorphic {
-            background: linear-gradient(45deg, #18634b, #2dce89);
-            color: white;
-            box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
-        }
-        
-        .btn-primary-neumorphic:hover {
-            background: linear-gradient(45deg, #155a42, #28b87d);
-            color: white;
-            box-shadow: 4px 4px 8px #a3b1c6, -4px -4px 8px #ffffff;
-            text-decoration: none;
-        }
-        
-        .logo-container {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .logo-container img {
-            max-height: 60px;
-            width: auto;
-        }
-        
-        .next-steps {
-            background: #e6ebf1;
-            border-radius: 15px;
-            box-shadow: 6px 6px 12px #a3b1c6, -6px -6px 12px #ffffff;
-            padding: 2rem;
-            margin-top: 2rem;
-            border-left: 4px solid #18634b;
-        }
-        
-        .next-steps h5 {
-            color: #31344b;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-        
-        .next-steps ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .next-steps li {
-            color: #8492a6;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .next-steps li i {
-            color: #18634b;
-            margin-right: 0.5rem;
-            width: 16px;
-        }
-        
-        @media (max-width: 768px) {
-            .confirmation-card {
-                padding: 2rem 1rem;
-            }
-            
-            .confirmation-title {
-                font-size: 1.5rem;
-            }
-            
-            .info-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.25rem;
-            }
-        }
-    </style>
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+
 </head>
 <body>
-    <div class="confirmation-container">
+    <div class="section section-lg bg-primary">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-8 col-xl-6">
                     <!-- Logo -->
-                    <div class="logo-container">
-                        <img src="{% static 'images/ysemlogo.png' %}" alt="YSEM Logo" class="img-fluid">
+                    <div class="text-center mb-5">
+                        <div class="card card-body shadow-soft border-light bg-primary d-inline-block">
+                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo"
+                                style="height: 50px; width: auto;">
+                        </div>
                     </div>
                     
-                    <!-- Confirmation Card -->
-                    <div class="confirmation-card">
-                        <div class="success-icon">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        
-                        <h1 class="confirmation-title">Inscription réussie !</h1>
-                        <p class="confirmation-subtitle">
-                            Votre demande d'inscription a été soumise avec succès. 
-                            Vous recevrez une confirmation par email sous peu.
-                        </p>
-                        
-                        <!-- Informations du candidat -->
-                        <div class="info-card">
-                            <div class="info-title">
-                                <i class="fas fa-user"></i>
-                                Informations du candidat
-                            </div>
-                            {% if session_data.etape_2 %}
-                                <div class="info-item">
-                                    <span class="info-label">Nom complet :</span>
-                                    <span class="info-value">{{ session_data.etape_2.prenom }} {{ session_data.etape_2.nom }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Email :</span>
-                                    <span class="info-value">{{ session_data.etape_2.courriel }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Téléphone :</span>
-                                    <span class="info-value">{{ session_data.etape_2.telephone }}</span>
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Informations de l'inscription -->
-                        <div class="info-card">
-                            <div class="info-title">
-                                <i class="fas fa-graduation-cap"></i>
-                                Détails de l'inscription
-                            </div>
-                            {% if session_data.etape_1 %}
-                                <div class="info-item">
-                                    <span class="info-label">Année académique :</span>
-                                    <span class="info-value">{{ session_data.etape_1.annee_academique }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Niveau demandé :</span>
-                                    <span class="info-value">{{ session_data.etape_1.niveau_demande }}</span>
-                                </div>
-                            {% endif %}
-                            {% if session_data.etape_4 %}
-                                <div class="info-item">
-                                    <span class="info-label">Spécialité choisie :</span>
-                                    <span class="info-value">{{ session_data.etape_4.specialite_choisie_1 }}</span>
-                                </div>
-                            {% endif %}
-                            {% if student %}
-                                <div class="info-item">
-                                    <span class="info-label">Matricule :</span>
-                                    <span class="info-value">{{ student.matricule }}</span>
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Prochaines étapes -->
-                        <div class="next-steps">
-                            <h5><i class="fas fa-list-ul mr-2"></i>Prochaines étapes</h5>
-                            <ul>
-                                <li><i class="fas fa-envelope"></i>Vous recevrez un email de confirmation</li>
-                                <li><i class="fas fa-file-alt"></i>Préparez les documents requis</li>
-                                <li><i class="fas fa-calendar-check"></i>Attendez la convocation pour l'entretien</li>
-                                <li><i class="fas fa-phone"></i>Nous vous contacterons pour la suite du processus</li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Actions -->
-                        <div class="mt-4">
-                            <a href="{% url 'main:inscription_externe' %}" class="btn btn-neumorphic">
+                    <div class="alert alert-success shadow-soft mb-4 mb-lg-5" role="alert">
+                    <span class="alert-inner--icon icon-lg"><span class="far fa-thumbs-up"></span></span>
+                    <span class="alert-heading">Inscription réussie !</span>
+                    <p>Votre demande d'inscription a été soumise avec succès. 
+                            Vous recevrez une confirmation par email sous peu.</p>
+                    <hr>
+                    <p class="mb-4">Nous vous contacterons pour la suite du processus</p>
+                    <a href="{% url 'main:inscription_externe' %}" class="btn btn-neumorphic text-success">
                                 <i class="fas fa-home mr-2"></i>
                                 Retour à l'accueil
                             </a>
-                            <a href="#" onclick="window.print()" class="btn btn-primary-neumorphic">
-                                <i class="fas fa-print mr-2"></i>
-                                Imprimer
-                            </a>
-                        </div>
-                    </div>
+                </div>
+
                 </div>
             </div>
         </div>
@@ -310,5 +54,6 @@
     <script src="{% static 'neumorphism-ui-v1.0.0/vendor/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/assets/js/neumorphism.js' %}"></script>
+
 </body>
 </html>

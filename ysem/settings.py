@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "schools",
     "authentication",
     "Teaching",
+    "student_portal",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Middlewares de sécurité pour le portail étudiant
+    "student_portal.middleware.StudentSessionCleanupMiddleware",
+    "student_portal.middleware.StudentPortalSecurityMiddleware",
 ]
 
 ROOT_URLCONF = "ysem.urls"

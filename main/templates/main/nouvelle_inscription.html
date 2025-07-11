@@ -3,31 +3,387 @@
 
 {% block title %}Nouvelle Inscription - YSEM{% endblock %}
 
-{% block page_title %}Nouvelle Inscription - Étape {{ step }}{% endblock %}
+{% block page_title %}Nouvelle Inscription{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-plus me-2"></i>Nouvelle Inscription - Étape {{ step }}</h5>
-            <form method="post">
+            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-plus me-2"></i>Nouvelle Inscription</h5>
+
+            <!-- Informations importantes -->
+            <div class="alert alert-info mb-4">
+                <h6><i class="fas fa-info-circle me-2"></i>Documents requis</h6>
+                <ul class="mb-0">
+                    <li>Tous les documents doivent être lisibles et de bonne qualité</li>
+                    <li>Taille maximale par fichier : 5 Mo</li>
+                    <li>Formats acceptés uniquement : PNG, JPG, PDF</li>
+                    <li>Les originaux de ces documents seront demandés après l'inscription</li>
+                </ul>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <div class="d-flex justify-content-between">
-                    {% if prev_step %}
-                        <a href="{% url 'main:nouvelle_inscription' step=prev_step %}" class="btn btn-secondary">Précédent</a>
-                    {% endif %}
-                    <button type="submit" class="btn btn-primary">Suivant</button>
+
+                <!-- Section 1: Informations personnelles -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-user me-2"></i>Informations personnelles</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.nom.label_tag }}
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger small">{{ form.nom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.prenom.label_tag }}
+                            {{ form.prenom }}
+                            {% if form.prenom.errors %}
+                                <div class="text-danger small">{{ form.prenom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.date_naissance.label_tag }}
+                            {{ form.date_naissance }}
+                            {% if form.date_naissance.errors %}
+                                <div class="text-danger small">{{ form.date_naissance.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.lieu_naissance.label_tag }}
+                            {{ form.lieu_naissance }}
+                            {% if form.lieu_naissance.errors %}
+                                <div class="text-danger small">{{ form.lieu_naissance.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.sexe.label_tag }}
+                            {{ form.sexe }}
+                            {% if form.sexe.errors %}
+                                <div class="text-danger small">{{ form.sexe.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.nationalite.label_tag }}
+                            {{ form.nationalite }}
+                            {% if form.nationalite.errors %}
+                                <div class="text-danger small">{{ form.nationalite.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.premiere_langue_officielle.label_tag }}
+                            {{ form.premiere_langue_officielle }}
+                            {% if form.premiere_langue_officielle.errors %}
+                                <div class="text-danger small">{{ form.premiere_langue_officielle.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Coordonnées -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-envelope me-2"></i>Coordonnées</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.courriel.label_tag }}
+                            {{ form.courriel }}
+                            {% if form.courriel.errors %}
+                                <div class="text-danger small">{{ form.courriel.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.telephone.label_tag }}
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}
+                                <div class="text-danger small">{{ form.telephone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Informations académiques -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-graduation-cap me-2"></i>Informations académiques</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.annee_academique.label_tag }}
+                            {{ form.annee_academique }}
+                            {% if form.annee_academique.errors %}
+                                <div class="text-danger small">{{ form.annee_academique.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.niveau.label_tag }}
+                            {{ form.niveau }}
+                            {% if form.niveau.errors %}
+                                <div class="text-danger small">{{ form.niveau.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.programme.label_tag }}
+                            {{ form.programme }}
+                            {% if form.programme.errors %}
+                                <div class="text-danger small">{{ form.programme.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.specialite_souhaitee.label_tag }}
+                            {{ form.specialite_souhaitee }}
+                            {% if form.specialite_souhaitee.errors %}
+                                <div class="text-danger small">{{ form.specialite_souhaitee.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 mb-3" id="autre-specialite" style="display: none;">
+                            {{ form.autre_specialite.label_tag }}
+                            {{ form.autre_specialite }}
+                            {% if form.autre_specialite.errors %}
+                                <div class="text-danger small">{{ form.autre_specialite.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Informations familiales -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-users me-2"></i>Informations familiales</h6>
+
+                    <!-- Informations du père -->
+                    <h6 class="mb-2 text-secondary">Informations du père</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3">
+                            {{ form.nom_pere.label_tag }}
+                            {{ form.nom_pere }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.profession_pere.label_tag }}
+                            {{ form.profession_pere }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.telephone_pere.label_tag }}
+                            {{ form.telephone_pere }}
+                        </div>
+                    </div>
+
+                    <!-- Informations de la mère -->
+                    <h6 class="mb-2 text-secondary">Informations de la mère</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3">
+                            {{ form.nom_mere.label_tag }}
+                            {{ form.nom_mere }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.profession_mere.label_tag }}
+                            {{ form.profession_mere }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.telephone_mere.label_tag }}
+                            {{ form.telephone_mere }}
+                        </div>
+                    </div>
+
+                    <!-- Informations du tuteur -->
+                    <h6 class="mb-2 text-secondary">Informations du tuteur/responsable</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3">
+                            {{ form.nom_tuteur.label_tag }}
+                            {{ form.nom_tuteur }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.profession_tuteur.label_tag }}
+                            {{ form.profession_tuteur }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.telephone_tuteur.label_tag }}
+                            {{ form.telephone_tuteur }}
+                        </div>
+                    </div>
+
+                    <!-- Contact d'urgence -->
+                    <h6 class="mb-2 text-secondary">Contact d'urgence</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.nom_urgence.label_tag }}
+                            {{ form.nom_urgence }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.telephone_urgence.label_tag }}
+                            {{ form.telephone_urgence }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.lien_parente_urgence.label_tag }}
+                            {{ form.lien_parente_urgence }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Cursus scolaire -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-school me-2"></i>Cursus scolaire et universitaire</h6>
+
+                    <!-- BEPC/CAP -->
+                    <h6 class="mb-2 text-secondary">BEPC / CAP</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3">
+                            {{ form.bepc_cap_serie.label_tag }}
+                            {{ form.bepc_cap_serie }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.bepc_cap_annee.label_tag }}
+                            {{ form.bepc_cap_annee }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.bepc_cap_mention.label_tag }}
+                            {{ form.bepc_cap_mention }}
+                        </div>
+                    </div>
+
+                    <!-- Baccalauréat -->
+                    <h6 class="mb-2 text-secondary">Baccalauréat</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-3 mb-3">
+                            {{ form.bac_serie.label_tag }}
+                            {{ form.bac_serie }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.bac_annee.label_tag }}
+                            {{ form.bac_annee }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.bac_mention.label_tag }}
+                            {{ form.bac_mention }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.bac_etablissement.label_tag }}
+                            {{ form.bac_etablissement }}
+                        </div>
+                    </div>
+
+                    <!-- Études supérieures -->
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            {{ form.etudes_superieures.label_tag }}
+                            {{ form.etudes_superieures }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Documents requis -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-file-upload me-2"></i>Documents requis</h6>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.acte_naissance.label_tag }}
+                            {{ form.acte_naissance }}
+                            {% if form.acte_naissance.errors %}
+                                <div class="text-danger small">{{ form.acte_naissance.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.acte_naissance.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.certificat_nationalite.label_tag }}
+                            {{ form.certificat_nationalite }}
+                            {% if form.certificat_nationalite.errors %}
+                                <div class="text-danger small">{{ form.certificat_nationalite.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.certificat_nationalite.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.diplome_bac.label_tag }}
+                            {{ form.diplome_bac }}
+                            {% if form.diplome_bac.errors %}
+                                <div class="text-danger small">{{ form.diplome_bac.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.diplome_bac.help_text }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.releve_notes_bac.label_tag }}
+                            {{ form.releve_notes_bac }}
+                            {% if form.releve_notes_bac.errors %}
+                                <div class="text-danger small">{{ form.releve_notes_bac.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.releve_notes_bac.help_text }}</small>
+                        </div>
+                        <div class="col-12 mb-3">
+                            {{ form.bulletins_terminale.label_tag }}
+                            {{ form.bulletins_terminale }}
+                            {% if form.bulletins_terminale.errors %}
+                                <div class="text-danger small">{{ form.bulletins_terminale.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.bulletins_terminale.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <!-- Documents optionnels -->
+                    <h6 class="mb-2 text-secondary">Documents et frais optionnels</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                {{ form.photos_identite }}
+                                {{ form.photos_identite.label_tag }}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                {{ form.frais_etude_dossier }}
+                                {{ form.frais_etude_dossier.label_tag }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7: Attestation -->
+                <div class="card-neumorphic p-3 mb-4">
+                    <h6 class="mb-3 text-primary"><i class="fas fa-check-circle me-2"></i>Attestation</h6>
+                    <div class="form-check">
+                        {{ form.attestation_veracite }}
+                        {{ form.attestation_veracite.label_tag }}
+                        {% if form.attestation_veracite.errors %}
+                            <div class="text-danger small">{{ form.attestation_veracite.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>Créer l'inscription
+                    </button>
                 </div>
             </form>
+
+            <!-- Messages -->
             {% if messages %}
-                <ul class="messages">
+                <div class="mt-4">
                     {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     {% endfor %}
-                </ul>
+                </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+// Script pour afficher/masquer le champ "Autre spécialité"
+document.addEventListener('DOMContentLoaded', function() {
+    const specialiteSelect = document.getElementById('id_specialite_souhaitee');
+    const autreSpecialiteDiv = document.getElementById('autre-specialite');
+
+    function toggleAutreSpecialite() {
+        if (specialiteSelect.value === 'autre') {
+            autreSpecialiteDiv.style.display = 'block';
+        } else {
+            autreSpecialiteDiv.style.display = 'none';
+        }
+    }
+
+    specialiteSelect.addEventListener('change', toggleAutreSpecialite);
+    toggleAutreSpecialite(); // Vérifier l'état initial
+});
+</script>
 {% endblock %}

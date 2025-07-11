@@ -21,12 +21,22 @@
                     <div class="mb-3"><strong>Statut :</strong> <span class="badge bg-info">{{ student.get_status_display }}</span></div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3"><strong>Programme :</strong> {{ student.program.name }}</div>
-                    <div class="mb-3"><strong>École :</strong> {{ student.school.name }}</div>
+                    <div class="mb-3"><strong>Programme :</strong> {% if student.program %}{{ student.program.name }}{% else %}<span class="text-muted">Non défini</span>{% endif %}</div>
+                    <div class="mb-3"><strong>École :</strong> {% if student.school %}{{ student.school.name }}{% else %}<span class="text-muted">Non définie</span>{% endif %}</div>
                     <div class="mb-3"><strong>Langue :</strong> {{ student.get_lang_display }}</div>
-                    <div class="mb-3"><strong>Parrain :</strong> {% if student.godfather %}{{ student.godfather.firstname }} {{ student.godfather.lastname }}{% else %}<span class="text-muted">Aucun</span>{% endif %}</div>
-                    <div class="mb-3"><strong>Date d'ajout :</strong> {{ student.created_at|date:'d/m/Y H:i' }}</div>
+                    <div class="mb-3"><strong>Parrain :</strong> {% if student.godfather %}{{ student.godfather.full_name }}{% else %}<span class="text-muted">Aucun</span>{% endif %}</div>
+                    <div class="mb-3"><strong>Date d'ajout :</strong> {% if student.created_at %}{{ student.created_at|date:'d/m/Y H:i' }}{% else %}<span class="text-muted">Non définie</span>{% endif %}</div>
                     <div class="mb-3"><strong>Dernière mise à jour :</strong> {{ student.last_updated|date:'d/m/Y H:i' }}</div>
+                    <div class="mb-3"><strong>Accès externe :</strong>
+                        {% if student.has_external_password %}
+                            <span class="badge bg-success">Configuré</span>
+                            {% if student.external_password_created_at %}
+                                <small class="text-muted">({{ student.external_password_created_at|date:'d/m/Y H:i' }})</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">Non configuré</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -40,21 +50,70 @@
             <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-address-card me-2"></i>Informations complémentaires</h4>
             <div class="row g-4">
                 <div class="col-md-6">
-                    <div class="mb-3"><strong>Pays d'origine :</strong> {{ student.metadata.country }}</div>
-                    <div class="mb-3"><strong>Région d'origine :</strong> {{ student.metadata.original_region }}</div>
-                    <div class="mb-3"><strong>Département d'origine :</strong> {{ student.metadata.original_department }}</div>
-                    <div class="mb-3"><strong>Arrondissement d'origine :</strong> {{ student.metadata.original_district }}</div>
-                    <div class="mb-3"><strong>Ville de résidence :</strong> {{ student.metadata.residence_city }}</div>
-                    <div class="mb-3"><strong>Quartier de résidence :</strong> {{ student.metadata.residence_quarter }}</div>
+                    <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>Informations géographiques</h6>
+                    <div class="mb-3"><strong>Pays d'origine :</strong> {{ student.metadata.original_country|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Région d'origine :</strong> {{ student.metadata.original_region|default:"Non spécifiée" }}</div>
+                    <div class="mb-3"><strong>Département d'origine :</strong> {{ student.metadata.original_department|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Arrondissement d'origine :</strong> {{ student.metadata.original_district|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Ville de résidence :</strong> {{ student.metadata.residence_city|default:"Non spécifiée" }}</div>
+                    <div class="mb-3"><strong>Quartier de résidence :</strong> {{ student.metadata.residence_quarter|default:"Non spécifié" }}</div>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3"><strong>Mère (ville) :</strong> {{ student.metadata.mother_live_city }}</div>
-                    <div class="mb-3"><strong>Email de la mère :</strong> {{ student.metadata.mother_email }}</div>
-                    <div class="mb-3"><strong>Profession de la mère :</strong> {{ student.metadata.mother_occupation }}</div>
-                    <div class="mb-3"><strong>Nom du père :</strong> {{ student.metadata.father_full_name }}</div>
-                    <div class="mb-3"><strong>Téléphone de la mère :</strong> {{ student.metadata.mother_phone_number }}</div>
-                    <div class="mb-3"><strong>Dernier alias :</strong> {{ student.metadata.last_alias }}</div>
+                    <h6 class="text-primary mb-3"><i class="fas fa-users me-2"></i>Informations familiales</h6>
+                    <div class="mb-3"><strong>Nom de la mère :</strong> {{ student.metadata.mother_full_name|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Ville de la mère :</strong> {{ student.metadata.mother_live_city|default:"Non spécifiée" }}</div>
+                    <div class="mb-3"><strong>Email de la mère :</strong> {{ student.metadata.mother_email|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Profession de la mère :</strong> {{ student.metadata.mother_occupation|default:"Non spécifiée" }}</div>
+                    <div class="mb-3"><strong>Téléphone de la mère :</strong> {{ student.metadata.mother_phone_number|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Nom du père :</strong> {{ student.metadata.father_full_name|default:"Non spécifié" }}</div>
+                    <div class="mb-3"><strong>Dossier complet :</strong>
+                        {% if student.metadata.is_complete %}
+                            <span class="badge bg-success">Oui</span>
+                        {% else %}
+                            <span class="badge bg-warning">Non</span>
+                        {% endif %}
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Détails des relations -->
+{% if student.school or student.program or student.godfather %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-link me-2"></i>Détails des relations</h4>
+            <div class="row g-4">
+                {% if student.school %}
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-school me-2"></i>École</h6>
+                    <div class="mb-2"><strong>Nom :</strong> {{ student.school.name }}</div>
+                    <div class="mb-2"><strong>Niveau :</strong> {{ student.school.level }}</div>
+                    {% if student.school.address %}<div class="mb-2"><strong>Adresse :</strong> {{ student.school.address }}</div>{% endif %}
+                    {% if student.school.phone_number %}<div class="mb-2"><strong>Téléphone :</strong> {{ student.school.phone_number }}</div>{% endif %}
+                </div>
+                {% endif %}
+
+                {% if student.program %}
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-book me-2"></i>Programme</h6>
+                    <div class="mb-2"><strong>Nom :</strong> {{ student.program.name }}</div>
+                    {% if student.program.description %}<div class="mb-2"><strong>Description :</strong> {{ student.program.description }}</div>{% endif %}
+                </div>
+                {% endif %}
+
+                {% if student.godfather %}
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-user-tie me-2"></i>Parrain</h6>
+                    <div class="mb-2"><strong>Nom complet :</strong> {{ student.godfather.full_name }}</div>
+                    {% if student.godfather.occupation %}<div class="mb-2"><strong>Profession :</strong> {{ student.godfather.occupation }}</div>{% endif %}
+                    <div class="mb-2"><strong>Téléphone :</strong> {{ student.godfather.phone_number }}</div>
+                    <div class="mb-2"><strong>Email :</strong> {{ student.godfather.email }}</div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -71,16 +130,26 @@
                         <tr>
                             <th>Niveau</th>
                             <th>Année académique</th>
+                            <th>Période</th>
+                            <th>Documents</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for sl in student.student_levels.all %}
+                        {% for sl in student_levels %}
                         <tr>
                             <td>{{ sl.level.name }}</td>
                             <td>{{ sl.academic_year.name }}</td>
+                            <td>{{ sl.academic_year.start_at|date:'d/m/Y' }} - {{ sl.academic_year.end_at|date:'d/m/Y' }}</td>
+                            <td>
+                                {% if sl.official_documents.all %}
+                                    <span class="badge bg-info">{{ sl.official_documents.count }} document(s)</span>
+                                {% else %}
+                                    <span class="text-muted">Aucun document</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="2" class="text-center text-muted">Aucun niveau enregistré</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted">Aucun niveau enregistré</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -88,4 +157,107 @@
         </div>
     </div>
 </div>
+
+<!-- Documents officiels -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-file-alt me-2"></i>Documents officiels</h4>
+
+            <!-- Statistiques des documents -->
+            {% if document_stats.total > 0 %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded">
+                        <h5 class="mb-1">{{ document_stats.total }}</h5>
+                        <small class="text-muted">Total</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-success text-white rounded">
+                        <h5 class="mb-1">{{ document_stats.available }}</h5>
+                        <small>Disponibles</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-warning text-white rounded">
+                        <h5 class="mb-1">{{ document_stats.withdrawn }}</h5>
+                        <small>Retirés</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-danger text-white rounded">
+                        <h5 class="mb-1">{{ document_stats.lost }}</h5>
+                        <small>Perdus</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Liste détaillée des documents -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Niveau</th>
+                            <th>Type de document</th>
+                            <th>Statut</th>
+                            <th>Date de retrait</th>
+                            <th>Date de création</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sl in student_levels %}
+                            {% for doc in sl.official_documents.all %}
+                            <tr>
+                                <td>{{ sl.level.name }} ({{ sl.academic_year.name }})</td>
+                                <td>{{ doc.get_type_display }}</td>
+                                <td>
+                                    {% if doc.status == 'available' %}
+                                        <span class="badge bg-success">{{ doc.get_status_display }}</span>
+                                    {% elif doc.status == 'withdrawn' %}
+                                        <span class="badge bg-warning">{{ doc.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ doc.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ doc.withdrawn_date|date:'d/m/Y'|default:'-' }}</td>
+                                <td>{{ doc.created_at|date:'d/m/Y' }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">Aucun document officiel enregistré</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boutons d'action -->
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex gap-2 mb-4">
+            <a href="{% url 'main:etudiants' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+            <a href="{% url 'main:etudiant_edit' pk=student.matricule %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Modifier
+            </a>
+            {% if user.is_scholar_admin %}
+            <form method="post" action="{% url 'main:generate_student_external_password' pk=student.matricule %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info" onclick="return confirm('Êtes-vous sûr de vouloir {% if student.has_external_password %}réinitialiser{% else %}générer{% endif %} le mot de passe externe pour cet étudiant ?')">
+                    <i class="fas fa-key me-2"></i>{% if student.has_external_password %}Réinitialiser{% else %}Générer{% endif %} mot de passe externe
+                </button>
+            </form>
+            {% endif %}
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print me-2"></i>Imprimer
+            </button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

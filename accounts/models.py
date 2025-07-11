@@ -38,9 +38,8 @@ class Godfather(models.Model):
     """
     Modèle pour les parrains/tuteurs
     """
-    user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='godfather_profile')
-    firstname = models.CharField(max_length=100)
-    lastname = models.CharField(max_length=100)
+    # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='godfather_profile')
+    full_name = models.CharField(max_length=200)
     occupation = models.CharField(max_length=200, blank=True, null=True)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField()
@@ -48,7 +47,7 @@ class Godfather(models.Model):
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
     def __str__(self):
-        return f"{self.firstname} {self.lastname}"
+        return self.full_name
 
     class Meta:
         verbose_name = "Parrain"

@@ -13,12 +13,60 @@
             <form method="get" class="mb-0">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label for="status">Status:</label>
+                        <label for="status">Statut:</label>
                         <select class="form-control" id="status" name="status">
                             <option value="">Tous</option>
                             <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>En attente</option>
                             <option value="abandoned" {% if request.GET.status == 'abandoned' %}selected{% endif %}>Abandonné</option>
                             <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejeté</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="gender">Genre:</label>
+                        <select class="form-control" id="gender" name="gender">
+                            <option value="">Tous</option>
+                            <option value="M" {% if request.GET.gender and request.GET.gender == 'M' %}selected{% endif %}>Masculin</option>
+                            <option value="F" {% if request.GET.gender and request.GET.gender == 'F' %}selected{% endif %}>Féminin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="program">Programme:</label>
+                        <select class="form-control" id="program" name="program">
+                            <option value="">Tous</option>
+                            {% for program in programs %}
+                            <option value="{{ program.pk }}"
+                            {% if request.GET.program == program.pk|stringformat:'s' %}selected{% endif %}>{{ program.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="language">Langue:</label>
+                        <select class="form-control" id="language" name="language">
+                            <option value="">Tous</option>
+                            <option value="fr" {% if request.GET.language and request.GET.language == 'fr' %}selected{% endif %}>Français</option>
+                            <option value="en" {% if request.GET.language and request.GET.language == 'en' %}selected{% endif %}>Anglais</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-3">
+                        <label for="godfather">Parrain:</label>
+                        <select class="form-control" id="godfather" name="godfather">
+                            <option value="">Tous</option>
+                            {% for godfather in godfathers %}
+                            <option value="{{ godfather.pk }}"
+                            {% if request.GET.godfather == godfather.pk|stringformat:'s' %}selected{% endif %}>{{ godfather.firstname }} {{ godfather.lastname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="school">École:</label>
+                        <select class="form-control" id="school" name="school">
+                            <option value="">Toutes</option>
+                            {% for school in schools %}
+                            <option value="{{ school.pk }}"
+                            {% if request.GET.school == school.pk|stringformat:'s' %}selected{% endif %}>{{ school.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -36,6 +84,27 @@
                     {% if request.GET.status %}
                         <li class="list-inline-item"><span class="badge badge-success text-uppercase">Statut : {{ request.GET.status }}</span></li>
                     {% endif %}
+                    {% if request.GET.gender %}
+                    <li class="list-inline-item"><span
+                        class="badge badge-info text-uppercase">Genre : {{ request.GET.gender }}</span></li>
+                    {% endif %}
+                    {% if request.GET.program %}
+                    <li class="list-inline-item"><span class="badge badge-secondary text-uppercase">Programme :
+                        {% for program in programs %}{% if program.pk|stringformat:'s' == request.GET.program %}
+                        {{ program.name }}{% endif %}{% endfor %}</span></li>
+                    {% endif %}
+                    {% if request.GET.language %}
+                    <li class="list-inline-item"><span class="badge badge-warning text-uppercase">Langue : {{ request.GET.language }}</span></li>
+                    {% endif %}
+                    {% if request.GET.godfather %}
+                    <li class="list-inline-item"><span class="badge badge-primary text-uppercase">Parrain :
+                        {% for godfather in godfathers %}{% if godfather.pk|stringformat:'s' == request.GET.godfather %}{{ godfather.firstname }} {{ godfather.lastname }}{% endif %}{% endfor %}</span></li>
+                    {% endif %}
+                    {% if request.GET.school %}
+                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">École :
+                        {% for school in schools %}{% if school.pk|stringformat:'s' == request.GET.school %}
+                        {{ school.name }}{% endif %}{% endfor %}</span></li>
+                    {% endif %}
                 </ul>
             </div>
             {% endif %}
@@ -47,8 +116,13 @@
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des inscriptions</h5>
-                <a href="{% url 'main:nouvelle_inscription' step=1 %}" class="btn btn-success"><i class="fas fa-plus me-2"></i>Nouvelle inscription</a>
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des inscriptions</h5>
+                    <small class="text-muted">{{ students|length }} inscription(s) trouvée(s)</small>
+                </div>
+                <a href="{% url 'main:nouvelle_inscription' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Nouvelle inscription
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover">
@@ -56,6 +130,7 @@
                         <tr>
                             <th>Matricule</th>
                             <th>Nom complet</th>
+                            <th>Genre</th>
                             <th>Programme</th>
                             <th>Date d'inscription</th>
                             <th>Statut</th>
@@ -64,7 +139,7 @@
                     </thead>
                     <tbody>
                         {% for student in students %}
-                            <tr>
+                            <tr {% if student.created_at|timesince|slice:":1" == "0" %}class="table-warning"{% endif %}>
                                 <td><strong>{{ student.matricule }}</strong></td>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -77,28 +152,71 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ student.program.name }}</td>
-                                <td>{{ student.date_naiss|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge {% if student.gender == 'M' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ student.get_gender_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if student.program %}
+                                        <span class="badge bg-info">{{ student.program.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non spécifié</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ student.created_at|date:"d/m/Y" }}
+                                    <br>
+                                    <small class="text-muted">{{ student.created_at|timesince }} ago</small>
+                                </td>
                                 <td>
                                     <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% endif %}">{{ student.get_status_display }}</span>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <button class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                        <a href="{% url 'main:inscription_detail' student.matricule %}" class="btn btn-sm btn-outline-primary" title="Voir détails">
                                             <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" title="Approuver">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" title="Rejeter">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                        </a>
+                                        {% if student.status == 'pending' %}
+                                            <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Approuver" onclick="return confirm('Approuver cette inscription ?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Rejeter" onclick="return confirm('Rejeter cette inscription ?')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        {% elif student.status == 'approved' %}
+                                            <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-sm btn-outline-info" title="Voir profil étudiant">
+                                                <i class="fas fa-user"></i>
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Légende -->
+            <div class="mt-3 p-3 bg-light rounded">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <strong>Légende :</strong>
+                    <span class="badge bg-warning text-dark ms-2">Inscription récente (moins de 24h)</span>
+                    <span class="ms-3">
+                        <i class="fas fa-eye text-primary me-1"></i> Voir détails
+                        <i class="fas fa-check text-success ms-2 me-1"></i> Approuver
+                        <i class="fas fa-times text-danger ms-2 me-1"></i> Rejeter
+                        <i class="fas fa-user text-info ms-2 me-1"></i> Profil étudiant
+                    </span>
+                </small>
             </div>
             <!-- Pagination -->
             <!-- <nav aria-label="Page navigation" class="mt-4">
@@ -246,6 +364,17 @@
         background: var(--primary-color);
         color: var(--text-color);
         box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .table-warning {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+        border-left: 4px solid #ffc107;
+    }
+
+    .bg-light {
+        background: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
     }
 </style>
 {% endblock %}

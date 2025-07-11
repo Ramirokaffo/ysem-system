@@ -1,0 +1,627 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'main:inscriptions' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux inscriptions
+                    </a>
+                </div>
+                <div>
+                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %} fs-6">
+                        {{ student.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations principales -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic p-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-user me-2"></i>
+                Informations personnelles
+            </h4>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Matricule</label>
+                    <div class="p-2 bg-light rounded">{{ student.matricule }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Nom complet</label>
+                    <div class="p-2 bg-light rounded">{{ student.firstname }} {{ student.lastname }}</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Date de naissance</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.date_naiss %}
+                            {{ student.date_naiss|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-muted">Non renseignée</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Genre</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.gender == 'M' %}
+                            <i class="fas fa-mars text-primary me-1"></i> Masculin
+                        {% elif student.gender == 'F' %}
+                            <i class="fas fa-venus text-danger me-1"></i> Féminin
+                        {% else %}
+                            <span class="text-muted">Non spécifié</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Téléphone</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.phone_number %}
+                            <i class="fas fa-phone me-1"></i> {{ student.phone_number }}
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.email %}
+                            <i class="fas fa-envelope me-1"></i> {{ student.email }}
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Langue</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.lang == 'fr' %}
+                            <i class="fas fa-flag me-1"></i> Français
+                        {% elif student.lang == 'en' %}
+                            <i class="fas fa-flag me-1"></i> Anglais
+                        {% else %}
+                            <span class="text-muted">Non spécifiée</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Date d'inscription</label>
+                    <div class="p-2 bg-light rounded">
+                        <i class="fas fa-calendar me-1"></i> {{ student.created_at|date:"d/m/Y à H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions et statut -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic p-4 mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-cogs me-2"></i>
+                Actions
+            </h5>
+            
+            {% if student.status == 'pending' %}
+                <div class="d-grid gap-2">
+                    <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
+                            <i class="fas fa-check me-2"></i>
+                            Approuver l'inscription
+                        </button>
+                    </form>
+                    
+                    <form method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir rejeter cette inscription ?')">
+                            <i class="fas fa-times me-2"></i>
+                            Rejeter l'inscription
+                        </button>
+                    </form>
+                </div>
+            {% elif student.status == 'approved' %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Inscription approuvée
+                </div>
+                <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-primary w-100">
+                    <i class="fas fa-user me-2"></i>
+                    Voir le profil étudiant
+                </a>
+            {% elif student.status == 'rejected' %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>
+                    Inscription rejetée
+                </div>
+                <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
+                        <i class="fas fa-redo me-2"></i>
+                        Réactiver l'inscription
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        
+        <!-- Informations système -->
+        <div class="card-neumorphic p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations système
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Statut actuel</label>
+                <div class="p-2 bg-light rounded">
+                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                        {{ student.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Créé le</label>
+                <div class="p-2 bg-light rounded">
+                    <small>{{ student.created_at|date:"d/m/Y à H:i" }}</small>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Dernière modification</label>
+                <div class="p-2 bg-light rounded">
+                    <small>{{ student.last_updated|date:"d/m/Y à H:i" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations académiques -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Informations académiques
+            </h4>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Programme</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.program %}
+                            <i class="fas fa-book me-2"></i>{{ student.program.name }}
+                        {% else %}
+                            <span class="text-muted">Non spécifié</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">École d'origine</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.school %}
+                            <i class="fas fa-school me-2"></i>{{ student.school.name }}
+                        {% else %}
+                            <span class="text-muted">Non spécifiée</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Parrain</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.godfather %}
+                            <div class="mb-2">
+                                <i class="fas fa-user-tie me-2"></i>{{ student.godfather.full_name }}
+                            </div>
+                            {% if student.godfather.occupation %}
+                            <div class="mb-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-briefcase me-1"></i>{{ student.godfather.occupation }}
+                                </small>
+                            </div>
+                            {% endif %}
+                            {% if student.godfather.phone_number %}
+                            <div class="mb-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-phone me-1"></i>{{ student.godfather.phone_number }}
+                                </small>
+                            </div>
+                            {% endif %}
+                            {% if student.godfather.email %}
+                            <div class="mb-1">
+                                <small class="text-muted">
+                                    <i class="fas fa-envelope me-1"></i>{{ student.godfather.email }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Aucun parrain</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Niveaux d'études -->
+{% if student.student_levels.all %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-layer-group me-2"></i>
+                Niveaux d'études
+            </h4>
+
+            {% for student_level in student.student_levels.all %}
+            <div class="row mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Niveau</label>
+                    <div class="p-2 bg-light rounded">
+                        <i class="fas fa-graduation-cap me-2"></i>{{ student_level.level.name }}
+                        {% if student_level.is_active %}
+                            <span class="badge bg-success ms-2">Actuel</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Année académique</label>
+                    <div class="p-2 bg-light rounded">
+                        <i class="fas fa-calendar me-2"></i>{{ student_level.academic_year.name }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Documents officiels</label>
+                    <div class="p-2 bg-light rounded">
+                        <i class="fas fa-file-alt me-2"></i>{{ student_level.official_documents.count }} document(s)
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Informations familiales -->
+{% if student.metadata %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-users me-2"></i>
+                Informations familiales
+            </h4>
+
+            <div class="row">
+                <!-- Informations sur la mère -->
+                <div class="col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-female me-2"></i>Informations sur la mère
+                    </h6>
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Nom complet</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.mother_full_name|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Ville de résidence</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.mother_live_city|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Profession</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.mother_occupation|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <div class="p-2 bg-light rounded">
+                                {% if student.metadata.mother_phone_number %}
+                                    <i class="fas fa-phone me-1"></i>{{ student.metadata.mother_phone_number }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Email</label>
+                            <div class="p-2 bg-light rounded">
+                                {% if student.metadata.mother_email %}
+                                    <i class="fas fa-envelope me-1"></i>{{ student.metadata.mother_email }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations sur le père -->
+                <div class="col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-male me-2"></i>Informations sur le père
+                    </h6>
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Nom complet</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.father_full_name|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Ville de résidence</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.father_live_city|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Profession</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.father_occupation|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <div class="p-2 bg-light rounded">
+                                {% if student.metadata.father_phone_number %}
+                                    <i class="fas fa-phone me-1"></i>{{ student.metadata.father_phone_number }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Email</label>
+                            <div class="p-2 bg-light rounded">
+                                {% if student.metadata.father_email %}
+                                    <i class="fas fa-envelope me-1"></i>{{ student.metadata.father_email }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations d'adresse -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Informations d'adresse
+            </h4>
+
+            <div class="row">
+                <!-- Adresse d'origine -->
+                <div class="col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-home me-2"></i>Adresse d'origine
+                    </h6>
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Pays</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.original_country|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Région</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.original_region|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Département</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.original_department|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">District</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.original_district|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse de résidence -->
+                <div class="col-md-6 mb-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-building me-2"></i>Adresse de résidence
+                    </h6>
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Ville</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.residence_city|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="form-label fw-bold">Quartier</label>
+                            <div class="p-2 bg-light rounded">
+                                {{ student.metadata.residence_quarter|default:"Non renseigné" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents d'inscription -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-folder-open me-2"></i>
+                Documents d'inscription
+            </h4>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Dossier complet</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.is_complete %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Complet
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Incomplet
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Acte de naissance</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.acte_naissance %}
+                            <a href="{{ student.metadata.acte_naissance.url }}" target="_blank" class="text-primary">
+                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Preuve du baccalauréat</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.preuve_baccalaureat %}
+                            <a href="{{ student.metadata.preuve_baccalaureat.url }}" target="_blank" class="text-primary">
+                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Relevé de notes du bac</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.releve_notes_bac %}
+                            <a href="{{ student.metadata.releve_notes_bac.url }}" target="_blank" class="text-primary">
+                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Bulletins de terminale</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.bulletins_terminale %}
+                            <a href="{{ student.metadata.bulletins_terminale.url }}" target="_blank" class="text-primary">
+                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-label {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bg-light {
+        background: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+    
+    .alert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    }
+    
+    .btn {
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        border: none;
+    }
+    
+    .btn:hover {
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+    
+    .badge {
+        border-radius: 20px;
+        padding: 0.5em 1em;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}

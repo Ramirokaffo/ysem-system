@@ -23,9 +23,9 @@ class StudentMetaDataAdmin(admin.ModelAdmin):
     """
     Administration pour le modèle StudentMetaData
     """
-    list_display = ['country', 'lang', 'residence_city', 'original_region']
-    list_filter = ['country', 'lang', 'original_region']
-    search_fields = ['country', 'residence_city', 'original_region']
+    list_display = ['original_country', 'residence_city', 'original_region']
+    list_filter = ['original_country', 'original_region']
+    search_fields = ['original_country', 'residence_city', 'original_region']
 
 @admin.register(OfficialDocument)
 class OfficialDocumentAdmin(admin.ModelAdmin):

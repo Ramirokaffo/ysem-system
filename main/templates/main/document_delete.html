@@ -1,0 +1,170 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8d7da;
+        border-bottom: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+    .btn-group {
+        gap: 0.5rem;
+    }
+    .document-info {
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    .info-row:last-child {
+        margin-bottom: 0;
+    }
+    .info-label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    .info-value {
+        color: #212529;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de page -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ page_title }}</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'main:documents' %}">Documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Supprimer document</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <!-- Confirmation de suppression -->
+    <div class="delete-container">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmation de suppression
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning" role="alert">
+                    <strong>Attention !</strong> Cette action est irréversible. Le document sera définitivement supprimé.
+                </div>
+
+                <p class="mb-3">
+                    Êtes-vous sûr de vouloir supprimer ce document officiel ?
+                </p>
+
+                <!-- Informations du document -->
+                <div class="document-info">
+                    <h6 class="mb-3">Informations du document :</h6>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Étudiant :</span>
+                        <span class="info-value">
+                            {{ document.student_level.student.matricule }} - 
+                            {{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Niveau :</span>
+                        <span class="info-value">
+                            {{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})
+                        </span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Type de document :</span>
+                        <span class="info-value">{{ document.get_type_display }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Statut :</span>
+                        <span class="info-value">
+                            {% if document.status == 'available' %}
+                                <span class="badge bg-success">{{ document.get_status_display }}</span>
+                            {% elif document.status == 'withdrawn' %}
+                                <span class="badge bg-warning">{{ document.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ document.get_status_display }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if document.withdrawn_date %}
+                    <div class="info-row">
+                        <span class="info-label">Date de retrait :</span>
+                        <span class="info-value">{{ document.withdrawn_date|date:"d/m/Y" }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-row">
+                        <span class="info-label">Date de création :</span>
+                        <span class="info-value">{{ document.created_at|date:"d/m/Y à H:i" }}</span>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Confirmer la suppression
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant suppression
+    const deleteForm = document.querySelector('form[method="post"]');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            if (!confirm('Êtes-vous vraiment sûr de vouloir supprimer ce document ? Cette action est irréversible.')) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

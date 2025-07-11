@@ -1,0 +1,373 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- En-tête de page -->
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-copy me-2"></i>
+                        {{ page_title }}
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 bg-transparent p-0">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'main:dashboard' %}" class="text-primary">
+                                    <i class="fas fa-home me-1"></i>Tableau de bord
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'main:documents' %}" class="text-primary">Documents</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Création en masse</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{% url 'main:documents' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire principal -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="text-center mb-4">
+                <h2 class="h4 mb-2">
+                    <i class="fas fa-copy me-2"></i>
+                    Création en masse de documents officiels
+                </h2>
+                <p class="text-muted mb-0">
+                    Créez des documents pour tous les étudiants correspondant aux critères sélectionnés
+                </p>
+            </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="far fa-thumbs-up me-2"></i>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                            <i class="fas fa-fire me-2"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% else %}
+                            <i class="far fa-bell me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" id="bulkForm" novalidate>
+                {% csrf_token %}
+
+                <div class="row">
+                    <!-- Type de document -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="{{ form.document_type.id_for_label }}" class="form-label">
+                                <i class="fas fa-file-alt me-2"></i>
+                                {{ form.document_type.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.document_type }}
+                            {% if form.document_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.document_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Type de document à créer pour tous les étudiants sélectionnés.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Année académique -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="{{ form.academic_year.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                {{ form.academic_year.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.academic_year }}
+                            {% if form.academic_year.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.academic_year.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Niveau -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="{{ form.level.id_for_label }}" class="form-label">
+                                <i class="fas fa-layer-group me-2"></i>
+                                {{ form.level.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.level }}
+                            {% if form.level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.level.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Programme -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="{{ form.program.id_for_label }}" class="form-label">
+                                <i class="fas fa-graduation-cap me-2"></i>
+                                {{ form.program.label }}
+                            </label>
+                            {{ form.program }}
+                            {% if form.program.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.program.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Laissez vide pour inclure tous les programmes.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statut initial -->
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="form-group">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                <i class="fas fa-flag me-2"></i>
+                                {{ form.status.label }}
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Statut initial des documents créés.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton de prévisualisation -->
+                <div class="text-center mb-4">
+                    <button type="button" id="previewBtn" class="btn btn-info px-5 py-3">
+                        <i class="fas fa-eye me-2"></i>
+                        Prévisualiser les étudiants concernés
+                    </button>
+                </div>
+
+                <!-- Section de prévisualisation -->
+                <div id="previewSection" style="display: none;">
+                    <div class="card-neumorphic mt-4">
+                        <div class="text-center mb-4">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>
+                                Étudiants concernés
+                            </h5>
+                        </div>
+                        <div id="previewStats" class="row mb-4"></div>
+                        <div id="previewContent" class="card-neumorphic p-3" style="max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <!-- Erreurs générales du formulaire -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-4" role="alert">
+                        <i class="fas fa-fire me-2"></i>
+                        <strong>Erreur!</strong>
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Boutons d'action -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'main:documents' %}" class="btn btn-secondary px-4 py-2">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success px-5 py-2" id="submitBtn" disabled>
+                                <i class="fas fa-plus me-2"></i>Créer les documents
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const previewBtn = document.getElementById('previewBtn');
+    const previewSection = document.getElementById('previewSection');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('bulkForm');
+    
+    previewBtn.addEventListener('click', function() {
+        // Vérifier que les champs requis sont remplis
+        const requiredFields = ['{{ form.document_type.id_for_label }}', '{{ form.academic_year.id_for_label }}', '{{ form.level.id_for_label }}'];
+        let allFilled = true;
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value) {
+                allFilled = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!allFilled) {
+            alert('Veuillez remplir tous les champs obligatoires avant la prévisualisation.');
+            return;
+        }
+        
+        // Afficher un indicateur de chargement
+        previewBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Chargement...';
+        previewBtn.disabled = true;
+        
+        // Envoyer la requête AJAX
+        const formData = new FormData(form);
+        
+        fetch('{% url "main:document_bulk_preview" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayPreview(data);
+                previewSection.style.display = 'block';
+                submitBtn.disabled = false;
+            } else {
+                alert('Erreur lors de la prévisualisation: ' + JSON.stringify(data.errors));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la prévisualisation');
+        })
+        .finally(() => {
+            previewBtn.innerHTML = '<i class="fas fa-eye me-2"></i>Prévisualiser les étudiants concernés';
+            previewBtn.disabled = false;
+        });
+    });
+    
+    function displayPreview(data) {
+        // Afficher les statistiques avec style neumorphism
+        const statsHtml = `
+            <div class="col-md-4 mb-3">
+                <div class="card-neumorphic text-center p-3">
+                    <h3 class="mb-1 text-muted">${data.total_count}</h3>
+                    <p class="text-muted mb-0">Total étudiants</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card-neumorphic text-center p-3">
+                    <h3 class="mb-1 text-success">${data.new_count}</h3>
+                    <p class="text-muted mb-0">Nouveaux documents</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card-neumorphic text-center p-3">
+                    <h3 class="mb-1 text-warning">${data.existing_count}</h3>
+                    <p class="text-muted mb-0">Déjà existants</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('previewStats').innerHTML = statsHtml;
+
+        // Afficher la liste des étudiants avec style neumorphism
+        let studentsHtml = '';
+        if (data.students.length > 0) {
+            data.students.forEach(student => {
+                studentsHtml += `
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-light rounded">
+                        <div>
+                            <strong>${student.matricule}</strong>
+                            <span class="text-muted">- ${student.firstname} ${student.lastname}</span>
+                        </div>
+                        <small class="text-muted">(${student.program})</small>
+                    </div>
+                `;
+            });
+
+            if (data.total_count > data.showing_count) {
+                studentsHtml += `
+                    <div class="text-center p-3 text-muted">
+                        <em>... et ${data.total_count - data.showing_count} autres étudiants</em>
+                    </div>
+                `;
+            }
+        } else {
+            studentsHtml += '<div class="text-center text-muted p-4"><i class="fas fa-users fa-2x mb-3 d-block"></i>Aucun étudiant trouvé avec ces critères</div>';
+        }
+
+        document.getElementById('previewContent').innerHTML = studentsHtml;
+    }
+    
+    // Confirmation avant soumission
+    form.addEventListener('submit', function(e) {
+        if (!confirm('Êtes-vous sûr de vouloir créer ces documents ? Cette action ne peut pas être annulée.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

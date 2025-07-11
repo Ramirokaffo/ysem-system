@@ -15,8 +15,9 @@ def active_academic_year(request):
             active_year = None
     else:
         try:
-            active_year = AcademicYear.objects.get(is_active=True)
-            request.session['active_academic_year_id'] = active_year.id
+            active_year = AcademicYear.objects.filter(is_active=True).first()
+            if active_year:
+                request.session['active_academic_year_id'] = active_year.id
         except AcademicYear.DoesNotExist:
             active_year = None
     return {'active_academic_year': active_year}

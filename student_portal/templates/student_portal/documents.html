@@ -1,0 +1,207 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Mes Documents - Portail Étudiant{% endblock %}
+
+{% block page_title %}Mes Documents{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mes Documents</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+<!-- Filters Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtres</h5>
+
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Statut</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="">Tous les statuts</option>
+                            <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Disponible</option>
+                            <option value="withdrawn" {% if status_filter == 'withdrawn' %}selected{% endif %}>Retiré</option>
+                            <option value="lost" {% if status_filter == 'lost' %}selected{% endif %}>Perdu</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="type" class="form-label">Type de document</label>
+                        <select name="type" id="type" class="form-control">
+                            <option value="">Tous les types</option>
+                            {% for doc_type in document_types %}
+                            <option value="{{ doc_type }}" {% if type_filter == doc_type %}selected{% endif %}>
+                                {% if doc_type == 'student_card' %}Carte d'étudiant
+                                {% elif doc_type == 'transcript' %}Relevé de notes
+                                {% elif doc_type == 'diploma' %}Diplôme
+                                {% elif doc_type == 'certificate' %}Certificat de scolarité
+                                {% else %}{{ doc_type }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="year" class="form-label">Année académique</label>
+                        <select name="year" id="year" class="form-control">
+                            <option value="">Toutes les années</option>
+                            {% for year in academic_years %}
+                            <option value="{{ year.id }}" {% if year_filter == year.id|stringformat:"s" %}selected{% endif %}>
+                                {{ year.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="per_page" class="form-label">Éléments par page</label>
+                        <select name="per_page" id="per_page" class="form-control">
+                            {% for choice in per_page_choices %}
+                            <option value="{{ choice }}" {% if per_page == choice %}selected{% endif %}>{{ choice }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-secondary me-2">
+                            <i class="fas fa-search me-2"></i>Filtrer
+                        </button>
+                        <a href="{% url 'student_portal:documents' %}" class="btn btn-primary">
+                            <i class="fas fa-times me-2"></i>Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Liste des documents</h5>
+                    <span class="badge badge-light">
+                        {{ page_obj.paginator.count }} document(s) trouvé(s)
+                    </span>
+                </div>
+
+                {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="fas fa-file me-2"></i>Type de document</th>
+                                <th><i class="fas fa-graduation-cap me-2"></i>Niveau</th>
+                                <th><i class="fas fa-calendar me-2"></i>Année académique</th>
+                                <th><i class="fas fa-info-circle me-2"></i>Statut</th>
+                                <th><i class="fas fa-clock me-2"></i>Date de création</th>
+                                <th><i class="fas fa-download me-2"></i>Date de retrait</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ document.get_type_display }}</div>
+                                </td>
+                                <td>{{ document.student_level.level.name }}</td>
+                                <td>{{ document.student_level.academic_year.name }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if document.status == 'available' %}badge-success
+                                        {% elif document.status == 'withdrawn' %}badge-info
+                                        {% else %}badge-warning{% endif %}">
+                                        {{ document.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ document.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if document.withdrawn_date %}
+                                        {{ document.withdrawn_date|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Navigation des documents" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}&per_page={{ per_page }}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}&per_page={{ per_page }}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}&per_page={{ per_page }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}&per_page={{ per_page }}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if year_filter %}&year={{ year_filter }}{% endif %}&per_page={{ per_page }}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun document trouvé</h5>
+                    <p class="text-muted mb-0">
+                        {% if status_filter or type_filter or year_filter %}
+                            Aucun document ne correspond aux critères de recherche.
+                        {% else %}
+                            Vous n'avez aucun document enregistré pour le moment.
+                        {% endif %}
+                    </p>
+                    {% if status_filter or type_filter or year_filter %}
+                    <a href="{% url 'student_portal:documents' %}" class="btn btn-outline-secondary mt-3">
+                        <i class="fas fa-times me-2"></i>Réinitialiser les filtres
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+{% endblock %}
