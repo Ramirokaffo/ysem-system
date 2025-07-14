@@ -1,0 +1,248 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-plus me-2"></i>
+                    {{ form_title }}
+                </h5>
+                <a href="{% url 'planification:schedules' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Erreurs de validation :</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informations générales
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }}
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.name.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    {{ form.description.label }}
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.description.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paramètres académiques -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-graduation-cap me-2"></i>
+                            Paramètres académiques
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.academic_year.id_for_label }}" class="form-label">
+                                    {{ form.academic_year.label }}
+                                </label>
+                                {{ form.academic_year }}
+                                {% if form.academic_year.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.academic_year.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">
+                                    {{ form.level.label }}
+                                </label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.level.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Période et durée -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-calendar-week me-2"></i>
+                            Période et durée
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                    {{ form.start_date.label }}
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.start_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                    {{ form.end_date.label }}
+                                </label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.end_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.duration_type.id_for_label }}" class="form-label">
+                                    {{ form.duration_type.label }}
+                                </label>
+                                {{ form.duration_type }}
+                                {% if form.duration_type.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.duration_type.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'planification:schedules' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Aide contextuelle -->
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                Aide
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Informations générales</h6>
+                    <ul class="small text-muted">
+                        <li><strong>Nom :</strong> Donnez un nom descriptif à votre emploi du temps</li>
+                        <li><strong>Description :</strong> Ajoutez des détails sur cet emploi du temps (optionnel)</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-primary">Paramètres</h6>
+                    <ul class="small text-muted">
+                        <li><strong>Année académique :</strong> Sélectionnez l'année académique concernée</li>
+                        <li><strong>Niveau :</strong> Choisissez le niveau d'études</li>
+                        <li><strong>Période :</strong> Définissez la période de validité de l'emploi du temps</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calcul de la durée
+    const startDateInput = document.getElementById('{{ form.start_date.id_for_label }}');
+    const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
+    const durationTypeSelect = document.getElementById('{{ form.duration_type.id_for_label }}');
+    
+    function updateDuration() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && endDate > startDate) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffMonths = Math.round(diffDays / 30);
+            
+            // Suggérer le type de durée approprié
+            if (diffDays <= 35) {
+                durationTypeSelect.value = '1_month';
+            } else if (diffDays <= 100) {
+                durationTypeSelect.value = '3_months';
+            } else if (diffDays <= 200) {
+                durationTypeSelect.value = '6_months';
+            } else {
+                durationTypeSelect.value = '1_year';
+            }
+        }
+    }
+    
+    startDateInput.addEventListener('change', updateDuration);
+    endDateInput.addEventListener('change', updateDuration);
+});
+</script>
+{% endblock %}

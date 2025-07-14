@@ -1,0 +1,231 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Séances de Cours - YSEM{% endblock %}
+
+{% block page_title %}Séances de Cours{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Séances de cours
+                </h5>
+                <a href="{% url 'planification:session_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Programmer une séance
+                </a>
+            </div>
+
+            <!-- Filters -->
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="form-group">
+                            <label for="search" class="form-label">Rechercher</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search }}" placeholder="Cours, enseignant, salle...">
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="form-group">
+                            <label for="status" class="form-label">Statut</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">Tous</option>
+                                {% for value, label in session_statuses %}
+                                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="form-group">
+                            <label for="level" class="form-label">Niveau</label>
+                            <select class="form-control" id="level" name="level">
+                                <option value="">Tous</option>
+                                {% for l in levels %}
+                                    <option value="{{ l.id }}" {% if level == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-group">
+                            <label for="academic_year" class="form-label">Année académique</label>
+                            <select class="form-control" id="academic_year" name="academic_year">
+                                <option value="">Toutes</option>
+                                {% for year in academic_years %}
+                                    <option value="{{ year.id }}" {% if academic_year == year.id|stringformat:"s" %}selected{% endif %}>{{ year.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-1"></i>
+                                    Filtrer
+                                </button>
+                                <a href="{% url 'planification:sessions' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>
+                                    Effacer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Sessions Table -->
+            {% if sessions %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Heure</th>
+                                <th>Cours</th>
+                                <th>Enseignant</th>
+                                <th>Salle</th>
+                                <th>Niveau</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ session.date|date:"d/m/Y" }}</strong>
+                                    <br><small class="text-muted">{{ session.date|date:"l" }}</small>
+                                </td>
+                                <td>
+                                    {{ session.time_slot.start_time|time:"H:i" }} - {{ session.time_slot.end_time|time:"H:i" }}
+                                    <br><small class="text-muted">{{ session.duration_hours }}h</small>
+                                </td>
+                                <td>
+                                    <strong>{{ session.course.label }}</strong>
+                                    {% if session.topic %}
+                                        <br><small class="text-muted">{{ session.topic }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</td>
+                                <td>
+                                    <span class="badge badge-info">{{ session.classroom.code }}</span>
+                                    <br><small>{{ session.classroom.name }}</small>
+                                </td>
+                                <td>{{ session.level.name }}</td>
+                                <td>
+                                    <span class="badge badge-secondary">{{ session.get_session_type_display }}</span>
+                                </td>
+                                <td>
+                                    {% if session.status == 'scheduled' %}
+                                        <span class="badge badge-primary">{{ session.get_status_display }}</span>
+                                    {% elif session.status == 'ongoing' %}
+                                        <span class="badge badge-warning">{{ session.get_status_display }}</span>
+                                    {% elif session.status == 'completed' %}
+                                        <span class="badge badge-success">{{ session.get_status_display }}</span>
+                                    {% elif session.status == 'cancelled' %}
+                                        <span class="badge badge-danger">{{ session.get_status_display }}</span>
+                                    {% elif session.status == 'postponed' %}
+                                        <span class="badge badge-info">{{ session.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'planification:session_detail' session.pk %}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'planification:session_update' session.pk %}"
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'planification:session_delete' session.pk %}"
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Navigation des pages">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if level %}&level={{ level }}{% endif %}{% if academic_year %}&academic_year={{ academic_year }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if level %}&level={{ level }}{% endif %}{% if academic_year %}&academic_year={{ academic_year }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if level %}&level={{ level }}{% endif %}{% if academic_year %}&academic_year={{ academic_year }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if level %}&level={{ level }}{% endif %}{% if academic_year %}&academic_year={{ academic_year }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if level %}&level={{ level }}{% endif %}{% if academic_year %}&academic_year={{ academic_year }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune séance trouvée</h5>
+                    <p class="text-muted">
+                        {% if search or status or level or academic_year %}
+                            Aucune séance ne correspond à vos critères de recherche.
+                        {% else %}
+                            Commencez par programmer des séances de cours.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'planification:session_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Programmer une séance
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

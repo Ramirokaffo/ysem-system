@@ -1,0 +1,316 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ form_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    {{ form_title }}
+                </h5>
+                <a href="{% if is_update %}{% url 'planification:lecturer_detail' matricule=object.matricule %}{% else %}{% url 'planification:lecturers' %}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Annuler
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-user me-2"></i>
+                        Informations personnelles
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.matricule.label_tag }}
+                                {{ form.matricule }}
+                                {% if form.matricule.help_text %}
+                                    <small class="form-text text-muted">{{ form.matricule.help_text }}</small>
+                                {% endif %}
+                                {% if form.matricule.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.matricule.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.grade.label_tag }}
+                                {{ form.grade }}
+                                {% if form.grade.help_text %}
+                                    <small class="form-text text-muted">{{ form.grade.help_text }}</small>
+                                {% endif %}
+                                {% if form.grade.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.grade.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.firstname.label_tag }}
+                                {{ form.firstname }}
+                                {% if form.firstname.help_text %}
+                                    <small class="form-text text-muted">{{ form.firstname.help_text }}</small>
+                                {% endif %}
+                                {% if form.firstname.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.firstname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.lastname.label_tag }}
+                                {{ form.lastname }}
+                                {% if form.lastname.help_text %}
+                                    <small class="form-text text-muted">{{ form.lastname.help_text }}</small>
+                                {% endif %}
+                                {% if form.lastname.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.lastname.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.date_naiss.label_tag }}
+                                {{ form.date_naiss }}
+                                {% if form.date_naiss.help_text %}
+                                    <small class="form-text text-muted">{{ form.date_naiss.help_text }}</small>
+                                {% endif %}
+                                {% if form.date_naiss.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.date_naiss.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.gender.label_tag }}
+                                {{ form.gender }}
+                                {% if form.gender.help_text %}
+                                    <small class="form-text text-muted">{{ form.gender.help_text }}</small>
+                                {% endif %}
+                                {% if form.gender.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.gender.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="form-group">
+                                {{ form.lang.label_tag }}
+                                {{ form.lang }}
+                                {% if form.lang.help_text %}
+                                    <small class="form-text text-muted">{{ form.lang.help_text }}</small>
+                                {% endif %}
+                                {% if form.lang.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.lang.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-address-book me-2"></i>
+                        Informations de contact
+                    </h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.help_text %}
+                                    <small class="form-text text-muted">{{ form.email.help_text }}</small>
+                                {% endif %}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-group">
+                                {{ form.phone_number.label_tag }}
+                                {{ form.phone_number }}
+                                {% if form.phone_number.help_text %}
+                                    <small class="form-text text-muted">{{ form.phone_number.help_text }}</small>
+                                {% endif %}
+                                {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.phone_number.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Submit Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% if is_update %}{% url 'planification:lecturer_detail' matricule=object.matricule %}{% else %}{% url 'planification:lecturers' %}{% endif %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-10">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                Aide pour remplir le formulaire
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Matricule :</strong> Identifiant unique (lettres et chiffres uniquement)
+                        </li>
+                        <li class="mb-2">
+                            <strong>Grade :</strong> Titre académique ou professionnel
+                        </li>
+                        <li class="mb-2">
+                            <strong>Date de naissance :</strong> Format JJ/MM/AAAA
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Email :</strong> Adresse email professionnelle (optionnel)
+                        </li>
+                        <li class="mb-2">
+                            <strong>Téléphone :</strong> Numéro avec indicatif pays (optionnel)
+                        </li>
+                        <li class="mb-2">
+                            <strong>Langue :</strong> Langue de préférence pour les communications
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format matricule field to uppercase
+    const matriculeField = document.getElementById('id_matricule');
+    if (matriculeField) {
+        matriculeField.addEventListener('input', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    }
+    
+    // Auto-format names
+    const firstnameField = document.getElementById('id_firstname');
+    const lastnameField = document.getElementById('id_lastname');
+    
+    if (firstnameField) {
+        firstnameField.addEventListener('blur', function() {
+            this.value = this.value.trim().replace(/\b\w/g, l => l.toUpperCase());
+        });
+    }
+    
+    if (lastnameField) {
+        lastnameField.addEventListener('blur', function() {
+            this.value = this.value.trim().toUpperCase();
+        });
+    }
+    
+    // Email validation
+    const emailField = document.getElementById('id_email');
+    if (emailField) {
+        emailField.addEventListener('blur', function() {
+            this.value = this.value.trim().toLowerCase();
+        });
+    }
+    
+    // Phone number formatting
+    const phoneField = document.getElementById('id_phone_number');
+    if (phoneField) {
+        phoneField.addEventListener('input', function() {
+            // Remove all non-digit characters except + and spaces
+            let value = this.value.replace(/[^\d\+\s\-\(\)]/g, '');
+            this.value = value;
+        });
+    }
+});
+</script>
+{% endblock %}

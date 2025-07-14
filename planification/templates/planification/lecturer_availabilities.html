@@ -1,0 +1,242 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Disponibilités des enseignants - YSEM{% endblock %}
+
+{% block page_title %}Disponibilités des enseignants{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-clock me-2"></i>
+                    Disponibilités des enseignants
+                </h5>
+                <a href="{% url 'planification:lecturer_availability_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Ajouter une disponibilité
+                </a>
+            </div>
+
+            <!-- Filtres -->
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ current_filters.search }}"
+                               class="form-control" 
+                               placeholder="Rechercher un enseignant...">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-control">
+                            <option value="">Tous les statuts</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="lecturer" class="form-control">
+                            <option value="">Tous les enseignants</option>
+                            {% for lecturer in lecturers %}
+                                <option value="{{ lecturer.matricule }}" {% if current_filters.lecturer == lecturer.matricule %}selected{% endif %}>
+                                    {{ lecturer.firstname }} {{ lecturer.lastname }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="academic_year" class="form-control">
+                            <option value="">Toutes les années</option>
+                            {% for year in academic_years %}
+                                <option value="{{ year.id }}" {% if current_filters.academic_year == year.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ year.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search me-2"></i>
+                            Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Liste des disponibilités -->
+            {% if availabilities %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Enseignant</th>
+                                <th>Créneau</th>
+                                <th>Année académique</th>
+                                <th>Statut</th>
+                                <th>Période</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for availability in availabilities %}
+                            <tr>
+                                <td>
+                                    <strong>{{ availability.lecturer.firstname }} {{ availability.lecturer.lastname }}</strong>
+                                    <br><small class="text-muted">{{ availability.lecturer.matricule }} - {{ availability.lecturer.grade }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ availability.time_slot.get_day_of_week_display }}</strong>
+                                    <br>{{ availability.time_slot.start_time|time:"H:i" }} - {{ availability.time_slot.end_time|time:"H:i" }}
+                                    <br><small class="text-muted">{{ availability.time_slot.name }}</small>
+                                </td>
+                                <td>{{ availability.academic_year.name }}</td>
+                                <td>
+                                    {% if availability.status == 'available' %}
+                                        <span class="badge bg-success">{{ availability.get_status_display }}</span>
+                                    {% elif availability.status == 'preferred' %}
+                                        <span class="badge bg-info">{{ availability.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ availability.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if availability.start_date and availability.end_date %}
+                                        {{ availability.start_date|date:"d/m/Y" }} - {{ availability.end_date|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Toute l'année</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if availability.notes %}
+                                        {{ availability.notes|truncatechars:50 }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-secondary" 
+                                                title="Modifier"
+                                                onclick="editAvailability({{ availability.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                title="Supprimer"
+                                                onclick="deleteAvailability({{ availability.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <nav aria-label="Navigation des pages">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.lecturer %}&lecturer={{ request.GET.lecturer }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.lecturer %}&lecturer={{ request.GET.lecturer }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.lecturer %}&lecturer={{ request.GET.lecturer }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.lecturer %}&lecturer={{ request.GET.lecturer }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune disponibilité trouvée</h5>
+                    <p class="text-muted">
+                        {% if current_filters.search or current_filters.status or current_filters.lecturer or current_filters.academic_year %}
+                            Aucune disponibilité ne correspond à vos critères de recherche.
+                        {% else %}
+                            Commencez par configurer les disponibilités des enseignants.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'planification:lecturer_availability_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter une disponibilité
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Aide contextuelle -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-info-circle me-2"></i>
+                À propos des disponibilités
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="text-success">Disponible</h6>
+                    <p class="small text-muted">L'enseignant est disponible pour ce créneau</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-info">Préféré</h6>
+                    <p class="small text-muted">L'enseignant préfère ce créneau (priorité lors de la génération)</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-danger">Indisponible</h6>
+                    <p class="small text-muted">L'enseignant n'est pas disponible pour ce créneau</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editAvailability(id) {
+    // TODO: Implémenter la modification en modal ou redirection
+    alert('Fonctionnalité de modification à implémenter');
+}
+
+function deleteAvailability(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
+        // TODO: Implémenter la suppression
+        alert('Fonctionnalité de suppression à implémenter');
+    }
+}
+</script>
+{% endblock %}

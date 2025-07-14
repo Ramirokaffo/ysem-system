@@ -1,0 +1,271 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    {{ form_title }}
+                </h5>
+                <a href="{% url 'planification:time_slots' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Erreurs de validation :</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informations générales
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }}
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.name.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.name.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.day_of_week.id_for_label }}" class="form-label">
+                                    {{ form.day_of_week.label }}
+                                </label>
+                                {{ form.day_of_week }}
+                                {% if form.day_of_week.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.day_of_week.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.day_of_week.help_text }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horaires -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-clock me-2"></i>
+                            Horaires du créneau
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                                    {{ form.start_time.label }}
+                                </label>
+                                {{ form.start_time }}
+                                {% if form.start_time.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.start_time.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.start_time.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                                    {{ form.end_time.label }}
+                                </label>
+                                {{ form.end_time }}
+                                {% if form.end_time.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.end_time.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.end_time.help_text }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Affichage de la durée calculée -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-info" id="duration-info" style="display: none;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Durée du créneau :</strong> <span id="duration-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-toggle-on me-2"></i>
+                            Statut du créneau
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-check">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        {{ form.is_active.label }}
+                                    </label>
+                                </div>
+                                {% if form.is_active.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.is_active.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">{{ form.is_active.help_text }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'planification:time_slots' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Aide contextuelle -->
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                Guide de création de créneaux horaires
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="text-primary">Bonnes pratiques</h6>
+                    <ul class="small text-muted">
+                        <li>Utilisez des noms descriptifs (ex: "Matin 1", "Après-midi 2")</li>
+                        <li>Respectez les horaires standards de l'établissement</li>
+                        <li>Prévoyez des pauses entre les créneaux</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-primary">Contraintes</h6>
+                    <ul class="small text-muted">
+                        <li>Durée minimale : 30 minutes</li>
+                        <li>Durée maximale : 8 heures</li>
+                        <li>Pas de chevauchement d'horaires</li>
+                        <li>Heure de fin > heure de début</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-primary">Utilisation</h6>
+                    <ul class="small text-muted">
+                        <li>Les créneaux actifs apparaissent dans la planification</li>
+                        <li>Les enseignants définissent leurs disponibilités</li>
+                        <li>Utilisés pour la génération automatique d'emplois du temps</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
+    const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
+    const durationInfo = document.getElementById('duration-info');
+    const durationText = document.getElementById('duration-text');
+    
+    function calculateDuration() {
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+        
+        if (startTime && endTime) {
+            const start = new Date('2000-01-01 ' + startTime);
+            const end = new Date('2000-01-01 ' + endTime);
+            
+            if (end > start) {
+                const diffMs = end - start;
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                let durationStr = '';
+                if (diffHours > 0) {
+                    durationStr += diffHours + 'h';
+                }
+                if (diffMinutes > 0) {
+                    if (durationStr) durationStr += ' ';
+                    durationStr += diffMinutes + 'min';
+                }
+                
+                durationText.textContent = durationStr;
+                durationInfo.style.display = 'block';
+                
+                // Validation
+                if (diffMs < 30 * 60 * 1000) { // Moins de 30 minutes
+                    durationInfo.className = 'alert alert-warning';
+                    durationText.textContent += ' (Durée trop courte - minimum 30 minutes)';
+                } else if (diffMs > 8 * 60 * 60 * 1000) { // Plus de 8 heures
+                    durationInfo.className = 'alert alert-warning';
+                    durationText.textContent += ' (Durée trop longue - maximum 8 heures)';
+                } else {
+                    durationInfo.className = 'alert alert-info';
+                }
+            } else {
+                durationInfo.style.display = 'none';
+            }
+        } else {
+            durationInfo.style.display = 'none';
+        }
+    }
+    
+    startTimeInput.addEventListener('change', calculateDuration);
+    endTimeInput.addEventListener('change', calculateDuration);
+    
+    // Calcul initial si les champs sont pré-remplis
+    calculateDuration();
+});
+</script>
+{% endblock %}

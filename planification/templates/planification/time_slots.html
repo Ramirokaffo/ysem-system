@@ -1,0 +1,235 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Créneaux Horaires - YSEM{% endblock %}
+
+{% block page_title %}Créneaux Horaires{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Créneaux horaires
+                </h5>
+                <a href="{% url 'planification:time_slot_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Ajouter un créneau
+                </a>
+            </div>
+
+            <!-- Filtres -->
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        {{ search_form.search }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ search_form.day_of_week }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ search_form.status }}
+                    </div>
+                    <div class="col-md-3">
+                        {{ search_form.time_period }}
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search me-2"></i>
+                            Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Time Slots Table -->
+            {% if time_slots %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Jour</th>
+                                <th>Horaires</th>
+                                <th>Durée</th>
+                                <th>Statut</th>
+                                <th>Utilisation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slot in time_slots %}
+                            <tr>
+                                <td>
+                                    <strong>{{ slot.name }}</strong>
+                                </td>
+                                <td>{{ slot.get_day_of_week_display }}</td>
+                                <td>
+                                    <strong>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</strong>
+                                </td>
+                                <td>
+                                    {{ slot.duration_hours }}h
+                                </td>
+                                <td>
+                                    {% if slot.is_active %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ slot.sessions.count }} séance{{ slot.sessions.count|pluralize }}
+                                        <br>{{ slot.lecturer_availabilities.count }} disponibilité{{ slot.lecturer_availabilities.count|pluralize }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'planification:time_slot_detail' slot.pk %}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'planification:time_slot_update' slot.pk %}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'planification:time_slot_delete' slot.pk %}"
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun créneau horaire défini</h5>
+                    <p class="text-muted">Commencez par définir les créneaux horaires pour organiser les cours.</p>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter un créneau
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Schedule Overview -->
+{% if time_slots %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-week me-2"></i>
+                Vue d'ensemble hebdomadaire
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Heure</th>
+                            <th>Lundi</th>
+                            <th>Mardi</th>
+                            <th>Mercredi</th>
+                            <th>Jeudi</th>
+                            <th>Vendredi</th>
+                            <th>Samedi</th>
+                            <th>Dimanche</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% regroup time_slots by start_time as time_groups %}
+                        {% for time_group in time_groups %}
+                        <tr>
+                            <td class="fw-bold">{{ time_group.grouper|time:"H:i" }}</td>
+                            <!-- Lundi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "monday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Mardi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "tuesday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Mercredi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "wednesday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Jeudi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "thursday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Vendredi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "friday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Samedi -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "saturday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <!-- Dimanche -->
+                            <td>
+                                {% for slot in time_group.list %}
+                                    {% if slot.day_of_week == "sunday" and slot.is_active %}
+                                        <div class="badge badge-primary mb-1">
+                                            {{ slot.name }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

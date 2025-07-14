@@ -25,6 +25,7 @@ class StudentPortalSecurityMiddleware:
             '/document/',
             '/inscription/',
             '/teach/',
+            '/planning/',
         ]
     
     def __call__(self, request):

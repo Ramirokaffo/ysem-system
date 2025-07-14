@@ -1,0 +1,275 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-clock me-2"></i>
+                    {{ form_title }}
+                </h5>
+                <a href="{% url 'planification:lecturer_availabilities' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Erreurs de validation :</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- Sélection de l'enseignant et du créneau -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-user-cog me-2"></i>
+                            Enseignant et créneau
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.lecturer.id_for_label }}" class="form-label">
+                                    {{ form.lecturer.label }}
+                                </label>
+                                {{ form.lecturer }}
+                                {% if form.lecturer.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.lecturer.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.time_slot.id_for_label }}" class="form-label">
+                                    {{ form.time_slot.label }}
+                                </label>
+                                {{ form.time_slot }}
+                                {% if form.time_slot.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.time_slot.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paramètres de disponibilité -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-cogs me-2"></i>
+                            Paramètres de disponibilité
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.academic_year.id_for_label }}" class="form-label">
+                                    {{ form.academic_year.label }}
+                                </label>
+                                {{ form.academic_year }}
+                                {% if form.academic_year.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.academic_year.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    {{ form.status.label }}
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.status.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Période spécifique (optionnel) -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-calendar-week me-2"></i>
+                            Période spécifique (optionnel)
+                        </h6>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Si vous ne spécifiez pas de dates, la disponibilité s'appliquera à toute l'année académique.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                                    {{ form.start_date.label }}
+                                </label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.start_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">
+                                    {{ form.end_date.label }}
+                                </label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.end_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-md-12 mb-4">
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            Notes additionnelles
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                    {{ form.notes.label }}
+                                </label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.notes.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'planification:lecturer_availabilities' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Aide contextuelle -->
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                Guide des statuts de disponibilité
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="text-success">Disponible</h6>
+                    <p class="small text-muted">
+                        L'enseignant peut être assigné à ce créneau lors de la génération automatique d'emploi du temps.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-info">Préféré</h6>
+                    <p class="small text-muted">
+                        L'enseignant préfère ce créneau. Il sera prioritaire lors de la génération automatique.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-danger">Indisponible</h6>
+                    <p class="small text-muted">
+                        L'enseignant ne peut pas être assigné à ce créneau (conflit d'horaire, congé, etc.).
+                    </p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <h6 class="text-primary">Conseils</h6>
+            <ul class="small text-muted">
+                <li>Configurez les disponibilités avant de générer un emploi du temps automatiquement</li>
+                <li>Utilisez le statut "Préféré" pour optimiser l'attribution des créneaux</li>
+                <li>Les périodes spécifiques permettent de gérer les congés ou absences temporaires</li>
+                <li>Les notes peuvent contenir des informations importantes pour la planification</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation côté client pour les dates
+    const startDateInput = document.getElementById('{{ form.start_date.id_for_label }}');
+    const endDateInput = document.getElementById('{{ form.end_date.id_for_label }}');
+    
+    function validateDates() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && endDate <= startDate) {
+            endDateInput.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            endDateInput.setCustomValidity('');
+        }
+    }
+    
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener('change', validateDates);
+        endDateInput.addEventListener('change', validateDates);
+    }
+    
+    // Mise à jour dynamique des informations sur le statut
+    const statusSelect = document.getElementById('{{ form.status.id_for_label }}');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            // Vous pouvez ajouter ici une logique pour afficher des informations contextuelles
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -77,5 +77,39 @@ def no_student_portal_access(view_func):
                 "Accès interdit. Les étudiants ne peuvent pas accéder à cette page."
             )
         return view_func(request, *args, **kwargs)
-    
+
+    return wrapper
+
+
+def planning_admin_required(view_func):
+    """
+    Décorateur pour s'assurer qu'un utilisateur est un responsable de planification
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        # Vérifier si c'est un étudiant connecté au portail
+        if request.session.get('student_authenticated'):
+            messages.error(
+                request,
+                "Accès interdit. Cette page est réservée aux responsables de planification."
+            )
+            return redirect('student_portal:dashboard')
+
+        # Vérifier si l'utilisateur est connecté et est un responsable de planification
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Vous devez vous connecter pour accéder à cette page."
+            )
+            return redirect('authentication:login')
+
+        if not request.user.is_planning_admin():
+            messages.error(
+                request,
+                "Accès interdit. Cette page est réservée aux responsables de planification."
+            )
+            return redirect('main:dashboard')
+
+        return view_func(request, *args, **kwargs)
+
     return wrapper

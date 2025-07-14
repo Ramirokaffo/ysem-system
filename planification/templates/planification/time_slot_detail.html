@@ -1,0 +1,261 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<!-- En-tête avec informations principales -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h5 class="mb-2">
+                        <i class="fas fa-clock me-2"></i>
+                        {{ time_slot.name }}
+                    </h5>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="badge bg-primary">{{ time_slot.get_day_of_week_display }}</span>
+                        <span class="badge bg-info">{{ time_slot.start_time|time:"H:i" }} - {{ time_slot.end_time|time:"H:i" }}</span>
+                        <span class="badge bg-secondary">{{ time_slot.duration_hours }}h</span>
+                        {% if time_slot.is_active %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-warning">Inactif</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'planification:time_slots' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                    <a href="{% url 'planification:time_slot_update' time_slot.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations détaillées -->
+            <div class="row">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Jour de la semaine</h6>
+                    <p class="mb-0">
+                        <strong>{{ time_slot.get_day_of_week_display }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Horaires</h6>
+                    <p class="mb-0">
+                        <strong>{{ time_slot.start_time|time:"H:i" }} - {{ time_slot.end_time|time:"H:i" }}</strong>
+                        <br><small class="text-muted">Durée : {{ time_slot.duration_hours }}h</small>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Créé le</h6>
+                    <p class="mb-0">
+                        <strong>{{ time_slot.created_at|date:"d/m/Y à H:i" }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Dernière modification</h6>
+                    <p class="mb-0">
+                        <strong>{{ time_slot.last_updated|date:"d/m/Y à H:i" }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques d'utilisation -->
+{% if usage_stats %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon primary mb-3">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h4 class="mb-1">{{ usage_stats.total_sessions }}</h4>
+            <p class="text-muted mb-0">Séances totales</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon success mb-3">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h4 class="mb-1">{{ usage_stats.scheduled_sessions }}</h4>
+            <p class="text-muted mb-0">Séances programmées</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon info mb-3">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h4 class="mb-1">{{ usage_stats.completed_sessions }}</h4>
+            <p class="text-muted mb-0">Séances terminées</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon warning mb-3">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h4 class="mb-1">{{ usage_stats.cancelled_sessions }}</h4>
+            <p class="text-muted mb-0">Séances annulées</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Prochaines séances -->
+    <div class="col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-calendar-plus me-2"></i>
+                Prochaines séances
+            </h6>
+            
+            {% if upcoming_sessions %}
+                <div class="list-group list-group-flush">
+                    {% for session in upcoming_sessions %}
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ session.course.label }}</h6>
+                                    <p class="mb-1 text-muted">{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</p>
+                                    <small class="text-muted">{{ session.classroom.name }}</small>
+                                </div>
+                                <small class="text-muted">{{ session.date|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Aucune séance programmée</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Disponibilités des enseignants -->
+    <div class="col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-user-clock me-2"></i>
+                Disponibilités des enseignants
+            </h6>
+            
+            {% if lecturer_availabilities %}
+                <div class="list-group list-group-flush">
+                    {% for availability in lecturer_availabilities %}
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ availability.lecturer.firstname }} {{ availability.lecturer.lastname }}</h6>
+                                    <small class="text-muted">{{ availability.lecturer.grade }}</small>
+                                </div>
+                                <div>
+                                    {% if availability.status == 'available' %}
+                                        <span class="badge bg-success">{{ availability.get_status_display }}</span>
+                                    {% elif availability.status == 'preferred' %}
+                                        <span class="badge bg-info">{{ availability.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ availability.get_status_display }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'planification:lecturer_availabilities' %}?time_slot={{ time_slot.id }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>
+                        Voir toutes les disponibilités
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-user-times fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Aucune disponibilité configurée</p>
+                    <a href="{% url 'planification:lecturer_availability_create' %}?time_slot={{ time_slot.id }}" 
+                       class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter une disponibilité
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h6>
+            
+            <div class="row">
+                <div class="col-md-3 mb-2">
+                    <a href="{% url 'planification:sessions' %}?time_slot={{ time_slot.id }}" 
+                       class="btn btn-outline-primary w-100">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Voir les séances
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{% url 'planification:lecturer_availabilities' %}?time_slot={{ time_slot.id }}" 
+                       class="btn btn-outline-info w-100">
+                        <i class="fas fa-user-clock me-2"></i>
+                        Gérer les disponibilités
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <a href="{% url 'planification:time_slot_update' time_slot.pk %}" 
+                       class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier le créneau
+                    </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                    {% if time_slot.is_active %}
+                        <button class="btn btn-outline-warning w-100" onclick="toggleTimeSlotStatus({{ time_slot.pk }}, false)">
+                            <i class="fas fa-pause me-2"></i>
+                            Désactiver
+                        </button>
+                    {% else %}
+                        <button class="btn btn-outline-success w-100" onclick="toggleTimeSlotStatus({{ time_slot.pk }}, true)">
+                            <i class="fas fa-play me-2"></i>
+                            Activer
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleTimeSlotStatus(timeSlotId, isActive) {
+    const action = isActive ? 'activer' : 'désactiver';
+    if (confirm(`Êtes-vous sûr de vouloir ${action} ce créneau horaire ?`)) {
+        // TODO: Implémenter l'activation/désactivation via AJAX
+        alert(`Fonctionnalité d'${action} à implémenter`);
+    }
+}
+</script>
+{% endblock %}

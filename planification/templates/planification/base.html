@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Dashboard Planification - YSEM{% endblock %}</title>
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link type="text/css" href="{% static 'main/css/base.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/navigation.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'main/css/alerts.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header card-neumorphic d-flex justify-content-between align-items-center p-3 ml-4 mr-4 mb-2 rounded-top rounded-bottom-0">
+        <div class="d-flex align-items-center">
+            <!-- Mobile Menu Toggle -->
+            <button class="btn d-md-none me-3" onclick="toggleSidebar()" style="background: transparent; border: none; color: var(--text-color);">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Page Title -->
+            <h1 class="header-title">{% block page_title %}Dashboard Planification{% endblock %}</h1>
+        </div>
+
+        <div class="header-user-info">
+            <!-- Academic Year -->
+            <div class="academic-year-badge">
+                <span class="academic-year-label">Année académique</span>
+                <div>{{ current_year|default:"Non définie" }}</div>
+            </div>
+
+            <!-- User Profile -->
+            <div class="user-profile dropdown">
+                <div class="user-details">
+                    <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="user-role">Responsable Planification</div>
+                </div>
+                <div class="user-avatar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;" id="userDropdown">
+                    {% if user.first_name and user.last_name %}
+                        {{ user.first_name.0 }}{{ user.last_name.0 }}
+                    {% else %}
+                        {{ user.username.0|upper }}
+                    {% endif %}
+                </div>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="{% url 'authentication:logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+            <!-- Logo YSEM -->
+            <div class="sidebar-logo">
+                <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo">
+                <!-- <div class="sidebar-logo-text">YSEM</div> -->
+            </div>
+
+            <!-- Divider -->
+            <div class="sidebar-divider"></div>
+
+            <!-- Navigation Menu -->
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'planification:dashboard' %}">
+                        <i class="fas fa-home me-2"></i>
+                        Accueil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'classrooms' %}active{% endif %}" href="{% url 'planification:classrooms' %}">
+                        <i class="fas fa-door-open me-2"></i>
+                        Salles de classe
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'lecturers' %}active{% endif %}" href="{% url 'planification:lecturers' %}">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>
+                        Enseignants
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'time_slots' %}active{% endif %}" href="{% url 'planification:time_slots' %}">
+                        <i class="fas fa-clock me-2"></i>
+                        Créneaux horaires
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'sessions' %}active{% endif %}" href="{% url 'planification:sessions' %}">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Séances de cours
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'schedules' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'planification:schedules' %}">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Emplois du temps
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if 'lecturer_availabilities' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'planification:lecturer_availabilities' %}">
+                        <i class="fas fa-user-clock me-2"></i>
+                        Disponibilités enseignants
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <button class="logout-btn" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Confirmer la déconnexion</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir vous déconnecter ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="logout()">Se déconnecter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/popper.js/dist/umd/popper.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/js/neumorphism.js' %}"></script>
+    <script src="{% static 'main/js/navigation.js' %}"></script>
+
+    <script>
+        // Update current date
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDateElement = document.getElementById('current-date');
+            if (currentDateElement) {
+                const now = new Date();
+                currentDateElement.textContent = now.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        });
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isMenuButton = event.target.closest('.btn');
+
+            if (!isClickInsideSidebar && !isMenuButton && window.innerWidth <= 768) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // Logout function
+        function logout() {
+            window.location.href = "{% url 'authentication:logout' %}";
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

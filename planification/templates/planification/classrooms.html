@@ -1,0 +1,188 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Gestion des Salles - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Salles{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-door-open me-2"></i>
+                    Liste des salles de classe
+                </h5>
+                <a href="{% url 'planification:classroom_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Ajouter une salle
+                </a>
+            </div>
+
+            <!-- Filters -->
+            <form method="get" class="mb-4">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="form-group">
+                            <label for="search" class="form-label">Rechercher</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search }}" placeholder="Code, nom ou bâtiment...">
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-group">
+                            <label for="status" class="form-label">Statut</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">Tous</option>
+                                <option value="active" {% if status == 'active' %}selected{% endif %}>Actives</option>
+                                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactives</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-1"></i>
+                                    Filtrer
+                                </button>
+                                <a href="{% url 'planification:classrooms' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>
+                                    Effacer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Classrooms Table -->
+            {% if classrooms %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Capacité</th>
+                                <th>Bâtiment</th>
+                                <th>Étage</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for classroom in classrooms %}
+                            <tr>
+                                <td>
+                                    <strong>{{ classroom.code }}</strong>
+                                </td>
+                                <td>{{ classroom.name }}</td>
+                                <td>
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ classroom.capacity }}
+                                    </span>
+                                </td>
+                                <td>{{ classroom.building|default:"-" }}</td>
+                                <td>{{ classroom.floor|default:"-" }}</td>
+                                <td>
+                                    {% if classroom.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'planification:classroom_detail' code=classroom.code %}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'planification:classroom_update' code=classroom.code %}"
+                                           class="btn btn-sm btn-outline-warning"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'planification:classroom_delete' code=classroom.code %}"
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Navigation des pages">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune salle trouvée</h5>
+                    <p class="text-muted">
+                        {% if search or status %}
+                            Aucune salle ne correspond à vos critères de recherche.
+                        {% else %}
+                            Commencez par ajouter des salles de classe.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'planification:classroom_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter une salle
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ form_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% if is_update %}{% url 'planification:session_detail' object.pk %}{% else %}{% url 'planification:sessions' %}{% endif %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                {% if is_update %}Retour aux détails{% else %}Retour à la liste{% endif %}
+            </a>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        {{ form_title }}
+                    </h5>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Informations du cours -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-book me-2"></i>
+                                    Informations du cours
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.course.id_for_label }}" class="form-label">{{ form.course.label }}</label>
+                                {{ form.course }}
+                                {% if form.course.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.course.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.course.help_text %}
+                                    <small class="form-text text-muted">{{ form.course.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.lecturer.id_for_label }}" class="form-label">{{ form.lecturer.label }}</label>
+                                {{ form.lecturer }}
+                                {% if form.lecturer.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.lecturer.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.lecturer.help_text %}
+                                    <small class="form-text text-muted">{{ form.lecturer.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">{{ form.level.label }}</label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.level.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.level.help_text %}
+                                    <small class="form-text text-muted">{{ form.level.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.academic_year.id_for_label }}" class="form-label">{{ form.academic_year.label }}</label>
+                                {{ form.academic_year }}
+                                {% if form.academic_year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.academic_year.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.academic_year.help_text %}
+                                    <small class="form-text text-muted">{{ form.academic_year.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Planification -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Planification
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.date.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.date.help_text %}
+                                    <small class="form-text text-muted">{{ form.date.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.time_slot.id_for_label }}" class="form-label">{{ form.time_slot.label }}</label>
+                                {{ form.time_slot }}
+                                {% if form.time_slot.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.time_slot.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.time_slot.help_text %}
+                                    <small class="form-text text-muted">{{ form.time_slot.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.classroom.id_for_label }}" class="form-label">{{ form.classroom.label }}</label>
+                                {{ form.classroom }}
+                                {% if form.classroom.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.classroom.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.classroom.help_text %}
+                                    <small class="form-text text-muted">{{ form.classroom.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.duration_hours.id_for_label }}" class="form-label">{{ form.duration_hours.label }}</label>
+                                {{ form.duration_hours }}
+                                {% if form.duration_hours.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.duration_hours.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.duration_hours.help_text %}
+                                    <small class="form-text text-muted">{{ form.duration_hours.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Détails de la séance -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Détails de la séance
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.session_type.id_for_label }}" class="form-label">{{ form.session_type.label }}</label>
+                                {{ form.session_type }}
+                                {% if form.session_type.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.session_type.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.session_type.help_text %}
+                                    <small class="form-text text-muted">{{ form.session_type.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.status.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.status.help_text %}
+                                    <small class="form-text text-muted">{{ form.status.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.topic.id_for_label }}" class="form-label">{{ form.topic.label }}</label>
+                                {{ form.topic }}
+                                {% if form.topic.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.topic.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.topic.help_text %}
+                                    <small class="form-text text-muted">{{ form.topic.help_text }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.notes.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                {% if form.notes.help_text %}
+                                    <small class="form-text text-muted">{{ form.notes.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Erreurs globales -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-end">
+                            <a href="{% if is_update %}{% url 'planification:session_detail' object.pk %}{% else %}{% url 'planification:sessions' %}{% endif %}" class="btn btn-outline-secondary me-2">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {{ submit_text }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Aide -->
+                <div class="card-neumorphic">
+                    <h6 class="mb-3">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Aide
+                    </h6>
+                    <div class="small text-muted">
+                        <p><strong>Conseils :</strong></p>
+                        <ul class="ps-3">
+                            <li>Vérifiez que la salle est disponible à l'heure choisie</li>
+                            <li>Assurez-vous que l'enseignant est disponible</li>
+                            <li>Le cours doit correspondre au niveau sélectionné</li>
+                            <li>La date doit être dans l'année académique</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

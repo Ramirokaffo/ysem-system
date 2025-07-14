@@ -1,0 +1,204 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Emplois du temps - YSEM{% endblock %}
+
+{% block page_title %}Emplois du temps{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Emplois du temps
+                </h5>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'planification:schedule_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Créer un emploi du temps
+                    </a>
+                    <a href="{% url 'planification:schedule_generate' %}" class="btn btn-success">
+                        <i class="fas fa-magic me-2"></i>
+                        Génération automatique
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ current_filters.search }}"
+                               class="form-control" 
+                               placeholder="Rechercher...">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-control">
+                            <option value="">Tous les statuts</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="level" class="form-control">
+                            <option value="">Tous les niveaux</option>
+                            {% for level in levels %}
+                                <option value="{{ level.id }}" {% if current_filters.level == level.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ level.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="academic_year" class="form-control">
+                            <option value="">Toutes les années</option>
+                            {% for year in academic_years %}
+                                <option value="{{ year.id }}" {% if current_filters.academic_year == year.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ year.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search me-2"></i>
+                            Filtrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Liste des emplois du temps -->
+            {% if schedules %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Niveau</th>
+                                <th>Année académique</th>
+                                <th>Période</th>
+                                <th>Statut</th>
+                                <th>Séances</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for schedule in schedules %}
+                            <tr>
+                                <td>
+                                    <strong>{{ schedule.name }}</strong>
+                                    {% if schedule.description %}
+                                        <br><small class="text-muted">{{ schedule.description|truncatechars:50 }}</small>
+                                    {% endif %}
+                                    {% if schedule.is_generated %}
+                                        <br><span class="badge bg-info">Généré automatiquement</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ schedule.level.name }}</td>
+                                <td>{{ schedule.academic_year.name }}</td>
+                                <td>
+                                    {{ schedule.start_date|date:"d/m/Y" }} - {{ schedule.end_date|date:"d/m/Y" }}
+                                    <br><small class="text-muted">{{ schedule.get_duration_days }} jours</small>
+                                </td>
+                                <td>
+                                    {% if schedule.status == 'draft' %}
+                                        <span class="badge bg-warning">{{ schedule.get_status_display }}</span>
+                                    {% elif schedule.status == 'active' %}
+                                        <span class="badge bg-success">{{ schedule.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ schedule.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ schedule.get_total_sessions }}</strong> séances
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'planification:schedule_detail' schedule.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if schedule.status == 'draft' %}
+                                            <a href="{% url 'planification:schedule_update' schedule.pk %}" 
+                                               class="btn btn-sm btn-outline-secondary" 
+                                               title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <nav aria-label="Navigation des pages">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.academic_year %}&academic_year={{ request.GET.academic_year }}{% endif %}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun emploi du temps trouvé</h5>
+                    <p class="text-muted">
+                        {% if current_filters.search or current_filters.status or current_filters.level or current_filters.academic_year %}
+                            Aucun emploi du temps ne correspond à vos critères de recherche.
+                        {% else %}
+                            Commencez par créer votre premier emploi du temps.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'planification:schedule_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Créer un emploi du temps
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

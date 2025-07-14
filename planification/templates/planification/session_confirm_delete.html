@@ -1,0 +1,148 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Supprimer {{ object.course.label }} - YSEM{% endblock %}
+
+{% block page_title %}Supprimer la séance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Actions -->
+        <div class="d-flex justify-content-start mb-4">
+            <a href="{% url 'planification:session_detail' object.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Retour aux détails
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4 text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Confirmer la suppression
+                    </h5>
+
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-warning me-2"></i>
+                            Attention !
+                        </h6>
+                        <p class="mb-0">
+                            Vous êtes sur le point de supprimer définitivement cette séance de cours. 
+                            Cette action est <strong>irréversible</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Informations de la séance à supprimer -->
+                    <div class="bg-light p-4 rounded mb-4">
+                        <h6 class="mb-3">Séance à supprimer :</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <strong>Cours :</strong> {{ object.course.label }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Enseignant :</strong> {{ object.lecturer.firstname }} {{ object.lecturer.lastname }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Date :</strong> {{ object.date|date:"l d F Y" }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Heure :</strong> {{ object.time_slot.start_time|time:"H:i" }} - {{ object.time_slot.end_time|time:"H:i" }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Salle :</strong> {{ object.classroom.code }} - {{ object.classroom.name }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Niveau :</strong> {{ object.level.name }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Type :</strong> {{ object.get_session_type_display }}
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>Statut :</strong> {{ object.get_status_display }}
+                            </div>
+                            {% if object.topic %}
+                            <div class="col-12 mb-2">
+                                <strong>Sujet :</strong> {{ object.topic }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Vérifications des dépendances -->
+                    {% if has_schedule_links %}
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-link me-2"></i>
+                            Liens avec des emplois du temps
+                        </h6>
+                        <p>Cette séance est liée à {{ schedule_sessions.count }} emploi(s) du temps :</p>
+                        <ul class="mb-0">
+                            {% for schedule_session in schedule_sessions %}
+                            <li>{{ schedule_session.schedule.name }} (Semaine {{ schedule_session.week_number }})</li>
+                            {% endfor %}
+                        </ul>
+                        <p class="mt-2 mb-0">
+                            <strong>Vous devez d'abord supprimer ces liens avant de pouvoir supprimer la séance.</strong>
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Formulaire de confirmation -->
+                    {% if not has_schedule_links %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'planification:session_detail' object.pk %}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-2"></i>
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>
+                                Supprimer définitivement
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'planification:session_detail' object.pk %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Retour aux détails
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Informations -->
+                <div class="card-neumorphic">
+                    <h6 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informations
+                    </h6>
+                    <div class="small text-muted">
+                        <p><strong>Conséquences de la suppression :</strong></p>
+                        <ul class="ps-3">
+                            <li>La séance sera définitivement supprimée</li>
+                            <li>Les données de présence seront perdues</li>
+                            <li>Les liens avec les emplois du temps seront supprimés</li>
+                            <li>Cette action ne peut pas être annulée</li>
+                        </ul>
+                        
+                        {% if has_schedule_links %}
+                        <div class="mt-3 p-2 bg-warning rounded">
+                            <strong>Action requise :</strong><br>
+                            Supprimez d'abord les liens avec les emplois du temps avant de pouvoir supprimer cette séance.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

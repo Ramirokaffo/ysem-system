@@ -1,0 +1,302 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ lecturer.firstname }} {{ lecturer.lastname }} - YSEM{% endblock %}
+
+{% block page_title %}{{ lecturer.firstname }} {{ lecturer.lastname }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <!-- Actions Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="{% url 'planification:lecturers' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'planification:lecturer_update' matricule=lecturer.matricule %}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier
+                </a>
+                <a href="{% url 'planification:lecturer_delete' matricule=lecturer.matricule %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Supprimer
+                </a>
+            </div>
+        </div>
+
+        <!-- Lecturer Information -->
+        <div class="row">
+            <!-- Personal Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-user me-2"></i>
+                        Informations personnelles
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Matricule :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-primary fs-6">{{ lecturer.matricule }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Nom complet :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ lecturer.firstname }} {{ lecturer.lastname }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Date de naissance :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ lecturer.date_naiss|date:"d/m/Y" }}
+                            <small class="text-muted">({{ lecturer.date_naiss|timesince }} ans)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Genre :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if lecturer.gender == 'M' %}
+                                <i class="fas fa-mars text-primary me-1"></i> Masculin
+                            {% else %}
+                                <i class="fas fa-venus text-danger me-1"></i> Féminin
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Grade :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-info">{{ lecturer.grade }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Langue :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if lecturer.lang == 'fr' %}
+                                🇫🇷 Français
+                            {% elif lecturer.lang == 'en' %}
+                                🇬🇧 Anglais
+                            {% else %}
+                                {{ lecturer.lang|default:"Non spécifiée" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-address-book me-2"></i>
+                        Informations de contact
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Email :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if lecturer.email %}
+                                <a href="mailto:{{ lecturer.email }}" class="text-decoration-none">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    {{ lecturer.email }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Téléphone :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if lecturer.phone_number %}
+                                <a href="tel:{{ lecturer.phone_number }}" class="text-decoration-none">
+                                    <i class="fas fa-phone me-1"></i>
+                                    {{ lecturer.phone_number }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Créé le :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <small class="text-muted">{{ lecturer.created_at|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <strong>Modifié le :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <small class="text-muted">{{ lecturer.last_updated|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teaching Statistics -->
+        {% if teaching_stats %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques d'enseignement (année en cours)
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ teaching_stats.total_sessions }}</h4>
+                                <p class="text-muted mb-0">Total séances</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-info">{{ teaching_stats.scheduled_sessions }}</h4>
+                                <p class="text-muted mb-0">Programmées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ teaching_stats.completed_sessions }}</h4>
+                                <p class="text-muted mb-0">Terminées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-danger">{{ teaching_stats.cancelled_sessions }}</h4>
+                                <p class="text-muted mb-0">Annulées</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Courses Taught -->
+        {% if courses_taught %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-book me-2"></i>
+                        Cours enseignés
+                    </h5>
+                    <div class="row">
+                        {% for course in courses_taught %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <span class="badge badge-secondary">{{ course.course__course_code }}</span>
+                                </div>
+                                <div>
+                                    <strong>{{ course.course__label }}</strong>
+                                    <br><small class="text-muted">{{ course.level__name }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Sessions -->
+        {% if upcoming_sessions %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Prochaines séances
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Heure</th>
+                                    <th>Cours</th>
+                                    <th>Salle</th>
+                                    <th>Niveau</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in upcoming_sessions %}
+                                <tr>
+                                    <td>{{ session.date|date:"d/m/Y" }}</td>
+                                    <td>{{ session.time_slot.start_time|time:"H:i" }}</td>
+                                    <td>{{ session.course.label }}</td>
+                                    <td>{{ session.classroom.name }}</td>
+                                    <td>{{ session.level.name }}</td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ session.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'planification:sessions' %}?lecturer={{ lecturer.matricule }}" class="btn btn-outline-primary">
+                            Voir toutes les séances de cet enseignant
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Prochaines séances
+                    </h5>
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune séance programmée pour cet enseignant</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

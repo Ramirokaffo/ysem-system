@@ -1,0 +1,188 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ session.course.label }} - {{ session.date|date:"d/m/Y" }} - YSEM{% endblock %}
+
+{% block page_title %}Détails de la séance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'planification:sessions' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Retour à la liste
+            </a>
+            <div>
+                <a href="{% url 'planification:session_update' session.pk %}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier
+                </a>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                    <i class="fas fa-trash me-2"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+
+        <!-- Informations principales -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Informations de la séance
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Cours</label>
+                            <div class="fw-bold">{{ session.course.label }}</div>
+                            <small class="text-muted">{{ session.course.course_code }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Enseignant</label>
+                            <div class="fw-bold">{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</div>
+                            <small class="text-muted">{{ session.lecturer.matricule }}</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Date et heure</label>
+                            <div class="fw-bold">{{ session.date|date:"l d F Y" }}</div>
+                            <small class="text-muted">
+                                {{ session.time_slot.start_time|time:"H:i" }} - {{ session.time_slot.end_time|time:"H:i" }}
+                                ({{ session.duration_hours }}h)
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Salle</label>
+                            <div class="fw-bold">
+                                <span class="badge badge-info me-2">{{ session.classroom.code }}</span>
+                                {{ session.classroom.name }}
+                            </div>
+                            <small class="text-muted">
+                                Capacité: {{ session.classroom.capacity }} places
+                                {% if session.classroom.building %} - {{ session.classroom.building }}{% endif %}
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Niveau</label>
+                            <div class="fw-bold">{{ session.level.name }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Année académique</label>
+                            <div class="fw-bold">{{ session.academic_year.name }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Type de séance</label>
+                            <div>
+                                <span class="badge badge-secondary">{{ session.get_session_type_display }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Statut</label>
+                            <div>
+                                {% if session.status == 'scheduled' %}
+                                    <span class="badge badge-primary">{{ session.get_status_display }}</span>
+                                {% elif session.status == 'ongoing' %}
+                                    <span class="badge badge-warning">{{ session.get_status_display }}</span>
+                                {% elif session.status == 'completed' %}
+                                    <span class="badge badge-success">{{ session.get_status_display }}</span>
+                                {% elif session.status == 'cancelled' %}
+                                    <span class="badge badge-danger">{{ session.get_status_display }}</span>
+                                {% elif session.status == 'postponed' %}
+                                    <span class="badge badge-info">{{ session.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if session.topic %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted">Sujet/Chapitre</label>
+                            <div class="fw-bold">{{ session.topic }}</div>
+                        </div>
+                        {% endif %}
+                        {% if session.notes %}
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted">Notes</label>
+                            <div class="border rounded p-3 bg-light">
+                                {{ session.notes|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Statistiques -->
+                <div class="card-neumorphic mb-4">
+                    <h6 class="mb-3">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques
+                    </h6>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="fw-bold text-primary fs-4">{{ session.attendance_count }}</div>
+                            <small class="text-muted">Présents</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="fw-bold text-info fs-4">{{ session.classroom.capacity }}</div>
+                            <small class="text-muted">Capacité</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations système -->
+                <div class="card-neumorphic">
+                    <h6 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informations système
+                    </h6>
+                    <div class="small text-muted">
+                        <div class="mb-2">
+                            <strong>Créé le:</strong> {{ session.created_at|date:"d/m/Y à H:i" }}
+                        </div>
+                        <div>
+                            <strong>Modifié le:</strong> {{ session.last_updated|date:"d/m/Y à H:i" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette séance ?</p>
+                <div class="alert alert-warning">
+                    <strong>Attention :</strong> Cette action est irréversible.
+                </div>
+                <div class="bg-light p-3 rounded">
+                    <strong>Séance à supprimer :</strong><br>
+                    {{ session.course.label }}<br>
+                    {{ session.date|date:"l d F Y" }} de {{ session.time_slot.start_time|time:"H:i" }} à {{ session.time_slot.end_time|time:"H:i" }}<br>
+                    Salle {{ session.classroom.code }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <a href="{% url 'planification:session_delete' session.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Supprimer définitivement
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

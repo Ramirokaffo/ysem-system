@@ -1,0 +1,247 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ classroom.name }} - YSEM{% endblock %}
+
+{% block page_title %}{{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <!-- Actions Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="{% url 'planification:classrooms' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+            <div>
+                <a href="{% url 'planification:classroom_update' code=classroom.code %}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier
+                </a>
+                <a href="{% url 'planification:classroom_delete' code=classroom.code %}" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Supprimer
+                </a>
+            </div>
+        </div>
+
+        <!-- Classroom Information -->
+        <div class="row">
+            <!-- Basic Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informations générales
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Code :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-primary fs-6">{{ classroom.code }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Nom :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ classroom.name }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Capacité :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-info">
+                                <i class="fas fa-users me-1"></i>
+                                {{ classroom.capacity }} personnes
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Bâtiment :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ classroom.building|default:"Non spécifié" }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Étage :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ classroom.floor|default:"Non spécifié" }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Statut :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            {% if classroom.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4">
+                            <strong>Créée le :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <small class="text-muted">{{ classroom.created_at|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <strong>Modifiée le :</strong>
+                        </div>
+                        <div class="col-sm-8">
+                            <small class="text-muted">{{ classroom.last_updated|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment -->
+            <div class="col-lg-6 mb-4">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-tools me-2"></i>
+                        Équipements
+                    </h5>
+                    {% if classroom.equipment %}
+                        <div class="equipment-text">
+                            {{ classroom.equipment|linebreaks }}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun équipement spécifié</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Statistics -->
+        {% if usage_stats %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques d'utilisation (année en cours)
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ usage_stats.total_sessions }}</h4>
+                                <p class="text-muted mb-0">Total séances</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-info">{{ usage_stats.scheduled_sessions }}</h4>
+                                <p class="text-muted mb-0">Programmées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ usage_stats.completed_sessions }}</h4>
+                                <p class="text-muted mb-0">Terminées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center">
+                                <h4 class="text-danger">{{ usage_stats.cancelled_sessions }}</h4>
+                                <p class="text-muted mb-0">Annulées</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Sessions -->
+        {% if upcoming_sessions %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Prochaines séances
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Heure</th>
+                                    <th>Cours</th>
+                                    <th>Enseignant</th>
+                                    <th>Niveau</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in upcoming_sessions %}
+                                <tr>
+                                    <td>{{ session.date|date:"d/m/Y" }}</td>
+                                    <td>{{ session.time_slot.start_time|time:"H:i" }}</td>
+                                    <td>{{ session.course.label }}</td>
+                                    <td>{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</td>
+                                    <td>{{ session.level.name }}</td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ session.get_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'planification:sessions' %}?classroom={{ classroom.code }}" class="btn btn-outline-primary">
+                            Voir toutes les séances de cette salle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card-neumorphic">
+                    <h5 class="mb-4">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Prochaines séances
+                    </h5>
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune séance programmée dans cette salle</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

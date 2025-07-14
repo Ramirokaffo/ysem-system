@@ -1,0 +1,254 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ page_title }} - YSEM{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<!-- En-tête avec informations principales -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h5 class="mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        {{ schedule.name }}
+                    </h5>
+                    {% if schedule.description %}
+                        <p class="text-muted mb-2">{{ schedule.description }}</p>
+                    {% endif %}
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="badge bg-primary">{{ schedule.level.name }}</span>
+                        <span class="badge bg-info">{{ schedule.academic_year.name }}</span>
+                        {% if schedule.status == 'draft' %}
+                            <span class="badge bg-warning">{{ schedule.get_status_display }}</span>
+                        {% elif schedule.status == 'active' %}
+                            <span class="badge bg-success">{{ schedule.get_status_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ schedule.get_status_display }}</span>
+                        {% endif %}
+                        {% if schedule.is_generated %}
+                            <span class="badge bg-info">Généré automatiquement</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'planification:schedules' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                    {% if schedule.status == 'draft' %}
+                        <a href="{% url 'planification:schedule_update' schedule.pk %}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>
+                            Modifier
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informations détaillées -->
+            <div class="row">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Période</h6>
+                    <p class="mb-0">
+                        <strong>{{ schedule.start_date|date:"d/m/Y" }}</strong> - <strong>{{ schedule.end_date|date:"d/m/Y" }}</strong>
+                        <br><small class="text-muted">{{ schedule.get_duration_days }} jours ({{ stats.total_weeks }} semaines)</small>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Durée</h6>
+                    <p class="mb-0">
+                        <strong>{{ schedule.get_duration_type_display }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Créé le</h6>
+                    <p class="mb-0">
+                        <strong>{{ schedule.created_at|date:"d/m/Y à H:i" }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-muted">Dernière modification</h6>
+                    <p class="mb-0">
+                        <strong>{{ schedule.last_updated|date:"d/m/Y à H:i" }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon primary mb-3">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h4 class="mb-1">{{ stats.total_sessions }}</h4>
+            <p class="text-muted mb-0">Séances totales</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon success mb-3">
+                <i class="fas fa-book"></i>
+            </div>
+            <h4 class="mb-1">{{ stats.courses_count }}</h4>
+            <p class="text-muted mb-0">Cours différents</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon warning mb-3">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h4 class="mb-1">{{ stats.lecturers_count }}</h4>
+            <p class="text-muted mb-0">Enseignants</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-neumorphic text-center">
+            <div class="stat-icon info mb-3">
+                <i class="fas fa-calendar-week"></i>
+            </div>
+            <h4 class="mb-1">{{ stats.total_weeks }}</h4>
+            <p class="text-muted mb-0">Semaines</p>
+        </div>
+    </div>
+</div>
+
+<!-- Emploi du temps par semaine -->
+{% if sessions_by_week %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic">
+                <h5 class="mb-4">
+                    <i class="fas fa-table me-2"></i>
+                    Emploi du temps détaillé
+                </h5>
+
+                <!-- Navigation par semaine -->
+                <div class="mb-4">
+                    <nav>
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            {% for week_number, sessions in sessions_by_week.items %}
+                                <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                        id="nav-week{{ week_number }}-tab" 
+                                        data-bs-toggle="tab" 
+                                        data-bs-target="#nav-week{{ week_number }}" 
+                                        type="button" 
+                                        role="tab">
+                                    Semaine {{ week_number }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </nav>
+                </div>
+
+                <!-- Contenu des semaines -->
+                <div class="tab-content" id="nav-tabContent">
+                    {% for week_number, sessions in sessions_by_week.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="nav-week{{ week_number }}" 
+                             role="tabpanel">
+                            
+                            <h6 class="mb-3">Semaine {{ week_number }} - {{ sessions|length }} séance{{ sessions|length|pluralize }}</h6>
+                            
+                            {% if sessions %}
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th>Jour</th>
+                                                <th>Heure</th>
+                                                <th>Cours</th>
+                                                <th>Enseignant</th>
+                                                <th>Salle</th>
+                                                <th>Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for schedule_session in sessions %}
+                                                {% with session=schedule_session.course_session %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ session.time_slot.get_day_of_week_display }}</strong>
+                                                        <br><small class="text-muted">{{ session.date|date:"d/m/Y" }}</small>
+                                                    </td>
+                                                    <td>
+                                                        {{ session.time_slot.start_time|time:"H:i" }} - {{ session.time_slot.end_time|time:"H:i" }}
+                                                        <br><small class="text-muted">{{ session.duration_hours }}h</small>
+                                                    </td>
+                                                    <td>
+                                                        <strong>{{ session.course.label }}</strong>
+                                                        <br><small class="text-muted">{{ session.course.course_code }}</small>
+                                                        {% if session.topic %}
+                                                            <br><small class="text-info">{{ session.topic }}</small>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {{ session.lecturer.firstname }} {{ session.lecturer.lastname }}
+                                                        <br><small class="text-muted">{{ session.lecturer.grade }}</small>
+                                                    </td>
+                                                    <td>
+                                                        <strong>{{ session.classroom.name }}</strong>
+                                                        <br><small class="text-muted">{{ session.classroom.capacity }} places</small>
+                                                    </td>
+                                                    <td>
+                                                        {% if session.session_type == 'lecture' %}
+                                                            <span class="badge bg-primary">{{ session.get_session_type_display }}</span>
+                                                        {% elif session.session_type == 'tutorial' %}
+                                                            <span class="badge bg-info">{{ session.get_session_type_display }}</span>
+                                                        {% elif session.session_type == 'practical' %}
+                                                            <span class="badge bg-success">{{ session.get_session_type_display }}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary">{{ session.get_session_type_display }}</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endwith %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">Aucune séance programmée pour cette semaine</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card-neumorphic">
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune séance programmée</h5>
+                    <p class="text-muted">
+                        Cet emploi du temps ne contient encore aucune séance.
+                        {% if schedule.status == 'draft' %}
+                            Utilisez la génération automatique pour créer les séances.
+                        {% endif %}
+                    </p>
+                    {% if schedule.status == 'draft' %}
+                        <a href="{% url 'planification:schedule_generate' %}?level={{ schedule.level.id }}" class="btn btn-success">
+                            <i class="fas fa-magic me-2"></i>
+                            Générer automatiquement
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Supprimer {{ classroom.name }} - YSEM{% endblock %}
+
+{% block page_title %}Supprimer la salle{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card-neumorphic">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h5 class="text-danger">Confirmer la suppression</h5>
+            </div>
+
+            <!-- Classroom Information -->
+            <div class="alert alert-warning">
+                <h6 class="alert-heading">
+                    <i class="fas fa-door-open me-2"></i>
+                    Salle à supprimer
+                </h6>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Code :</strong></div>
+                    <div class="col-sm-8">{{ classroom.code }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Nom :</strong></div>
+                    <div class="col-sm-8">{{ classroom.name }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Capacité :</strong></div>
+                    <div class="col-sm-8">{{ classroom.capacity }} personnes</div>
+                </div>
+                {% if classroom.building %}
+                <div class="row">
+                    <div class="col-sm-4"><strong>Bâtiment :</strong></div>
+                    <div class="col-sm-8">{{ classroom.building }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Warning about associated sessions -->
+            {% if has_sessions %}
+            <div class="alert alert-danger">
+                <h6 class="alert-heading">
+                    <i class="fas fa-ban me-2"></i>
+                    Suppression impossible
+                </h6>
+                <p class="mb-2">
+                    Cette salle ne peut pas être supprimée car elle est utilisée dans 
+                    <strong>{{ sessions_count }}</strong> séance(s) de cours.
+                </p>
+                <p class="mb-0">
+                    <small>
+                        Veuillez d'abord supprimer ou modifier ces séances avant de pouvoir supprimer la salle.
+                    </small>
+                </p>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Information
+                </h6>
+                <p class="mb-0">
+                    Cette action est <strong>irréversible</strong>. La salle sera définitivement supprimée du système.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'planification:classroom_detail' code=classroom.code %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour aux détails
+                </a>
+                
+                {% if not has_sessions %}
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous vraiment sûr de vouloir supprimer cette salle ?')">
+                        <i class="fas fa-trash me-2"></i>
+                        Confirmer la suppression
+                    </button>
+                </form>
+                {% else %}
+                <button type="button" class="btn btn-danger" disabled>
+                    <i class="fas fa-ban me-2"></i>
+                    Suppression impossible
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Actions -->
+{% if has_sessions %}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-6">
+        <div class="card-neumorphic">
+            <h6 class="mb-3">
+                <i class="fas fa-lightbulb me-2"></i>
+                Actions alternatives
+            </h6>
+            <div class="d-grid gap-2">
+                <a href="{% url 'planification:sessions' %}?classroom={{ classroom.code }}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Voir les séances de cette salle
+                </a>
+                <a href="{% url 'planification:classroom_update' code=classroom.code %}" class="btn btn-outline-warning">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier la salle
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="deactivateClassroom()">
+                    <i class="fas fa-pause me-2"></i>
+                    Désactiver temporairement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deactivateClassroom() {
+    if (confirm('Voulez-vous désactiver cette salle au lieu de la supprimer ?\n\nCela permettra de la réactiver plus tard si nécessaire.')) {
+        // Redirect to edit form with a parameter to suggest deactivation
+        window.location.href = "{% url 'planification:classroom_update' code=classroom.code %}?suggest_deactivate=1";
+    }
+}
+
+// Add confirmation dialog for deletion
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.querySelector('form[method="post"]');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            const confirmed = confirm(
+                'ATTENTION : Cette action est irréversible !\n\n' +
+                'Êtes-vous absolument certain de vouloir supprimer la salle "{{ classroom.name }}" ?\n\n' +
+                'Tapez "SUPPRIMER" pour confirmer.'
+            );
+            
+            if (confirmed) {
+                const userInput = prompt('Tapez "SUPPRIMER" pour confirmer la suppression :');
+                if (userInput !== 'SUPPRIMER') {
+                    e.preventDefault();
+                    alert('Suppression annulée. Vous devez taper exactement "SUPPRIMER" pour confirmer.');
+                }
+            } else {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

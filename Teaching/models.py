@@ -81,8 +81,8 @@ class TeachingMonitoring(models.Model):
         }.get(statut, 'bg-secondary')
 
     class Meta:
-        verbose_name = "Suivi_Cours"
-        verbose_name_plural = "Suivi_Cours"
+        verbose_name = "Suivie de cours"
+        verbose_name_plural = "Suivie des cours"
 
 
 class Evaluation(models.Model):

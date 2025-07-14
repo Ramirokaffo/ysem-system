@@ -55,6 +55,19 @@
     box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
 }
 
+/* Section titles in navigation */
+.nav-section-title {
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 20px;
+    margin: 10px 0 5px 0;
+    opacity: 0.7;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
 /* Bouton de déconnexion */
 .logout-btn {
     width: 100%;

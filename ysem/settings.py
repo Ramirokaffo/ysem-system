@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "authentication",
     "Teaching",
     "student_portal",
+    "planification",
 ]
 
 MIDDLEWARE = [

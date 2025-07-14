@@ -20,11 +20,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+# Configuration du site d'administration
+from . import admin_config
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("authentication.urls")),
     path("", include("main.urls")),
     path("teach/", include("Teaching.urls")),
+    path("planning/", include("planification.urls")),
     path("portail-etudiant/", include("student_portal.urls")),
 ]
 

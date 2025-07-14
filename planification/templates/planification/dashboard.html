@@ -1,0 +1,290 @@
+{% extends 'planification/base.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard Planification - YSEM{% endblock %}
+
+{% block page_title %}Dashboard Planification{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_classrooms|default:0 }}</h5>
+                    <p class="text-muted mb-0">Salles actives</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon success">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_lecturers|default:0 }}</h5>
+                    <p class="text-muted mb-0">Enseignants</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-book"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_courses|default:0 }}</h5>
+                    <p class="text-muted mb-0">Cours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon info">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_time_slots|default:0 }}</h5>
+                    <p class="text-muted mb-0">Créneaux horaires</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deuxième ligne de statistiques pour les emplois du temps -->
+<div class="row">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon success">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_schedules|default:0 }}</h5>
+                    <p class="text-muted mb-0">Emplois du temps</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon info">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.active_schedules|default:0 }}</h5>
+                    <p class="text-muted mb-0">Emplois actifs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.draft_schedules|default:0 }}</h5>
+                    <p class="text-muted mb-0">Brouillons</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Statistics -->
+{% if session_stats %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-week me-2"></i>
+                Séances cette semaine
+            </h5>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <h4 class="text-primary">{{ session_stats.this_week }}</h4>
+                        <p class="text-muted mb-0">Total</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <h4 class="text-info">{{ session_stats.scheduled }}</h4>
+                        <p class="text-muted mb-0">Programmées</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <h4 class="text-success">{{ session_stats.completed }}</h4>
+                        <p class="text-muted mb-0">Terminées</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <h4 class="text-danger">{{ session_stats.cancelled }}</h4>
+                        <p class="text-muted mb-0">Annulées</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Quick Actions & Upcoming Sessions -->
+    <div class="col-lg-4 mb-4">
+        <!-- Quick Actions -->
+        <div class="card-neumorphic mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h5>
+            <div class="d-grid gap-2">
+                <a href="{% url 'planification:classrooms' %}" class="btn btn-primary">
+                    <i class="fas fa-door-open me-2"></i>
+                    Gérer les salles
+                </a>
+                <a href="{% url 'planification:sessions' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar-plus me-2"></i>
+                    Programmer séance
+                </a>
+                <a href="{% url 'planification:time_slots' %}" class="btn btn-primary">
+                    <i class="fas fa-clock me-2"></i>
+                    Créneaux horaires
+                </a>
+                <a href="{% url 'planification:lecturers' %}" class="btn btn-primary">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    Voir enseignants
+                </a>
+                <a href="{% url 'planification:schedules' %}" class="btn btn-success">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Emplois du temps
+                </a>
+                <a href="{% url 'planification:schedule_generate' %}" class="btn btn-warning">
+                    <i class="fas fa-magic me-2"></i>
+                    Génération automatique
+                </a>
+                <a href="{% url 'planification:lecturer_availabilities' %}" class="btn btn-info">
+                    <i class="fas fa-user-clock me-2"></i>
+                    Disponibilités enseignants
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Sessions -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Prochaines séances
+            </h5>
+            {% if upcoming_sessions %}
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Heure</th>
+                                <th>Cours</th>
+                                <th>Enseignant</th>
+                                <th>Salle</th>
+                                <th>Niveau</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in upcoming_sessions %}
+                            <tr>
+                                <td>{{ session.date|date:"d/m/Y" }}</td>
+                                <td>{{ session.time_slot.start_time|time:"H:i" }}</td>
+                                <td>{{ session.course.label }}</td>
+                                <td>{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</td>
+                                <td>{{ session.classroom.name }}</td>
+                                <td>{{ session.level.name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'planification:sessions' %}" class="btn btn-outline-primary">
+                        Voir toutes les séances
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucune séance programmée</p>
+                    <a href="{% url 'planification:sessions' %}" class="btn btn-primary">
+                        Programmer une séance
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Popular Classrooms -->
+{% if popular_classrooms %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-bar me-2"></i>
+                Salles les plus utilisées
+            </h5>
+            <div class="row">
+                {% for classroom in popular_classrooms %}
+                <div class="col-md-2 mb-3">
+                    <div class="text-center">
+                        <h6>{{ classroom.name }}</h6>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {% if classroom.session_count > 0 %}{{ classroom.session_count|floatformat:0 }}%{% else %}0%{% endif %}">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ classroom.session_count }} séances</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
