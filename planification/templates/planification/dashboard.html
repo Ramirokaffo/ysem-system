@@ -137,7 +137,7 @@
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <div class="text-center">
-                        <h4 class="text-primary">{{ session_stats.this_week }}</h4>
+                        <h4 class="text-warning">{{ session_stats.this_week }}</h4>
                         <p class="text-muted mb-0">Total</p>
                     </div>
                 </div>
@@ -191,15 +191,15 @@
                     <i class="fas fa-chalkboard-teacher me-2"></i>
                     Voir enseignants
                 </a>
-                <a href="{% url 'planification:schedules' %}" class="btn btn-success">
+                <a href="{% url 'planification:schedules' %}" class="btn btn-primary">
                     <i class="fas fa-calendar-alt me-2"></i>
                     Emplois du temps
                 </a>
-                <a href="{% url 'planification:schedule_generate' %}" class="btn btn-warning">
+                <a href="{% url 'planification:schedule_generate' %}" class="btn btn-primary">
                     <i class="fas fa-magic me-2"></i>
                     Génération automatique
                 </a>
-                <a href="{% url 'planification:lecturer_availabilities' %}" class="btn btn-info">
+                <a href="{% url 'planification:lecturer_availabilities' %}" class="btn btn-primary">
                     <i class="fas fa-user-clock me-2"></i>
                     Disponibilités enseignants
                 </a>
@@ -287,4 +287,7 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+{% block extra_css %}
+<link type="text/css" href="{% static 'main/css/dashboard.css' %}" rel="stylesheet">
 {% endblock %}

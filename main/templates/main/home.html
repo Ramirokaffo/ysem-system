@@ -14,33 +14,43 @@
 </head>
 
 <body>
-    <div class="min-vh-100 d-flex align-items-center">
+    <!-- Hero Section -->
+    <section class="section bg-soft pb-5 overflow-hidden">
+        <div class="container">
+            <div class="row justify-content-center text-center pt-6">
+                <div class="col-lg-8 col-xl-8">
+                    <!-- Logo/Icon with neumorphic effect -->
+                    <div class="icon icon-shape icon-xl bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
+                        <i class="fas fa-graduation-cap fa-3x text-secondary"></i>
+                    </div>
+                    <h1 class="display-2 mb-3">YSEM</h1>
+                    <p class="lead px-md-6">Système de Gestion Académique moderne et intuitif pour une gestion optimale de votre établissement</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="section section-lg">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-lg-10 col-xl-8">
-                    <!-- Header -->
-                    <div class="text-center mb-5">
-                        <div class="mb-4">
-                            <i class="fas fa-graduation-cap fa-4x text-primary"></i>
-                        </div>
-                        <h1 class="display-4 fw-bold mb-3">YSEM</h1>
-                        <p class="lead text-muted">Système de Gestion Académique</p>
-                    </div>
 
                     <!-- Services Cards -->
-                    <div class="row g-4">
+                    <div class="row mb-5">
                         <!-- Administration -->
-                        <div class="col-md-6">
-                            <div class="card-neumorphic p-4 h-100 text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-users-cog fa-3x text-primary"></i>
+                        <div class="col-12 col-md-6 mb-5 mb-md-0">
+                            <div class="card bg-primary shadow-soft border-light p-5 h-100 text-center">
+                                <!-- Icon with neumorphic effect -->
+                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
+                                    <i class="fas fa-users-cog fa-2x"></i>
                                 </div>
-                                <h4 class="mb-3">Administration</h4>
-                                <p class="text-muted mb-4">
-                                    Accès réservé au personnel administratif pour la gestion des étudiants, 
+                                <h3 class="h4 mb-3">Administration</h3>
+                                <p class="text-muted mb-4 px-lg-3">
+                                    Accès réservé au personnel administratif pour la gestion des étudiants,
                                     des inscriptions et des documents officiels.
                                 </p>
-                                <a href="{% url 'authentication:login' %}" class="btn btn-primary btn-lg">
+                                <a href="{% url 'authentication:login' %}" class="btn btn-primary btn-lg shadow-soft">
                                     <i class="fas fa-sign-in-alt me-2"></i>
                                     Connexion Administration
                                 </a>
@@ -48,17 +58,18 @@
                         </div>
 
                         <!-- Portail Étudiant -->
-                        <div class="col-md-6">
-                            <div class="card-neumorphic p-4 h-100 text-center">
-                                <div class="mb-3">
-                                    <i class="fas fa-user-graduate fa-3x text-success"></i>
+                        <div class="col-12 col-md-6">
+                            <div class="card bg-primary shadow-soft border-light p-5 h-100 text-center">
+                                <!-- Icon with neumorphic effect -->
+                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
+                                    <i class="fas fa-user-graduate fa-2x text-success"></i>
                                 </div>
-                                <h4 class="mb-3">Portail Étudiant</h4>
-                                <p class="text-muted mb-4">
-                                    Consultez vos documents officiels en ligne avec votre matricule 
+                                <h3 class="h4 mb-3">Portail Étudiant</h3>
+                                <p class="text-muted mb-4 px-lg-3">
+                                    Consultez vos documents officiels en ligne avec votre matricule
                                     et le mot de passe fourni par la scolarité.
                                 </p>
-                                <a href="{% url 'student_portal:login' %}" class="btn btn-success btn-lg">
+                                <a href="{% url 'student_portal:login' %}" class="btn btn-success btn-lg shadow-soft">
                                     <i class="fas fa-external-link-alt me-2"></i>
                                     Accès Étudiant
                                 </a>
@@ -67,111 +78,119 @@
                     </div>
 
                     <!-- Inscription Section -->
-                    <div class="row mt-5">
+                    <div class="row">
                         <div class="col-12">
-                            <div class="card-neumorphic p-4 text-center">
-                                <div class="mb-3">
+                            <div class="card bg-primary shadow-soft border-light p-5 text-center">
+                                <!-- Icon with neumorphic effect -->
+                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
                                     <i class="fas fa-file-signature fa-2x text-info"></i>
                                 </div>
-                                <h5 class="mb-3">Nouvelle Inscription</h5>
-                                <p class="text-muted mb-4">
-                                    Vous souhaitez vous inscrire à YSEM ? Remplissez notre formulaire d'inscription en ligne.
+                                <h3 class="h4 mb-3">Nouvelle Inscription</h3>
+                                <p class="text-muted mb-4 px-lg-6">
+                                    Vous souhaitez rejoindre YSEM ? Commencez votre parcours académique en remplissant notre formulaire d'inscription en ligne.
                                 </p>
-                                <a href="{% url 'main:inscription_externe' %}" class="btn btn-info">
+                                <a href="{% url 'main:inscription_externe' %}" class="btn btn-info btn-lg shadow-soft">
                                     <i class="fas fa-plus-circle me-2"></i>
                                     S'inscrire en ligne
                                 </a>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                    <!-- Footer -->
-                    <div class="text-center mt-5">
-                        <p class="text-muted mb-2">
-                            <small>© 2024 YSEM - Tous droits réservés</small>
-                        </p>
-                        <p class="text-muted">
-                            <small>
-                                <i class="fas fa-phone me-2"></i>Pour toute assistance, contactez le service scolarité
-                            </small>
-                        </p>
+    <!-- Features Section -->
+    <section class="section bg-primary pt-0 section-lg">
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <div class="mb-5">
+                        <h2 class="h3">Pourquoi choisir YSEM ?</h2>
+                        <p class="lead text-muted">Une plateforme complète pour tous vos besoins académiques</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <!-- Icon box -->
+                    <div class="icon-box text-center mb-5 mb-md-0">
+                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
+                            <span class="fas fa-shield-alt text-danger"></span>
+                        </div>
+                        <h3 class="h5 my-3">Sécurisé</h3>
+                        <p class="px-lg-4">Vos données sont protégées par des systèmes de sécurité avancés</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 mb-5 mb-md-0">
+                    <!-- Icon box -->
+                    <div class="icon-box text-center">
+                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
+                            <span class="fas fa-clock text-success"></span>
+                        </div>
+                        <h3 class="h5 my-3">Disponible 24/7</h3>
+                        <p class="px-lg-4">Accédez à vos services académiques à tout moment, où que vous soyez</p>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 mb-5 mb-md-0">
+                    <!-- Icon box -->
+                    <div class="icon-box text-center">
+                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
+                            <span class="fas fa-mobile-alt text-info"></span>
+                        </div>
+                        <h3 class="h5 my-3">Responsive</h3>
+                        <p class="px-lg-4">Interface adaptée à tous vos appareils : ordinateur, tablette, mobile</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section bg-soft pt-5 pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                        <div class="card-body">
+                            <div class="icon icon-shape icon-md bg-soft shadow-soft border border-light rounded-circle mb-3 mx-auto">
+                                <i class="fas fa-phone text-secondary"></i>
+                            </div>
+                            <h4 class="h5 mb-3">Besoin d'aide ?</h4>
+                            <p class="text-muted mb-0">
+                                Pour toute assistance technique ou administrative, contactez le service scolarité
+                            </p>
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">
+                        <small>© 2024 YSEM - Système de Gestion Académique. Tous droits réservés.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/popper.js/dist/umd/popper.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/js/neumorphism.js' %}"></script>
 
-    <style>
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-
-    .card-neumorphic {
-        background: #f8f9fa;
-        border-radius: 20px;
-        box-shadow: 
-            20px 20px 60px #d1d9e6,
-            -20px -20px 60px #ffffff;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .card-neumorphic:hover {
-        transform: translateY(-5px);
-        box-shadow: 
-            25px 25px 70px #d1d9e6,
-            -25px -25px 70px #ffffff;
-    }
-
-    .btn-primary, .btn-success, .btn-info {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 
-            8px 8px 16px #d1d9e6,
-            -8px -8px 16px #ffffff;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        padding: 12px 24px;
-    }
-
-    .btn-primary:hover, .btn-success:hover, .btn-info:hover {
-        transform: translateY(-2px);
-        box-shadow: 
-            12px 12px 20px #d1d9e6,
-            -12px -12px 20px #ffffff;
-    }
-
-    .btn-primary:active, .btn-success:active, .btn-info:active {
-        transform: translateY(0);
-        box-shadow: 
-            inset 4px 4px 8px #d1d9e6,
-            inset -4px -4px 8px #ffffff;
-    }
-
-    .btn-primary {
-        background: linear-gradient(145deg, #5a6acf, #4e73df);
-    }
-
-    .btn-success {
-        background: linear-gradient(145deg, #1cc88a, #17a673);
-    }
-
-    .btn-info {
-        background: linear-gradient(145deg, #36b9cc, #2c9faf);
-    }
-
-    .display-4 {
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .fa-graduation-cap {
-        filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
-    }
-    </style>
+    <script>
+        // Animation d'entrée pour les cartes
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
 </body>
 </html>

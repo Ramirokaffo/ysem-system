@@ -25,14 +25,14 @@
             <!-- Filters -->
             <form method="get" class="mb-4">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-1">
                         <div class="form-group">
                             <label for="search" class="form-label">Rechercher</label>
                             <input type="text" class="form-control" id="search" name="search" 
                                    value="{{ search }}" placeholder="Cours, enseignant, salle...">
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-2 mb-1">
                         <div class="form-group">
                             <label for="status" class="form-label">Statut</label>
                             <select class="form-control" id="status" name="status">
@@ -43,7 +43,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-2 mb-1">
                         <div class="form-group">
                             <label for="level" class="form-label">Niveau</label>
                             <select class="form-control" id="level" name="level">
@@ -54,7 +54,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-1">
                         <div class="form-group">
                             <label for="academic_year" class="form-label">Année académique</label>
                             <select class="form-control" id="academic_year" name="academic_year">
@@ -65,22 +65,25 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div>
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="fas fa-search me-1"></i>
-                                    Filtrer
-                                </button>
-                                <a href="{% url 'planification:sessions' %}" class="btn btn-outline-secondary">
+                    <div class="col-md-2 align-self-center row justify-content-end align-items-center">
+                    <a href="{% url 'planification:sessions' %}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-1"></i>
                                     Effacer
                                 </a>
+                </div>
+                </div>
+                <div class="row mb-3 justify-content-end mx-1">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary me-3 px-6">
+                                    <i class="fas fa-search me-1"></i>
+                                    Filtrer
+                                </button>
+                                
                             </div>
                         </div>
                     </div>
-                </div>
             </form>
 
             <!-- Sessions Table -->
@@ -128,21 +131,21 @@
                                 </td>
                                 <td>
                                     {% if session.status == 'scheduled' %}
-                                        <span class="badge badge-primary">{{ session.get_status_display }}</span>
+                                        <span class="badge badge-primary text-secondary">{{ session.get_status_display }}</span>
                                     {% elif session.status == 'ongoing' %}
-                                        <span class="badge badge-warning">{{ session.get_status_display }}</span>
+                                        <span class="badge badge-warning text-warning">{{ session.get_status_display }}</span>
                                     {% elif session.status == 'completed' %}
-                                        <span class="badge badge-success">{{ session.get_status_display }}</span>
+                                        <span class="badge badge-success text-success">{{ session.get_status_display }}</span>
                                     {% elif session.status == 'cancelled' %}
-                                        <span class="badge badge-danger">{{ session.get_status_display }}</span>
+                                        <span class="badge badge-danger text-danger">{{ session.get_status_display }}</span>
                                     {% elif session.status == 'postponed' %}
-                                        <span class="badge badge-info">{{ session.get_status_display }}</span>
+                                        <span class="badge badge-info text-info">{{ session.get_status_display }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a href="{% url 'planification:session_detail' session.pk %}"
-                                           class="btn btn-sm btn-outline-primary"
+                                           class="btn btn-sm btn-outline-secondary"
                                            title="Voir détails">
                                             <i class="fas fa-eye"></i>
                                         </a>
