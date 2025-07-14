@@ -11,6 +11,9 @@ urlpatterns = [
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
     path('enseignants/ajouter/', views.ajouter_enseignantView.as_view(), name='ajouter_enseignant'),
+    path('evaluations/ajouter/', views.ajouter_evaluationView.as_view(), name='ajouter_evaluation'),
+    path('suivi_cours/ajouter/', views.ajouter_suiviView.as_view(), name='ajouter_suivi'),
+
     
  ]
 """path('enseignants/liste', views.liste_enseignants, name='liste_enseignants'),  # ta vue principale"""

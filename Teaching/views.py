@@ -14,6 +14,8 @@ from Teaching.models import TeachingMonitoring
 
 from Teaching.models import Evaluation, Lecturer
 from .forms import EnseignantForm
+from .forms import EvaluationForm
+from .forms import Suivi_CoursForm
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -54,6 +56,10 @@ class ajouter_enseignantView(LoginRequiredMixin, TemplateView):
         if form.is_valid():
             form.save()
             return redirect('teaching:enseignants') 
+        else:
+            context = self.get_context_data(**kwargs)
+            context ['form'] = form
+            return self.render_to_response(context)
 
 
 class EvaluationsView(LoginRequiredMixin, TemplateView):
@@ -67,6 +73,28 @@ class EvaluationsView(LoginRequiredMixin, TemplateView):
         context['page_title'] = 'Evaluation des enseignants'
         return context
 
+class ajouter_evaluationView(LoginRequiredMixin, TemplateView):
+    """Vue pour l'ajout d'evaluation"""
+    model = Evaluation
+    form_class = EvaluationForm
+    template_name = 'Teaching/ajouter_evaluation.html'
+    success_url = '/evaluations/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = EvaluationForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = EvaluationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('teaching:evaluations') 
+        else:
+            context = self.get_context_data(**kwargs)
+            context ['form'] = form
+            return self.render_to_response(context)
+
 
 class Suivi_CoursView(LoginRequiredMixin, TemplateView):
     """Vue pour la gestion du suivi des cours"""
@@ -79,6 +107,30 @@ class Suivi_CoursView(LoginRequiredMixin, TemplateView):
         context['avancements'] = TeachingMonitoring.objects.all()
         context['page_title'] = 'Cahier de texte'
         return context
+    
+class ajouter_suiviView(LoginRequiredMixin, TemplateView):
+    """Vue pour l'ajout de suivi"""
+    model = TeachingMonitoring
+    form_class = Suivi_CoursForm
+    template_name = 'Teaching/ajouter_suivi.html'
+    success_url = '/suivi_cours/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = Suivi_CoursForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = Suivi_CoursForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('teaching:suivi_cours') 
+        else:
+            context = self.get_context_data(**kwargs)
+            context ['form'] = form
+            return self.render_to_response(context)
+
+
 
 
 
