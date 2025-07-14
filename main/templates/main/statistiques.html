@@ -20,7 +20,7 @@
                 <div class="col-md-6">
                     <form method="get" class="row g-2">
                         <div class="col-md-6">
-                            <select name="year" class="form-select" onchange="this.form.submit()">
+                            <select name="year" class="form-select p-2" onchange="this.form.submit()">
                                 <option value="">Toutes les années</option>
                                 {% for year in academic_years %}
                                     <option value="{{ year.id }}" {% if selected_year == year.id|stringformat:"s" %}selected{% endif %}>
@@ -30,7 +30,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <select name="program" class="form-select" onchange="this.form.submit()">
+                            <select name="program" class="form-select p-2" onchange="this.form.submit()">
                                 <option value="">Tous les programmes</option>
                                 {% for program in programs %}
                                     <option value="{{ program.id }}" {% if selected_program == program.id|stringformat:"s" %}selected{% endif %}>
@@ -51,7 +51,7 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
-                <i class="fas fa-users fa-3x text-primary"></i>
+                <i class="fas fa-users fa-3x text-danger"></i>
             </div>
             <h3 class="mb-1">{{ total_students|default:0 }}</h3>
             <p class="text-muted mb-2">Total étudiants</p>
@@ -105,7 +105,7 @@
     <!-- Enrollment Chart -->
     <div class="col-lg-8 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-chart-line me-2"></i>
                 Répartition des étudiants par niveau
             </h5>
@@ -118,7 +118,7 @@
     <!-- Program Distribution -->
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-chart-pie me-2"></i>
                 Répartition par programme
             </h5>
@@ -151,7 +151,7 @@
     <!-- Students by Level -->
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-layer-group me-2"></i>
                 Étudiants par niveau
             </h5>
@@ -197,7 +197,7 @@
     <!-- Statistics Summary -->
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-chart-bar me-2"></i>
                 Résumé des statistiques
             </h5>
@@ -261,7 +261,7 @@
     <!-- Gender Distribution Chart -->
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-venus-mars me-2"></i>
                 Répartition par genre
             </h5>
@@ -281,7 +281,7 @@
     <!-- Document Status Chart -->
     <div class="col-lg-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-file-alt me-2"></i>
                 État des documents
             </h5>

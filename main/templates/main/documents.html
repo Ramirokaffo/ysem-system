@@ -99,10 +99,10 @@
                 <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des documents</h5>
                 <div class="btn-group">
                     <a href="{% url 'main:document_create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Nouveau document
+                        <i class="fas fa-plus me-2 mr-1"></i>Nouveau document
                     </a>
                     <a href="{% url 'main:document_bulk_create' %}" class="btn btn-success">
-                        <i class="fas fa-copy me-2"></i>Création en masse
+                        <i class="fas fa-copy me-2 mr-1"></i>Création en masse
                     </a>
                 </div>
             </div>
@@ -128,11 +128,11 @@
                             <td>{{ document.get_type_display }}</td>
                             <td>
                                 {% if document.status == 'available' %}
-                                    <span class="badge bg-success">{{ document.get_status_display }}</span>
+                                    <span class="badge bg-success text-primary">{{ document.get_status_display }}</span>
                                 {% elif document.status == 'withdrawn' %}
-                                    <span class="badge bg-warning">{{ document.get_status_display }}</span>
+                                    <span class="badge bg-warning text-primary">{{ document.get_status_display }}</span>
                                 {% else %}
-                                    <span class="badge bg-danger">{{ document.get_status_display }}</span>
+                                    <span class="badge bg-danger text-primary">{{ document.get_status_display }}</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -145,7 +145,7 @@
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     <a href="{% url 'main:document_edit' document.pk %}"
-                                       class="btn btn-outline-primary"
+                                       class="btn btn-outline-secondary"
                                        title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>

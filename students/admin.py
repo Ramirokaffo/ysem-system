@@ -19,7 +19,7 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ('matricule', 'firstname', 'lastname', 'date_naiss', 'gender', 'lang')
         }),
         ('Contact', {
-            'fields': ('email', 'phone_number', 'address')
+            'fields': ('email', 'phone_number')
         }),
         ('Informations académiques', {
             'fields': ('school', 'program', 'status')
