@@ -12,8 +12,8 @@
             <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-plus me-2"></i>Nouvelle Inscription</h5>
 
             <!-- Informations importantes -->
-            <div class="alert alert-info mb-4">
-                <h6><i class="fas fa-info-circle me-2"></i>Documents requis</h6>
+            <div class="alert alert-info mb-4 d-flex flex-column align-items-start">
+                <h4><i class="fas fa-info-circle me-2 mr-1"></i>Documents requis</h4>
                 <ul class="mb-0">
                     <li>Tous les documents doivent être lisibles et de bonne qualité</li>
                     <li>Taille maximale par fichier : 5 Mo</li>
@@ -27,7 +27,7 @@
 
                 <!-- Section 1: Informations personnelles -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-user me-2"></i>Informations personnelles</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-user me-2 mr-1"></i>Informations personnelles</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.nom.label_tag }}
@@ -83,7 +83,7 @@
 
                 <!-- Section 2: Coordonnées -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-envelope me-2"></i>Coordonnées</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-envelope me-2 mr-1"></i>Coordonnées</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.courriel.label_tag }}
@@ -104,7 +104,7 @@
 
                 <!-- Section 3: Informations académiques -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-graduation-cap me-2"></i>Informations académiques</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-graduation-cap me-2 mr-1"></i>Informations académiques</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.annee_academique.label_tag }}
@@ -146,7 +146,7 @@
 
                 <!-- Section 4: Informations familiales -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-users me-2"></i>Informations familiales</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-users me-2 mr-1"></i>Informations familiales</h6>
 
                     <!-- Informations du père -->
                     <h6 class="mb-2 text-secondary">Informations du père</h6>
@@ -219,7 +219,7 @@
 
                 <!-- Section 5: Cursus scolaire -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-school me-2"></i>Cursus scolaire et universitaire</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-school me-2 mr-1"></i>Cursus scolaire et universitaire</h6>
 
                     <!-- BEPC/CAP -->
                     <h6 class="mb-2 text-secondary">BEPC / CAP</h6>
@@ -270,7 +270,7 @@
 
                 <!-- Section 6: Documents requis -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-file-upload me-2"></i>Documents requis</h6>
+                    <h6 class="mb-3 text-secondary"><i class="fas fa-file-upload me-2 mr-1"></i>Documents requis</h6>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -334,7 +334,7 @@
                 </div>
 
                 <!-- Section 7: Attestation -->
-                <div class="card-neumorphic p-3 mb-4">
+                <!-- <div class="card-neumorphic p-3 mb-4">
                     <h6 class="mb-3 text-primary"><i class="fas fa-check-circle me-2"></i>Attestation</h6>
                     <div class="form-check">
                         {{ form.attestation_veracite }}
@@ -343,7 +343,7 @@
                             <div class="text-danger small">{{ form.attestation_veracite.errors }}</div>
                         {% endif %}
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Boutons d'action -->
                 <div class="d-flex justify-content-end">
@@ -369,10 +369,50 @@
 </div>
 
 <script>
-// Script pour afficher/masquer le champ "Autre spécialité"
+// Script pour gérer la sélection dynamique des spécialités
 document.addEventListener('DOMContentLoaded', function() {
+    const programSelect = document.getElementById('id_programme');
     const specialiteSelect = document.getElementById('id_specialite_souhaitee');
     const autreSpecialiteDiv = document.getElementById('autre-specialite');
+
+    function loadSpecialities(programId) {
+        if (!programId) {
+            // Réinitialiser le champ spécialité
+            specialiteSelect.innerHTML = '<option value="">Sélectionner d\'abord un programme</option>';
+            specialiteSelect.disabled = true;
+            return;
+        }
+
+        // Faire la requête AJAX pour récupérer les spécialités
+        fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Vider le select et ajouter l'option par défaut
+                    specialiteSelect.innerHTML = '<option value="">Sélectionner une spécialité</option>';
+
+                    // Ajouter les spécialités
+                    data.specialities.forEach(speciality => {
+                        const option = document.createElement('option');
+                        option.value = speciality.id;
+                        option.textContent = speciality.name;
+                        specialiteSelect.appendChild(option);
+                    });
+
+                    // Activer le champ
+                    specialiteSelect.disabled = false;
+                } else {
+                    console.error('Erreur lors du chargement des spécialités:', data.error);
+                    specialiteSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    specialiteSelect.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur AJAX:', error);
+                specialiteSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                specialiteSelect.disabled = true;
+            });
+    }
 
     function toggleAutreSpecialite() {
         if (specialiteSelect.value === 'autre') {
@@ -382,8 +422,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Événements
+    programSelect.addEventListener('change', function() {
+        loadSpecialities(this.value);
+    });
+
     specialiteSelect.addEventListener('change', toggleAutreSpecialite);
-    toggleAutreSpecialite(); // Vérifier l'état initial
+
+    // Initialisation
+    if (programSelect.value) {
+        loadSpecialities(programSelect.value);
+    }
+    toggleAutreSpecialite();
 });
 </script>
 {% endblock %}

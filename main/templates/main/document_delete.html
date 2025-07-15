@@ -3,154 +3,142 @@
 
 {% block title %}{{ page_title }}{% endblock %}
 
-{% block extra_css %}
-<style>
-    .delete-container {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    .card {
-        border: none;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .card-header {
-        background-color: #f8d7da;
-        border-bottom: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-    .btn-group {
-        gap: 0.5rem;
-    }
-    .document-info {
-        background-color: #f8f9fa;
-        border-radius: 0.375rem;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-    }
-    .info-row:last-child {
-        margin-bottom: 0;
-    }
-    .info-label {
-        font-weight: 500;
-        color: #6c757d;
-    }
-    .info-value {
-        color: #212529;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <!-- En-tête de page -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">{{ page_title }}</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'main:documents' %}">Documents</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Supprimer document</li>
-                </ol>
-            </nav>
+    <!-- <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0">{{ page_title }}</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'main:documents' %}">Documents</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Supprimer document</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft">
+                            <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="btn-group">
-            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
-            </a>
-        </div>
-    </div>
+    </div> -->
 
     <!-- Confirmation de suppression -->
-    <div class="delete-container">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Confirmation de suppression
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning" role="alert">
-                    <strong>Attention !</strong> Cette action est irréversible. Le document sera définitivement supprimé.
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-primary shadow-soft border-light">
+                <div class="card-header bg-primary border-light text-center pb-0">
+                    <div class="icon-container mb-3">
+                        <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-danger text-white mx-auto d-flex align-items-center justify-content-center">
+                            <span class="fas fa-exclamation-triangle fa-2x"></span>
+                        </div>
+                    </div>
+                    <h5 class="card-title mb-3">
+                        Confirmation de suppression
+                    </h5>
                 </div>
+                <div class="card-body">
+                    <div class="alert alert-warning shadow-soft" role="alert">
+                        <strong>Attention !</strong> Cette action est irréversible. Le document sera définitivement supprimé.
+                    </div>
 
-                <p class="mb-3">
-                    Êtes-vous sûr de vouloir supprimer ce document officiel ?
-                </p>
+                    <p class="mb-3 text-center">
+                        Êtes-vous sûr de vouloir supprimer ce document officiel ?
+                    </p>
 
-                <!-- Informations du document -->
-                <div class="document-info">
-                    <h6 class="mb-3">Informations du document :</h6>
-                    
-                    <div class="info-row">
-                        <span class="info-label">Étudiant :</span>
-                        <span class="info-value">
-                            {{ document.student_level.student.matricule }} - 
-                            {{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}
-                        </span>
-                    </div>
-                    
-                    <div class="info-row">
-                        <span class="info-label">Niveau :</span>
-                        <span class="info-value">
-                            {{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})
-                        </span>
-                    </div>
-                    
-                    <div class="info-row">
-                        <span class="info-label">Type de document :</span>
-                        <span class="info-value">{{ document.get_type_display }}</span>
-                    </div>
-                    
-                    <div class="info-row">
-                        <span class="info-label">Statut :</span>
-                        <span class="info-value">
-                            {% if document.status == 'available' %}
-                                <span class="badge bg-success">{{ document.get_status_display }}</span>
-                            {% elif document.status == 'withdrawn' %}
-                                <span class="badge bg-warning">{{ document.get_status_display }}</span>
-                            {% else %}
-                                <span class="badge bg-danger">{{ document.get_status_display }}</span>
-                            {% endif %}
-                        </span>
-                    </div>
-                    
-                    {% if document.withdrawn_date %}
-                    <div class="info-row">
-                        <span class="info-label">Date de retrait :</span>
-                        <span class="info-value">{{ document.withdrawn_date|date:"d/m/Y" }}</span>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="info-row">
-                        <span class="info-label">Date de création :</span>
-                        <span class="info-value">{{ document.created_at|date:"d/m/Y à H:i" }}</span>
-                    </div>
-                </div>
+                    <!-- Informations du document -->
+                    <div class="card bg-primary shadow-inset border-light p-3 mb-4">
+                        <h6 class="mb-3 text-primary">
+                            <span class="fas fa-file-alt mr-2"></span>Informations du document
+                        </h6>
 
-                <!-- Boutons d'action -->
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times me-2"></i>Annuler
-                    </a>
-                    
-                    <form method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-2"></i>Confirmer la suppression
-                        </button>
-                    </form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Étudiant</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">
+                                        {{ document.student_level.student.matricule }} -
+                                        {{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Niveau</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">
+                                        {{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Type de document</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">{{ document.get_type_display }}</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Statut</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">
+                                        {% if document.status == 'available' %}
+                                            <span class="badge badge-success">{{ document.get_status_display }}</span>
+                                        {% elif document.status == 'withdrawn' %}
+                                            <span class="badge badge-warning">{{ document.get_status_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ document.get_status_display }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if document.withdrawn_date %}
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Date de retrait</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">{{ document.withdrawn_date|date:"d/m/Y" }}</div>
+                                </div>
+                                {% endif %}
+
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-muted font-weight-bold">Date de création</label>
+                                    <div class="form-control shadow-inset border-light bg-primary">{{ document.created_at|date:"d/m/Y à H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="card bg-primary shadow-soft border-light p-3">
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft px-4 mx-1">
+                                <span class="fas fa-times mr-2"></span>Annuler
+                            </a>
+
+                            <form method="post" class="d-inline mx-1">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger shadow-soft px-4">
+                                    <span class="fas fa-trash mr-2"></span>Confirmer la suppression
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.icon-container {
+    padding: 1rem;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}

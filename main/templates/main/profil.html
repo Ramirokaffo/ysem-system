@@ -9,149 +9,158 @@
 <div class="row">
     <div class="col-lg-4">
         <!-- Carte de profil -->
-        <div class="card-neumorphic p-4 mb-4 text-center">
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4 text-center">
             <div class="profile-avatar mb-3">
-                <div class="avatar-lg bg-primary text-white rounded-circle mx-auto d-flex align-items-center justify-content-center">
+                <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center">
                     {% if user.first_name and user.last_name %}
-                        {{ user.first_name.0 }}{{ user.last_name.0 }}
+                        <span class="h3 mb-0">{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
                     {% else %}
-                        <i class="fas fa-user fa-2x"></i>
+                        <span class="fas fa-user fa-2x text-secondary"></span>
                     {% endif %}
                 </div>
             </div>
             <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
             <p class="text-muted mb-3">{{ user.role|default:"Administrateur" }}</p>
             <p class="text-muted mb-4">
-                <i class="fas fa-envelope me-2"></i>{{ user.email }}
+                <span class="fas fa-envelope mr-2"></span>{{ user.email }}
             </p>
-            
+
             <!-- Statistiques rapides -->
             {% if recent_approvals is not None %}
             <div class="row text-center">
                 <div class="col-12">
-                    <div class="card-neumorphic p-3 mb-3">
-                        <h5 class="text-primary mb-1">{{ recent_approvals }}</h5>
+                    <div class="card bg-primary shadow-soft border-light p-3 mb-3">
+                        <h5 class="text-success mb-1">{{ recent_approvals }}</h5>
                         <small class="text-muted">Approbations récentes (30j)</small>
                     </div>
                 </div>
             </div>
             {% endif %}
-            
-            <div class="d-grid gap-2">
-                <button class="btn btn-primary" onclick="editProfile()">
-                    <i class="fas fa-edit me-2"></i>Modifier le profil
+
+            <div class="d-flex flex-column gap-2 align-items-stretch">
+                <button class="btn btn-primary shadow-soft" onclick="editProfile()">
+                    <span class="fas fa-edit mr-2"></span>Modifier le profil
                 </button>
-                <button class="btn btn-outline-secondary" onclick="changePassword()">
-                    <i class="fas fa-key me-2"></i>Changer le mot de passe
+                <button class="btn btn-primary shadow-soft mt-3" onclick="changePassword()">
+                    <span class="fas fa-key mr-2"></span>Changer le mot de passe
                 </button>
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-8">
         <!-- Informations détaillées -->
-        <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-3 border-bottom pb-2">
-                <i class="fas fa-info-circle me-2"></i>Informations personnelles
-            </h5>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Nom d'utilisateur</label>
-                    <div class="form-control-static">{{ user.username }}</div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Email</label>
-                    <div class="form-control-static">{{ user.email }}</div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Prénom</label>
-                    <div class="form-control-static">{{ user.first_name|default:"Non renseigné" }}</div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Nom</label>
-                    <div class="form-control-static">{{ user.last_name|default:"Non renseigné" }}</div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Rôle</label>
-                    <div class="form-control-static">
-                        <span class="badge bg-primary">{{ user.role|default:"Administrateur" }}</span>
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h5 class="mb-3">
+                    <span class="fas fa-info-circle mr-2"></span>Informations personnelles
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Nom d'utilisateur</label>
+                        <div class="form-control shadow-inset border-light bg-primary">{{ user.username }}</div>
                     </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Statut</label>
-                    <div class="form-control-static">
-                        {% if user.is_active %}
-                            <span class="badge bg-success">Actif</span>
-                        {% else %}
-                            <span class="badge bg-danger">Inactif</span>
-                        {% endif %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Email</label>
+                        <div class="form-control shadow-inset border-light bg-primary">{{ user.email }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Prénom</label>
+                        <div class="form-control shadow-inset border-light bg-primary">{{ user.first_name|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Nom</label>
+                        <div class="form-control shadow-inset border-light bg-primary">{{ user.last_name|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Rôle</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            <span class="badge badge-primary text-secondary">{{ user.role|default:"Administrateur" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Statut</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            {% if user.is_active %}
+                                <span class="badge badge-success">Actif</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactif</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Informations de connexion -->
-        <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-3 border-bottom pb-2">
-                <i class="fas fa-clock me-2"></i>Informations de connexion
-            </h5>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Dernière connexion</label>
-                    <div class="form-control-static">
-                        {% if last_login %}
-                            <i class="fas fa-calendar me-1"></i>
-                            {{ last_login|date:"d/m/Y à H:i" }}
-                            <br>
-                            <small class="text-muted">{{ last_login|timesince }} ago</small>
-                        {% else %}
-                            <span class="text-muted">Jamais connecté</span>
-                        {% endif %}
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h5 class="mb-3">
+                    <span class="fas fa-clock mr-2"></span>Informations de connexion
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Dernière connexion</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            {% if last_login %}
+                                <span class="fas fa-calendar mr-1 mb-3"></span>
+                                {{ last_login|date:"d/m/Y à H:i" }}
+                                <br>
+                                <small class="text-muted">{{ last_login|timesince }} ago</small>
+                            {% else %}
+                                <span class="text-muted">Jamais connecté</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Compte créé le</label>
-                    <div class="form-control-static">
-                        {% if date_joined %}
-                            <i class="fas fa-calendar-plus me-1"></i>
-                            {{ date_joined|date:"d/m/Y à H:i" }}
-                            <br>
-                            <small class="text-muted">Il y a {{ date_joined|timesince }}</small>
-                        {% else %}
-                            <span class="text-muted">Date inconnue</span>
-                        {% endif %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Compte créé le</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            {% if date_joined %}
+                                <span class="fas fa-calendar-plus mr-1 mb-3"></span>
+                                {{ date_joined|date:"d/m/Y à H:i" }}
+                                <br>
+                                <small class="text-muted mt-2">Il y a {{ date_joined|timesince }}</small>
+                            {% else %}
+                                <span class="text-muted">Date inconnue</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Préférences -->
-        <div class="card-neumorphic p-4">
-            <h5 class="mb-3 border-bottom pb-2">
-                <i class="fas fa-cog me-2"></i>Préférences
-            </h5>
-            
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Langue</label>
-                    <div class="form-control-static">
-                        <i class="fas fa-language me-1"></i>Français
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label text-muted">Fuseau horaire</label>
-                    <div class="form-control-static">
-                        <i class="fas fa-globe me-1"></i>UTC+1 (Europe/Paris)
-                    </div>
-                </div>
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h5 class="mb-3">
+                    <span class="fas fa-cog mr-2"></span>Préférences
+                </h5>
             </div>
-            
-            <div class="mt-3">
-                <a href="{% url 'main:parametres' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-cogs me-2"></i>Paramètres système
-                </a>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Langue</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            <span class="fas fa-language mr-1"></span>Français
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Fuseau horaire</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            <span class="fas fa-globe mr-1"></span>UTC+1 (Europe/Paris)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'main:parametres' %}" class="btn btn-outline-secondary shadow-soft">
+                        <span class="fas fa-cogs mr-2"></span>Paramètres système
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -160,30 +169,30 @@
 <!-- Modals pour édition -->
 <div class="modal fade" id="editProfileModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content bg-primary shadow-soft border-light">
+            <div class="modal-header bg-primary border-light">
                 <h5 class="modal-title">Modifier le profil</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="editProfileForm">
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="firstName" class="form-label">Prénom</label>
-                        <input type="text" class="form-control" id="firstName" value="{{ user.first_name }}">
+                        <input type="text" class="form-control shadow-inset border-light" id="firstName" value="{{ user.first_name }}">
                     </div>
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="lastName" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="lastName" value="{{ user.last_name }}">
+                        <input type="text" class="form-control shadow-inset border-light" id="lastName" value="{{ user.last_name }}">
                     </div>
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" value="{{ user.email }}">
+                        <input type="email" class="form-control shadow-inset border-light" id="email" value="{{ user.email }}">
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" onclick="saveProfile()">Enregistrer</button>
+            <div class="modal-footer bg-primary border-light">
+                <button type="button" class="btn btn-outline-secondary shadow-soft" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary shadow-soft" onclick="saveProfile()">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -191,30 +200,30 @@
 
 <div class="modal fade" id="changePasswordModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content bg-primary shadow-soft border-light">
+            <div class="modal-header bg-primary border-light">
                 <h5 class="modal-title">Changer le mot de passe</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="changePasswordForm">
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="currentPassword" class="form-label">Mot de passe actuel</label>
-                        <input type="password" class="form-control" id="currentPassword">
+                        <input type="password" class="form-control shadow-inset border-light" id="currentPassword">
                     </div>
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="newPassword" class="form-label">Nouveau mot de passe</label>
-                        <input type="password" class="form-control" id="newPassword">
+                        <input type="password" class="form-control shadow-inset border-light" id="newPassword">
                     </div>
-                    <div class="mb-3">
+                    <div class="form-group mb-3">
                         <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
-                        <input type="password" class="form-control" id="confirmPassword">
+                        <input type="password" class="form-control shadow-inset border-light" id="confirmPassword">
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" onclick="savePassword()">Changer</button>
+            <div class="modal-footer bg-primary border-light">
+                <button type="button" class="btn btn-outline-secondary shadow-soft" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary shadow-soft" onclick="savePassword()">Changer</button>
             </div>
         </div>
     </div>
@@ -222,73 +231,29 @@
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    .avatar-lg {
-        width: 80px;
-        height: 80px;
-        font-size: 24px;
-        font-weight: bold;
-    }
-
-    .form-control-static {
-        padding: 0.375rem 0;
-        font-weight: 500;
-        color: var(--text-color);
-    }
-
-    .card-neumorphic {
-        background: var(--primary-color);
-        border-radius: 20px;
-        box-shadow: 9px 9px 16px #b8b9be, -9px -9px 16px #fff;
-        border: none;
-    }
-
-    .form-control {
-        border-radius: 10px;
-        border: 1px solid rgba(0,0,0,0.1);
-        background: var(--primary-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-    }
-
-    .form-control:focus {
-        border-color: var(--accent-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
-    }
-
-    .badge {
-        border-radius: 20px;
-        padding: 0.5em 1em;
-    }
-
-    .modal-content {
-        background: var(--primary-color);
-        border-radius: 20px;
-        border: none;
-        box-shadow: 9px 9px 16px #b8b9be, -9px -9px 16px #fff;
-    }
-</style>
+<!-- Utilisation des classes neumorphism uniquement -->
 {% endblock %}
 
 {% block extra_js %}
 <script>
     function editProfile() {
-        const modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
-        modal.show();
+        $('#editProfileModal').modal('show');
     }
 
     function changePassword() {
-        const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-        modal.show();
+        $('#changePasswordModal').modal('show');
     }
 
     function saveProfile() {
         // Ici, vous pouvez ajouter la logique pour sauvegarder le profil
         alert('Fonctionnalité à implémenter : Sauvegarde du profil');
+        $('#editProfileModal').modal('hide');
     }
 
     function savePassword() {
         // Ici, vous pouvez ajouter la logique pour changer le mot de passe
         alert('Fonctionnalité à implémenter : Changement de mot de passe');
+        $('#changePasswordModal').modal('hide');
     }
 </script>
 {% endblock %}

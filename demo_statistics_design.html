@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperçu du nouveau design - Résumé des statistiques</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e3e7f1;
+            --text-color: #5a5c69;
+            --text-muted: #858796;
+            --accent-color: #4e73df;
+        }
+
+        body {
+            background: var(--primary-color);
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-color);
+        }
+
+        .card-neumorphic {
+            background: var(--primary-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+            border: none;
+        }
+
+        /* Styles pour le résumé des statistiques */
+        .stat-card-mini {
+            background: var(--primary-color);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 3px 3px 6px #b8b9be, -3px -3px 6px #fff;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-mini:hover {
+            box-shadow: 5px 5px 10px #b8b9be, -5px -5px 10px #fff;
+            transform: translateY(-1px);
+        }
+
+        .stat-icon-mini {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1;
+        }
+
+        .progress-mini {
+            height: 4px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-mini {
+            height: 100%;
+            background: linear-gradient(90deg, #4e73df, #36b9cc);
+            border-radius: 2px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-bar-mini.bg-success {
+            background: linear-gradient(90deg, #1cc88a, #17a2b8);
+        }
+
+        .progress-bar-mini.bg-warning {
+            background: linear-gradient(90deg, #f6c23e, #fd7e14);
+        }
+
+        .progress-bar-mini.bg-danger {
+            background: linear-gradient(90deg, #e74a3b, #dc3545);
+        }
+
+        .empty-state-mini {
+            text-align: center;
+            padding: 20px;
+            background: var(--primary-color);
+            border-radius: 12px;
+            box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        }
+
+        .quick-stats-summary {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .quick-stat-item {
+            background: var(--primary-color);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 2px 2px 4px #b8b9be, -2px -2px 4px #fff;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .quick-stat-item:hover {
+            box-shadow: 4px 4px 8px #b8b9be, -4px -4px 8px #fff;
+        }
+
+        .quick-stat-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            margin-right: 8px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .quick-stat-content {
+            flex: 1;
+        }
+
+        .quick-stat-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1;
+        }
+
+        .quick-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .old-design, .new-design {
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .old-design {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+
+        .new-design {
+            background: var(--primary-color);
+            box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
+        }
+
+        .design-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 10px;
+        }
+
+        .old-design .design-title {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .new-design .design-title {
+            background: linear-gradient(135deg, #4e73df, #36b9cc);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-bar me-2"></i>Nouveau Design - Résumé des Statistiques</h1>
+        
+        <div class="card-neumorphic">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-bar me-2"></i>
+                Résumé des statistiques
+            </h5>
+
+            <!-- Gender Distribution -->
+            <div class="mb-4">
+                <h6 class="mb-3 text-primary">
+                    <i class="fas fa-venus-mars me-2"></i>
+                    Répartition par genre
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="stat-card-mini">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-mini bg-primary">
+                                        <i class="fas fa-mars"></i>
+                                    </div>
+                                    <span class="ms-2 fw-medium">Masculin</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="stat-number">85</div>
+                                    <small class="text-muted">57%</small>
+                                </div>
+                            </div>
+                            <div class="progress-mini mt-2">
+                                <div class="progress-bar-mini" style="width: 57%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card-mini">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-mini bg-danger">
+                                        <i class="fas fa-venus"></i>
+                                    </div>
+                                    <span class="ms-2 fw-medium">Féminin</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="stat-number">65</div>
+                                    <small class="text-muted">43%</small>
+                                </div>
+                            </div>
+                            <div class="progress-mini mt-2">
+                                <div class="progress-bar-mini" style="width: 43%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Status -->
+            <div class="mb-4">
+                <h6 class="mb-3 text-info">
+                    <i class="fas fa-file-alt me-2"></i>
+                    État des documents
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="stat-card-mini">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-mini bg-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <span class="ms-2 fw-medium">Disponibles</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="stat-number">200</div>
+                                    <small class="text-muted">67%</small>
+                                </div>
+                            </div>
+                            <div class="progress-mini mt-2">
+                                <div class="progress-bar-mini bg-success" style="width: 67%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card-mini">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-mini bg-warning">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                    <span class="ms-2 fw-medium">Retirés</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="stat-number">90</div>
+                                    <small class="text-muted">30%</small>
+                                </div>
+                            </div>
+                            <div class="progress-mini mt-2">
+                                <div class="progress-bar-mini bg-warning" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="stat-card-mini">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon-mini bg-danger">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <span class="ms-2 fw-medium">Perdus</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="stat-number">10</div>
+                                    <small class="text-muted">3%</small>
+                                </div>
+                            </div>
+                            <div class="progress-mini mt-2">
+                                <div class="progress-bar-mini bg-danger" style="width: 3%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Summary -->
+            <div class="quick-stats-summary">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-icon bg-primary">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="quick-stat-content">
+                                <div class="quick-stat-number">57%</div>
+                                <div class="quick-stat-label">Masculin</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-icon bg-danger">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="quick-stat-content">
+                                <div class="quick-stat-number">43%</div>
+                                <div class="quick-stat-label">Féminin</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                <i class="fas fa-info-circle me-1"></i>
+                Nouveau design avec style neumorphique, barres de progression et animations
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Animation des barres de progression au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-bar-mini');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,150 +1,227 @@
 {% extends 'Teaching/base.html' %}
 {% load static %}
 
-{% block title %}Suivi des enseignements-YSEM{% endblock %}
+{% block title %}Suivi des enseignements - YSEM{% endblock %}
 
-{% block page_title %}Suivi-Enseignements{% endblock %}
+{% block page_title %}Suivi des Enseignements{% endblock %}
 
 {% block content %}
-
-    <!-- C'est ici que je commence à modifier en creant la table de suivi des enseignements de YSEM -->
-           
-<div class="bg-primary text-dark ">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <div class="mb-4 row justify-content-between px-3">
-                    <span class="h5">Table de suivi</span>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary">
-                            <i class="fas fa-download me-2"></i>
-                            Exporter
-                        </button>
-                        <button class="btn btn-success">
-                            <i class="fas fa-plus me-2"></i>
-                            Ajouter suivi
-                        </button>
+<div class="container-fluid px-4">
+    <!-- En-tête avec titre et actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="h3 mb-0">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Suivi des Enseignements
+                            </h4>
+                            <p class="text-muted mb-0">Gestion et suivi des cours dispensés</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download me-2"></i>
+                                    Exporter
+                                </button>
+                                <a href="{% url 'teaching:ajouter_suivi' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Nouveau suivi
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="mb-5">
-                    <table class="table shadow-soft rounded">
-                        <tr>
-                            <th class="border-0" scope="col" id="Date">Date_Suivi</th>
-                            <th class="border-0" scope="col" id="etudiant">Nom-Prénom de l'enseigant</th>
-                            <th class="border-0" scope="col" id="CN">Cycle et niveau</th>
-                            <th class="border-0" scope="col" id="cours">Intitulé du cours</th>
-                            <th class="border-0" scope="col" id="chapP">Chapitre prevu</th>
-                            <th class="border-0" scope="col" id="chapF">Chapitre fait</th>
-                            <th class="border-0" scope="col" id="couveture">Taux de couverture seance</th>
-                        </tr>
-                        {% for suivi in suivi_cours %}
-                        <tr>
-                            <th scope="row" id="firstyear3">{{ suivi.date }}</th>
-                            <th scope="row" id="Bolter3" headers="firstyear3 teacher3">{{ suivi.nom }} {{ suivi.prenom }} </th>
-                            <td headers="firstyear3 Bolter3 males3">{{ suivi.cycle }} {{ suivi.niveau }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ suivi.intitule_cours }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ suivi.contenu_seance_prevu }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ suivi.contenu_effectif_seance }}/{{ suivi.contenu_seance_prevu }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ suivi.taux_couverture_seance|floatformat:1 }} %</td>
-                            <td headers="firstyear3 Bolter3 females3"><button class="btn btn-outline-success">
-                            <i class="fas fa-edit me-2"></i>Modifier</button></td>
-                        </tr>
-                        
-                        {% endfor %}
-                    </table>
-                    <h4 class="mt-5">État d’avancement des séances</h4>
-                    <table class="table table-striped">
-                            <thead>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres de recherche -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-filter text-primary me-2"></i>
+                        Filtres de recherche
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" id="filterForm">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Enseignant</label>
+                                <select name="lecturer" class="form-control shadow-inset border-light bg-primary">
+                                    <option value="">Tous les enseignants</option>
+                                    {% for lecturer in lecturers %}
+                                        <option value="{{ lecturer.matricule }}">{{ lecturer.firstname }} {{ lecturer.lastname }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Cours</label>
+                                <select name="course" class="form-control shadow-inset border-light bg-primary">
+                                    <option value="">Tous les cours</option>
+                                    {% for course in courses %}
+                                        <option value="{{ course.course_code }}">{{ course.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Niveau</label>
+                                <select name="level" class="form-control shadow-inset border-light bg-primary">
+                                    <option value="">Tous les niveaux</option>
+                                    {% for level in levels %}
+                                        <option value="{{ level.id }}">{{ level.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Année académique</label>
+                                <select name="academic_year" class="form-control shadow-inset border-light bg-primary">
+                                    {% for year in academic_years %}
+                                        <option value="{{ year.id }}" {% if year == active_year %}selected{% endif %}>
+                                            {{ year.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search me-2"></i>
+                                    Filtrer
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetFilters()">
+                                    <i class="fas fa-times me-2"></i>
+                                    Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table principale des suivis -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-table text-primary me-2"></i>
+                        Liste des suivis de cours
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
                                 <tr>
-                                    <th>Enseignant</th>
-                                    <th>Cycle / Niveau</th>
-                                    <th>Intitule cours</th>
-                                    <th>Avancement</th>
+                                    <th class="border-0 px-3">Date</th>
+                                    <th class="border-0">Enseignant</th>
+                                    <th class="border-0">Cours</th>
+                                    <th class="border-0">Niveau</th>
+                                    <th class="border-0 text-center">Chapitres</th>
+                                    <th class="border-0 text-center">Séances</th>
+                                    <th class="border-0 text-center">Taux</th>
+                                    <th class="border-0 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                             {% for suivi in avancements %}
-                                <tr>  
-                                    <td>{{ suivi.enseignant.get_full_name }}</td>
-                                    <td>{{ suivi.niveau.cycle }} / {{ suivi.niveau.nom }}</td>
-                                    <td>{{ suivi.cours }}</td>
+                                {% for suivi in suivi_cours %}
+                                <tr>
+                                    <td class="px-3">
+                                        <span class="badge bg-light text-dark">
+                                            {{ suivi.date|date:"d/m/Y" }}
+                                        </span>
+                                    </td>
                                     <td>
-                                         <div class="progress" style="height: 25px;">
-                                            <div class="progress-bar {{ suivi.couleur_barre }}"
-                                                 role="progressbar"
-                                                 style="width: {{ suivi.taux_couverture|floatformat:0 }}%;"
-                                                 aria-valuenow="{{ suivi.taux_couverture|floatformat:0 }}"
-                                                 aria-valuemin="0" aria-valuemax="100">
-                                                {{ suivi.taux_couverture|floatformat:1 }} %
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm bg-primary text-white rounded-circle me-2">
+                                                {{ suivi.lecturer.firstname|first }}{{ suivi.lecturer.lastname|first }}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ suivi.lecturer.firstname }} {{ suivi.lecturer.lastname }}</h6>
+                                                <small class="text-muted">{{ suivi.lecturer.matricule }}</small>
                                             </div>
                                         </div>
                                     </td>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-0">{{ suivi.course.label }}</h6>
+                                            <small class="text-muted">{{ suivi.course.course_code }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-white">
+                                            {{ suivi.level.name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">{{ suivi.chapitre_fait }}/{{ suivi.totalChapterCount }}</span>
+                                            <small class="text-muted">{{ suivi.taux_couverture_chapitre|floatformat:1 }}%</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">{{ suivi.contenu_effectif_seance }}/{{ suivi.contenu_seance_prevu }}</span>
+                                            <small class="text-muted">{{ suivi.taux_couverture_seance|floatformat:1 }}%</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 20px; width: 80px;">
+                                            <div class="progress-bar {{ suivi.couleur_barre }}"
+                                                 role="progressbar"
+                                                 style="width: {{ suivi.taux_couverture_seance|floatformat:0 }}%"
+                                                 aria-valuenow="{{ suivi.taux_couverture_seance|floatformat:0 }}"
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
-                             {% endfor %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                                            <p>Aucun suivi de cours trouvé</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
-                    </table>
-
-                    
-                   
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Script pour les filtres -->
+<script>
+    function resetFilters() {
+        document.querySelectorAll('#filterForm select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+        document.getElementById('filterForm').submit();
+    }
+</script>
+
 {% endblock %}
-<!--
-{% block extra_css %}
-<style>
-    .form-select {
-        border-radius: 10px;
-        border: 1px solid rgba(0,0,0,0.1);
-        background: var(--primary-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-    }
-    
-    .form-select:focus {
-        border-color: var(--accent-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
-    }
-    
-    .progress {
-        background: var(--primary-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-    }
-    
-    .table {
-        background: transparent;
-    }
-    
-    .table th {
-        border-top: none;
-        border-bottom: 2px solid rgba(0,0,0,0.1);
-        font-weight: 600;
-        color: var(--text-color);
-    }
-    
-    .table td {
-        border-top: 1px solid rgba(0,0,0,0.05);
-        vertical-align: middle;
-    }
-    
-    .badge {
-        border-radius: 20px;
-        padding: 0.4em 0.8em;
-    }
-    
-    .list-group-item {
-        padding: 1rem 0;
-    }
-    
-    .list-group-item:not(:last-child) {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-    
-    .chart-container {
-        position: relative;
-    }
-</style>
-{% endblock %}
--->

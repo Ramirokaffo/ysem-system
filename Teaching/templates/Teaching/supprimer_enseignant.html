@@ -1,0 +1,121 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block title %}Supprimer Enseignant - YSEM{% endblock %}
+
+{% block page_title %}Supprimer l'enseignant{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        <div class="text-center">
+          <a href="{% url 'teaching:enseignants' %}" class="btn btn-outline-secondary shadow-soft">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% elif enseignant %}
+
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'teaching:detail_enseignant' enseignant.matricule %}" class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux détails
+                    </a>
+                </div>
+                <div>
+                    <span class="badge bg-danger fs-6">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Suppression
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation de suppression -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3 text-danger">
+                    <span class="fas fa-exclamation-triangle mr-2"></span>Confirmation de suppression
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning shadow-soft">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Attention !</strong> Cette action est irréversible et supprimera définitivement cet enseignant du système.
+                </div>
+
+                <p class="mb-4 text-center">Êtes-vous sûr de vouloir supprimer cet enseignant ?</p>
+
+                <!-- Récapitulatif de l'enseignant -->
+                <div class="card bg-primary shadow-inset border-light p-4 mb-4">
+                    <h6 class="text-secondary mb-3">
+                        <span class="fas fa-user-tie mr-2"></span>Informations de l'enseignant à supprimer
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Matricule</label>
+                                <div class="text-dark">{{ enseignant.matricule }}</div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Nom complet</label>
+                                <div class="text-dark">{{ enseignant.firstname }} {{ enseignant.lastname }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Grade</label>
+                                <div class="text-dark">{{ enseignant.grade }}</div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Email</label>
+                                <div class="text-dark">{{ enseignant.email|default:"Non renseigné" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" id="supprimer-form">
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boutons d'action -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'teaching:detail_enseignant' enseignant.matricule %}" class="btn btn-outline-secondary shadow-soft">
+                    <span class="fas fa-times mr-2"></span>Annuler
+                </a>
+                <a href="{% url 'teaching:enseignants' %}" class="btn btn-outline-primary shadow-soft">
+                    <span class="fas fa-list mr-2"></span>Liste des enseignants
+                </a>
+                <button type="submit" form="supprimer-form" class="btn btn-danger shadow-soft" onclick="return confirm('Confirmez-vous la suppression définitive de cet enseignant ?')">
+                    <span class="fas fa-trash mr-2"></span>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

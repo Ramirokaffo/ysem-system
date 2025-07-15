@@ -1,58 +1,170 @@
 {% extends 'Teaching/base.html' %}
 {% load static %}
 
-{% block title %}Evaluation des Enseignants-YSEM{% endblock %}
+{% block title %}Évaluations - YSEM{% endblock %}
 
-{% block page_title %}Evaluation-Enseignants{% endblock %}
+{% block page_title %}Évaluations des enseignants{% endblock %}
 
 {% block content %}
 
-    <!-- C'est ici que je commence à modifier en creant la table de suivi des enseignements de YSEM -->
-           
-<div class="bg-primary text-dark ">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <div class="mb-4 row justify-content-between px-3">
-                    <span class="h5">Table d'évaluation</span>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary">
-                            <i class="fas fa-download me-2"></i>
-                            Exporter
-                        </button>
-                        <button class="btn btn-success">
-                            <i class="fas fa-plus me-2"></i>
-                            Ajouter evaluation
-                        </button>
-                    </div>
+<!-- En-tête avec actions -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <span class="fas fa-star mr-2"></span>Gestion des évaluations
+                    </h4>
+                    <p class="text-muted mb-0">{{ evaluations.count }} évaluation{{ evaluations.count|pluralize }} enregistrée{{ evaluations.count|pluralize }}</p>
                 </div>
-                <div class="mb-5">
-                    <table class="table shadow-soft rounded">
-                        <tr>
-                            <th class="border-0" scope="col" id="Date">Date_Evaluation</th>
-                            <th class="border-0" scope="col" id="etudiant">Nom-Prénom de l'étudiant</th>
-                            <th class="border-0" scope="col" id="CN">Cycle et niveau</th>
-                            <th class="border-0" scope="col" id="cours">Intitulé du cours</th>
-                            <th class="border-0" scope="col" id="BE">Bonne explication du cours?</th>
-                            <th class="border-0" scope="col" id="BR">Bonne réponse aux questions?</th>
-                            <th class="border-0" scope="col" id="QDR">Quelles sont les difficultés rencontrées</th>
-                        </tr>
-                        {% for evaluation in evaluations %}
-                        <tr>
-                            <th scope="row" id="firstyear3">{{ evaluation.evaluationDat }}</th>
-                            <th scope="row" id="Bolter3" headers="firstyear3 teacher3">{{ evaluation.nom_et_prenom_etudiant }} </th>
-                            <td headers="firstyear3 Bolter3 males3">{{ evaluation.cycle }} {{ evaluation.niveau }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ evaluation.intitule_cours }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ evaluation.bonne_explication_cours }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ evaluation.bonne_reponse_questions }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ evaluation.quelles_difficultes_rencontrees }}</td>
-                            <td headers="firstyear3 Bolter3 females3"><button class="btn btn-outline-success">
-                            <i class="fas fa-edit me-2"></i>Modifier</button></td>
-                        </tr>
-                        
-                        {% endfor %}
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-download me-2"></i>
+                        Exporter
+                    </button>
+                    <a href="{% url 'teaching:ajouter_evaluation' %}" class="btn btn-success shadow-soft">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter évaluation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tableau des évaluations -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light">
+            <div class="card-body p-0">
+                {% if evaluations %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-primary border-light">
+                            <tr>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-calendar me-2 text-secondary"></i>Date
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-user-graduate me-2 text-secondary"></i>Étudiant
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-graduation-cap me-2 text-secondary"></i>Cycle/Niveau
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-book me-2 text-secondary"></i>Cours
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-chalkboard-teacher me-2 text-secondary"></i>Explication
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold" scope="col">
+                                    <i class="fas fa-question-circle me-2 text-secondary"></i>Réponses
+                                </th>
+                                <th class="border-0 text-dark font-weight-bold text-center" scope="col">
+                                    <i class="fas fa-cogs me-2 text-secondary"></i>Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evaluation in evaluations %}
+                            <tr class="border-light">
+                                <td class="border-light">
+                                    <span class="badge bg-dark text-white">
+                                        {{ evaluation.evaluationDat|date:"d/m/Y"|default:"Non renseignée" }}
+                                    </span>
+                                </td>
+                                <td class="border-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm bg-dark rounded-circle me-3">
+                                            <span class="text-white font-weight-bold">
+                                                {% if evaluation.student %}
+                                                    {{ evaluation.student.firstname|slice:":1"|upper }}{{ evaluation.student.lastname|slice:":1"|upper }}
+                                                {% else %}
+                                                    ??
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="font-weight-bold text-dark">
+                                                {% if evaluation.student %}
+                                                    {{ evaluation.student.lastname }} {{ evaluation.student.firstname }}
+                                                {% else %}
+                                                    Non renseigné
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="border-light">
+                                    <span class="badge bg-warning text-dark">
+                                        {% if evaluation.level %}
+                                            {{ evaluation.level.cycle }} - {{ evaluation.level }}
+                                        {% else %}
+                                            Non renseigné
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="border-light">
+                                    <span class="text-dark">
+                                        {% if evaluation.course %}
+                                            {{ evaluation.course.label|truncatechars:30 }}
+                                        {% else %}
+                                            Non renseigné
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="border-light text-center">
+                                    {% if evaluation.bonne_explication_cours %}
+                                        <i class="fas fa-check-circle text-success" title="Bonne explication"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" title="Explication insuffisante"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="border-light text-center">
+                                    {% if evaluation.bonne_reponse_questions %}
+                                        <i class="fas fa-check-circle text-success" title="Bonnes réponses"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" title="Réponses insuffisantes"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="border-light text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'teaching:detail_evaluation' evaluation.id %}"
+                                           class="btn btn-info btn-sm shadow-soft text-white"
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'teaching:modifier_evaluation' evaluation.id %}"
+                                           class="btn btn-warning btn-sm shadow-soft text-dark"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'teaching:supprimer_evaluation' evaluation.id %}"
+                                           class="btn btn-danger btn-sm shadow-soft text-white"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette évaluation ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
                     </table>
                 </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-star-half-alt fa-3x text-secondary"></i>
+                    </div>
+                    <h5 class="text-dark">Aucune évaluation enregistrée</h5>
+                    <p class="text-secondary">Commencez par ajouter votre première évaluation.</p>
+                    <a href="{% url 'teaching:ajouter_evaluation' %}" class="btn btn-success shadow-soft">
+                        <i class="fas fa-plus me-2"></i>Ajouter une évaluation
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

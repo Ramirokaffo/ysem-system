@@ -14,33 +14,33 @@
                 <div class="col-md-6">
                     <h5 class="mb-0">
                         <i class="fas fa-chart-bar me-2"></i>
-                        Tableau de bord statistique du suivi des enseignements
+                        Statistiques de suivi des enseignements
                     </h5>
                 </div>
                 <div class="col-md-6">
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <select class="form-select">
-                                <option value="2024">Année 2030</option>
-                                <option value="2024">Année 2029</option>
-                                <option value="2024">Année 2028</option>
-                                <option value="2024">Année 2027</option>
-                                <option value="2024">Année 2026</option>
-                                <option value="2024">Année 2025</option>
-                                <option value="2024">Année 2024</option>
-                                <option value="2023">Année 2023</option>
-                                <option value="2022">Année 2022</option>
-                            </select>
+                    <form method="get" id="filter-form">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <select class="form-select p-2" name="academic_year" id="academic_year" onchange="document.getElementById('filter-form').submit();">
+                                    {% for year in academic_years %}
+                                        <option value="{{ year.id }}" {% if current_year.id == year.id %}selected{% endif %}>
+                                            {{ year.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select p-2" name="program" id="program" onchange="document.getElementById('filter-form').submit();">
+                                    <option value="">Tous les programmes</option>
+                                    {% for program in programs %}
+                                        <option value="{{ program.id }}" {% if selected_program and selected_program.id == program.id %}selected{% endif %}>
+                                            {{ program.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <select class="form-select">
-                                <option value="all">Tous les programmes</option>
-                                <option value="info">ESSEC</option>
-                                <option value="gestion">ESTIC</option>
-                                
-                            </select>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -52,15 +52,13 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
-                <i class="fas fa-users-plus"></i>
+                <i class="fas fa-users fa-3x text-dark"></i>
+                <!-- <i class="fas fa-book fa-3x text-success"></i> -->
             </div>
-            <h3 class="mb-1">34</h3>
-            <p class="text-muted mb-2">Total enseignant</p>
+            <h3 class="mb-1">{{ kpis.total_lecturers|default:0 }}</h3>
+            <p class="text-muted mb-2">Total enseignants</p>
             <div class="d-flex justify-content-center align-items-center">
-                <span class="badge bg-success me-2">
-                    <i class="fas fa-arrow-up"></i> 20%
-                </span>
-                <small class="text-muted">vs année précédente</small>
+                <small class="text-muted">dans le système</small>
             </div>
         </div>
     </div>
@@ -68,125 +66,232 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
-                <i class="fas fa-file-alt"></i>
+                <i class="fas fa-book fa-3x text-success"></i>
             </div>
-            <h3 class="mb-1">456</h3>
+            <h3 class="mb-1">{{ kpis.total_courses|default:0 }}</h3>
             <p class="text-muted mb-2">Total cours</p>
             <div class="d-flex justify-content-center align-items-center">
-                <span class="badge bg-success me-2">
-                    <!--  <i class="fas fa-arrow-up"></i> 8% --> 
-                </span>
-                <small class="text-muted">pour cette année académique</small>
+                <small class="text-muted">
+                    {% if selected_program %}{{ selected_program.name }}{% else %}tous programmes{% endif %}
+                </small>
             </div>
         </div>
     </div>
-<!--
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card-neumorphic text-center">
-            <div class="mb-3">
-                <i class="fas fa-graduation-cap fa-3x text-warning"></i>
-            </div>
-            <h3 class="mb-1">89</h3>
-            <p class="text-muted mb-2">Diplômés</p>
-            <div class="d-flex justify-content-center align-items-center">
-                <span class="badge bg-warning me-2">
-                    <i class="fas fa-arrow-down"></i> 3%
-                </span>
-                <small class="text-muted">vs année précédente</small>
-            </div>
-        </div>
-    </div> -->
 
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic text-center">
             <div class="mb-3">
                 <i class="fas fa-percentage fa-3x text-info"></i>
             </div>
-            <h3 class="mb-1">80%</h3>
-            <p class="text-muted mb-2">Taux de converture des cours</p>
+            <h3 class="mb-1">{{ kpis.global_coverage|default:0 }}%</h3>
+            <p class="text-muted mb-2">Taux de couverture global</p>
             <div class="d-flex justify-content-center align-items-center">
-                <span class="badge bg-success me-2">
-                    <!-- <i class="fas fa-arrow-up"></i> 5% -->
-                </span>
-                <small class="text-muted"> </small>
+                {% if kpis.global_coverage >= 80 %}
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-check"></i> Excellent
+                    </span>
+                {% elif kpis.global_coverage >= 60 %}
+                    <span class="badge bg-warning me-2">
+                        <i class="fas fa-exclamation"></i> Moyen
+                    </span>
+                {% else %}
+                    <span class="badge bg-danger me-2">
+                        <i class="fas fa-times"></i> Faible
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic text-center">
+            <div class="mb-3">
+                <i class="fas fa-calendar-alt fa-3x text-warning"></i>
+            </div>
+            <h3 class="mb-1">{{ kpis.total_sessions|default:0 }}</h3>
+            <p class="text-muted mb-2">Séances programmées</p>
+            <div class="d-flex justify-content-center align-items-center">
+                <small class="text-muted">{{ current_year.name }}</small>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- Enrollment Chart -->
+    <!-- État d'avancement des cours -->
     <div class="col-lg-8 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
                 <i class="fas fa-chart-line me-2"></i>
                 État d'avancement des cours
             </h5>
-            <div class="chart-container" style="height: 300px; background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; display: flex; align-items: center; justify-content: center;">
-                <div class="text-center text-muted">
-                    <i class="fas fa-chart-line fa-3x mb-3"></i>
-                    <p>Graphique de l'état de couverture des cours par semestre</p>
-                    <small>Intégration Chart.js à venir</small>
+
+            {% if monitoring_stats.total_entries > 0 %}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                            </div>
+                            <h4 class="text-success">{{ monitoring_stats.status_distribution.termine }}</h4>
+                            <p class="text-muted mb-0">Cours terminés</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-clock fa-2x text-warning"></i>
+                            </div>
+                            <h4 class="text-warning">{{ monitoring_stats.status_distribution.en_cours }}</h4>
+                            <p class="text-muted mb-0">En cours</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                            <h4 class="text-danger">{{ monitoring_stats.status_distribution.retard }}</h4>
+                            <p class="text-muted mb-0">En retard</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="chart-container" id="statusChart" style="height: 200px;">
+                    <canvas id="statusChartCanvas"></canvas>
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <p>Aucune donnée de suivi disponible</p>
+                    <small>Ajoutez des entrées de suivi pour voir les statistiques</small>
+                </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Program Distribution 
+    <!-- Activités pédagogiques -->
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
-                <i class="fas fa-chart-pie me-2"></i>
-                Couverture des programmes de cours par niveau 
+                <i class="fas fa-tasks me-2"></i>
+                Activités pédagogiques
             </h5>
-            <div class="mb-3">
-                <p>Licence Professionnelle Elite Bilingue en Gestion</p>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>L1</span>
-                    <span class="fw-bold">45%</span>
+
+            {% if monitoring_stats.total_entries > 0 %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Travaux préparatoires</span>
+                        <span class="fw-bold">{{ monitoring_stats.pedagogical_activities.travaux_prep|default:0 }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #e9ecef;">
+                        <div class="progress-bar bg-primary"
+                             style="width: {{ monitoring_stats.pedagogical_activities.travaux_prep|floatformat:0 }}%;
+                                    border-radius: 10px;
+                                    min-width: {% if monitoring_stats.pedagogical_activities.travaux_prep > 0 %}2px{% else %}0{% endif %};">
+                        </div>
+                    </div>
                 </div>
-                <div class="progress" style="height: 8px; border-radius: 10px;">
-                    <div class="progress-bar bg-primary" style="width: 45%; border-radius: 10px;"></div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Travaux en équipe</span>
+                        <span class="fw-bold">{{ monitoring_stats.pedagogical_activities.group_work|default:0 }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #e9ecef;">
+                        <div class="progress-bar bg-success"
+                             style="width: {{ monitoring_stats.pedagogical_activities.group_work|floatformat:0 }}%;
+                                    border-radius: 10px;
+                                    min-width: {% if monitoring_stats.pedagogical_activities.group_work > 0 %}2px{% else %}0{% endif %};">
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>L2</span>
-                    <span class="fw-bold">30%</span>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Travaux en salle</span>
+                        <span class="fw-bold">{{ monitoring_stats.pedagogical_activities.class_work|default:0 }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #e9ecef;">
+                        <div class="progress-bar bg-info"
+                             style="width: {{ monitoring_stats.pedagogical_activities.class_work|floatformat:0 }}%;
+                                    border-radius: 10px;
+                                    min-width: {% if monitoring_stats.pedagogical_activities.class_work > 0 %}2px{% else %}0{% endif %};">
+                        </div>
+                    </div>
                 </div>
-                <div class="progress" style="height: 8px; border-radius: 10px;">
-                    <div class="progress-bar bg-success" style="width: 30%; border-radius: 10px;"></div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>TD et TP</span>
+                        <span class="fw-bold">{{ monitoring_stats.pedagogical_activities.td_tp|default:0 }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #e9ecef;">
+                        <div class="progress-bar bg-warning"
+                             style="width: {{ monitoring_stats.pedagogical_activities.td_tp|floatformat:0 }}%;
+                                    border-radius: 10px;
+                                    min-width: {% if monitoring_stats.pedagogical_activities.td_tp > 0 %}2px{% else %}0{% endif %};">
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>L3</span>
-                    <span class="fw-bold">25%</span>
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-tasks fa-2x mb-3"></i>
+                    <p>Aucune donnée d'activité</p>
                 </div>
-                <div class="progress" style="height: 8px; border-radius: 10px;">
-                    <div class="progress-bar bg-warning" style="width: 25%; border-radius: 10px;"></div>
-                </div>
-            </div>    
-            
-        </div> -->
+            {% endif %}
+        </div>
     </div>
 
-    <!--Graphique évaluation des enseignants par semestre--> 
+    <!-- Évaluation des enseignants -->
     <div class="col-lg-8 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
-                <i class="fas fa-chart-line me-2"></i>
+                <i class="fas fa-star me-2"></i>
                 Évaluation des enseignants
             </h5>
-            <div class="chart-container" style="height: 300px; background: var(--primary-color); border-radius: 10px; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; display: flex; align-items: center; justify-content: center;">
-                <div class="text-center text-muted">
-                    <i class="fas fa-chart-line fa-3x mb-3"></i>
-                    <p>Graphique de l'évaluation des enseignants pas semestre</p>
-                    <small>Intégration Chart.js à venir</small>
+
+            {% if evaluation_stats.total_evaluations > 0 %}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-thumbs-up fa-2x text-success"></i>
+                            </div>
+                            <h4 class="text-success">{{ evaluation_stats.satisfaction_score }}%</h4>
+                            <p class="text-muted mb-0">Satisfaction globale</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-users fa-2x text-info"></i>
+                            </div>
+                            <h4 class="text-info">{{ evaluation_stats.total_evaluations }}</h4>
+                            <p class="text-muted mb-0">Évaluations</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="mb-2">
+                                <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                            </div>
+                            <h4 class="text-warning">{{ evaluation_stats.stats.difficultes }}%</h4>
+                            <p class="text-muted mb-0">Difficultés signalées</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="chart-container" id="evaluationChart" style="height: 200px;">
+                    <canvas id="evaluationChartCanvas"></canvas>
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-star fa-3x mb-3"></i>
+                    <p>Aucune évaluation disponible</p>
+                    <small>Les évaluations apparaîtront ici une fois saisies</small>
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -201,163 +306,49 @@
                 <i class="fas fa-layer-group me-2"></i>
                 Couverture des cours par niveau
             </h5>
-            
+
             <div class="table-responsive">
                 <table class="table table-sm">
-                    <thead>
-                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Elite Bilingue en Science de Gestion</td>
-                        <tr>
-                            <th>Niveau</th>
-                            <th>Cours</th>
-                            <th>Taux de couverture</th>
-                            <th>Moyenne</th>
-                        </tr>
-                    </thead>
                     <tbody>
+                        {% if levels_by_program %}
+                            {% for program, levels in levels_by_program.items %}
+                                <tr>
+                                    <td colspan="4" style="text-align:center; font-weight:bold;">{{ program.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Cours</th>
+                                    <th>Taux de couverture</th>
+                                    <th>Moyenne</th>
+                                </tr>
 
-                        
-                        <tr>
-                            <td><span class="badge bg-primary">L1</span></td>
-                            <td>345</td>
-                            <td>
-                                <span class="text-success fw-bold">88%</span>
-                            </td>
-                            <td>14.2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L2</span></td>
-                            <td>298</td>
-                            <td>
-                                <span class="text-success fw-bold">91%</span>
-                            </td>
-                            <td>14.8</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L3</span></td>
-                            <td>267</td>
-                            <td>
-                                <span class="text-success fw-bold">94%</span>
-                            </td>
-                            <td>15.1</td>
-                        </tr>
-                        
-                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Avantage en Science de Gestion</td>
-                        <tr>
-                            <th>Niveau</th>
-                            <th>Cours</th>
-                            <th>Taux de couverture</th>
-                            <th>Moyenne</th>
-                        </tr>
-                        <tr>
-                            
-                            <td><span class="badge bg-primary">L1</span></td>
-                            <td>345</td>
-                            <td>
-                                <span class="text-success fw-bold">88%</span>
-                            </td>
-                            <td>14.2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L2</span></td>
-                            <td>298</td>
-                            <td>
-                                <span class="text-success fw-bold">91%</span>
-                            </td>
-                            <td>14.8</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L3</span></td>
-                            <td>267</td>
-                            <td>
-                                <span class="text-success fw-bold">94%</span>
-                            </td>
-                            <td>15.1</td>
-                        </tr>
-
-                        <td colspan="4" style="text-align:center; font-weight:bold;">Licence Professionnelle Elite en Communication des organisations</td>
-                        <tr>
-                            <th>Niveau</th>
-                            <th>Cours</th>
-                            <th>Taux de couverture</th>
-                            <th>Moyenne</th>
-                        </tr>
-
-                        <tr>
-                            <td><span class="badge bg-primary">L1</span></td>
-                            <td>345</td>
-                            <td>
-                                <span class="text-success fw-bold">88%</span>
-                            </td>
-                            <td>14.2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L2</span></td>
-                            <td>298</td>
-                            <td>
-                                <span class="text-success fw-bold">91%</span>
-                            </td>
-                            <td>14.8</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">L3</span></td>
-                            <td>267</td>
-                            <td>
-                                <span class="text-success fw-bold">94%</span>
-                            </td>
-                            <td>15.1</td>
-                        </tr>
-
-                        <td colspan="4" style="text-align:center; font-weight:bold;">Master Professionnel Elite en Science de Gestion</td>
-                        <tr>
-                            <th>Niveau</th>
-                            <th>Cours</th>
-                            <th>Taux de couverture</th>
-                            <th>Moyenne</th>
-                        </tr>
-
-                        <tr>
-                            <td><span class="badge bg-primary">M1</span></td>
-                            <td>345</td>
-                            <td>
-                                <span class="text-success fw-bold">88%</span>
-                            </td>
-                            <td>14.2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">M2</span></td>
-                            <td>298</td>
-                            <td>
-                                <span class="text-success fw-bold">91%</span>
-                            </td>
-                            <td>14.8</td>
-                        </tr>
-
-                        <td colspan="4" style="text-align:center; font-weight:bold;">Master Professionnel Elite en Communication</td>
-                        <tr>
-                            <th>Niveau</th>
-                            <th>Cours</th>
-                            <th>Taux de couverture</th>
-                            <th>Moyenne</th>
-                        </tr>
-                        
-                        <tr>
-                            <td><span class="badge bg-primary">M1</span></td>
-                            <td>345</td>
-                            <td>
-                                <span class="text-success fw-bold">88%</span>
-                            </td>
-                            <td>14.2</td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-primary">M2</span></td>
-                            <td>298</td>
-                            <td>
-                                <span class="text-success fw-bold">91%</span>
-                            </td>
-                            <td>14.8</td>
-                        </tr>
-                        
-
+                                {% for level_stat in levels %}
+                                    <tr>
+                                        <td><span class="badge bg-primary">{{ level_stat.level.name }}</span></td>
+                                        <td>{{ level_stat.course_count }}</td>
+                                        <td>
+                                            {% if level_stat.coverage >= 80 %}
+                                                <span class="text-success fw-bold">{{ level_stat.coverage }}%</span>
+                                            {% elif level_stat.coverage >= 60 %}
+                                                <span class="text-warning fw-bold">{{ level_stat.coverage }}%</span>
+                                            {% else %}
+                                                <span class="text-danger fw-bold">{{ level_stat.coverage }}%</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ level_stat.avg_score }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                        <p>Aucune donnée de couverture disponible</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -419,6 +410,109 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique de statut d'avancement
+    {% if monitoring_stats.total_entries > 0 %}
+    const statusCtx = document.getElementById('statusChartCanvas');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Terminés', 'En cours', 'En retard'],
+                datasets: [{
+                    data: [
+                        {{ monitoring_stats.status_distribution.termine }},
+                        {{ monitoring_stats.status_distribution.en_cours }},
+                        {{ monitoring_stats.status_distribution.retard }}
+                    ],
+                    backgroundColor: [
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+
+    // Graphique d'évaluation
+    {% if evaluation_stats.total_evaluations > 0 %}
+    const evalCtx = document.getElementById('evaluationChartCanvas');
+    if (evalCtx) {
+        new Chart(evalCtx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Support accessible',
+                    'Bonne explication',
+                    'Bonne réponse',
+                    'Donne TD',
+                    'Donne projets'
+                ],
+                datasets: [{
+                    label: 'Pourcentage positif',
+                    data: [
+                        {{ evaluation_stats.stats.support_accessible }},
+                        {{ evaluation_stats.stats.bonne_explication }},
+                        {{ evaluation_stats.stats.bonne_reponse }},
+                        {{ evaluation_stats.stats.donne_td }},
+                        {{ evaluation_stats.stats.donne_projet }}
+                    ],
+                    backgroundColor: [
+                        '#007bff',
+                        '#28a745',
+                        '#17a2b8',
+                        '#ffc107',
+                        '#6f42c1'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .form-select {
@@ -434,8 +528,30 @@
     }
     
     .progress {
-        background: var(--primary-color);
+        background: #e9ecef !important;
         box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+        transition: width 0.6s ease;
+        box-shadow: none;
+    }
+
+    .progress-bar.bg-primary {
+        background-color: #007bff !important;
+    }
+
+    .progress-bar.bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .progress-bar.bg-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .progress-bar.bg-warning {
+        background-color: #ffc107 !important;
     }
     
     .table {

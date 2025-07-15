@@ -7,13 +7,14 @@ from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 
-from academic.models import AcademicYear, Level, Program
+from academic.models import AcademicYear, Level, Program, Speciality
 from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, OfficialDocumentForm, BulkDocumentCreationForm
 from accounts.models import BaseUser, Godfather
-from students.models import Student, StudentLevel, StudentMetaData
+from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument
 import json
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
+from django.utils import timezone
 
 
 class HomeView(TemplateView):
@@ -374,6 +375,9 @@ class ParametresView(LoginRequiredMixin, TemplateView):
         context['programs'] = Program.objects.all().order_by('name')
         context['levels'] = Level.objects.all().order_by('name')
 
+        # Ajouter les années académiques pour la sélection
+        context['academic_years'] = AcademicYear.objects.all().order_by('-start_at')
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -437,6 +441,20 @@ class ParametresView(LoginRequiredMixin, TemplateView):
                 form.save()
                 messages.success(request, 'Paramètres de gestion des données mis à jour avec succès.')
                 return redirect('main:parametres')
+
+        elif form_type == 'academic_year':
+            academic_year_id = request.POST.get('academic_year_id')
+            if academic_year_id:
+                try:
+                    academic_year = AcademicYear.objects.get(id=academic_year_id)
+                    # Mettre à jour la session avec la nouvelle année académique
+                    request.session['active_academic_year_id'] = academic_year.id
+                    messages.success(request, f'Année académique changée vers {academic_year.name} avec succès.')
+                    return redirect('main:parametres')
+                except AcademicYear.DoesNotExist:
+                    messages.error(request, 'Année académique sélectionnée introuvable.')
+            else:
+                messages.error(request, 'Aucune année académique sélectionnée.')
 
         # Si on arrive ici, il y a eu une erreur
         messages.error(request, 'Erreur lors de la mise à jour des paramètres.')
@@ -722,6 +740,42 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                     except (ValueError, TypeError):
                         date_naissance = None
 
+                # Création des métadonnées de l'étudiant
+                student_metadata = StudentMetaData.objects.create(
+                    mother_full_name=cleaned_data.get('nom_mere', ''),
+                    mother_live_city=cleaned_data.get('ville_residence_mere', ''),
+                    mother_email=cleaned_data.get('courriel_mere', ''),
+                    mother_occupation=cleaned_data.get('profession_mere', ''),
+                    mother_phone_number=cleaned_data.get('telephone_mere', ''),
+                    father_full_name=cleaned_data.get('nom_pere', ''),
+                    father_live_city=cleaned_data.get('ville_residence_pere', ''),
+                    father_email=cleaned_data.get('courriel_pere', ''),
+                    father_occupation=cleaned_data.get('profession_pere', ''),
+                    father_phone_number=cleaned_data.get('telephone_pere', ''),
+                    original_country=cleaned_data.get('nationalite', 'Cameroun'),
+                    original_region=cleaned_data.get('region_origine', ''),
+                    original_department=cleaned_data.get('departement_origine', ''),
+                    original_district=cleaned_data.get('arrondissement_origine', ''),
+                    residence_city=cleaned_data.get('ville_residence', ''),
+                    residence_quarter=cleaned_data.get('quartier_residence', ''),
+                    # Ajout des fichiers d'inscription
+                    acte_naissance=request.FILES.get('acte_naissance'),
+                    certificat_nationalite=request.FILES.get('certificat_nationalite'),
+                    diplome_bac=request.FILES.get('diplome_bac'),
+                    releve_notes_bac=request.FILES.get('releve_notes_bac'),
+                    bulletins_terminale=request.FILES.get('bulletins_terminale'),
+                )
+
+                # Création du parrain si les informations sont fournies
+                godfather = None
+                if cleaned_data.get('nom_tuteur') or cleaned_data.get('telephone_tuteur'):
+                    godfather = Godfather.objects.create(
+                        full_name=cleaned_data.get('nom_tuteur', ''),
+                        occupation=cleaned_data.get('profession_tuteur', ''),
+                        phone_number=cleaned_data.get('telephone_tuteur', ''),
+                        email=cleaned_data.get('courriel_tuteur', ''),
+                    )
+
                 # Création de l'étudiant
                 student = Student.objects.create(
                     firstname=cleaned_data.get('prenom'),
@@ -731,8 +785,10 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                     lang='fr' if cleaned_data.get('premiere_langue_officielle') == 'francais' else 'en',
                     phone_number=cleaned_data.get('telephone'),
                     email=cleaned_data.get('courriel'),
-                    status='active',
+                    status='approved',  # Statut approuvé pour les inscriptions internes
                     program=cleaned_data.get('programme'),
+                    metadata=student_metadata,
+                    godfather=godfather,
                 )
 
                 # Création du StudentLevel
@@ -744,15 +800,8 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                         is_active=True
                     )
 
-                # Sauvegarde des fichiers si fournis
-                files_data = {}
-                file_fields = ['acte_naissance', 'certificat_nationalite', 'diplome_bac', 'releve_notes_bac', 'bulletins_terminale']
-                for field_name in file_fields:
-                    if field_name in request.FILES:
-                        files_data[field_name] = request.FILES[field_name]
-
                 # Redirection vers la page de succès
-                messages.success(request, 'Inscription créée avec succès!')
+                messages.success(request, 'Inscription éffectuée avec succès!')
                 return redirect('main:etudiant_detail', pk=student.pk)
 
             except Exception as e:
@@ -1035,6 +1084,63 @@ def document_delete(request, pk):
 
 
 @login_required
+def document_toggle_status(request, pk):
+    """
+    Vue pour marquer un document comme déchargé/retourné
+    """
+    document = get_object_or_404(OfficialDocument, pk=pk)
+
+    if request.method == 'POST':
+        if document.status == 'available':
+            # Marquer comme déchargé
+            document.status = 'withdrawn'
+            document.withdrawn_date = timezone.now().date()
+            action_message = 'déchargé'
+        elif document.status == 'withdrawn':
+            # Marquer comme retourné
+            document.status = 'returned'
+            document.returned_at = timezone.now().date()
+            action_message = 'retourné'
+        elif document.status == 'returned':
+            # Remettre comme déchargé (pour correction d'erreur)
+            document.status = 'withdrawn'
+            document.returned_at = None
+            action_message = 'remis en statut déchargé'
+        else:
+            # Pour les documents perdus, on peut les remettre disponibles
+            document.status = 'available'
+            document.withdrawn_date = None
+            document.returned_at = None
+            action_message = 'remis disponible'
+
+        document.save()
+        messages.success(request, f'Le document "{document.get_type_display()}" a été {action_message} avec succès.')
+        return redirect('main:documents')
+
+    # Déterminer l'action qui sera effectuée
+    if document.status == 'available':
+        action = 'décharger'
+        action_description = 'marquer ce document comme déchargé'
+    elif document.status == 'withdrawn':
+        action = 'retourner'
+        action_description = 'marquer ce document comme retourné'
+    elif document.status == 'returned':
+        action = 'remettre en déchargé'
+        action_description = 'remettre ce document en statut déchargé (correction d\'erreur)'
+    else:
+        action = 'remettre disponible'
+        action_description = 'remettre ce document disponible'
+
+    context = {
+        'document': document,
+        'action': action,
+        'action_description': action_description,
+        'page_title': f'{action.capitalize()} le document - {document.get_type_display()}'
+    }
+    return render(request, 'main/document_toggle_status.html', context)
+
+
+@login_required
 def document_bulk_create(request):
     """
     Vue pour la création en masse de documents officiels
@@ -1168,3 +1274,28 @@ def inscription_reject(request, pk):
         return redirect('main:inscription_detail', pk=pk)
 
     return redirect('main:inscriptions')
+
+
+def get_specialities_by_program(request):
+    """
+    Vue AJAX pour récupérer les spécialités d'un programme donné
+    """
+    program_id = request.GET.get('program_id')
+
+    if not program_id:
+        return JsonResponse({'specialities': []})
+
+    try:
+        # Récupérer les spécialités du programme
+        specialities = Speciality.objects.filter(program_id=program_id).values('id', 'name')
+        specialities_list = list(specialities)
+
+        return JsonResponse({
+            'success': True,
+            'specialities': specialities_list
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })

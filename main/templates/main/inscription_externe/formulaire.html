@@ -24,6 +24,15 @@
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6">
 
+                    <!-- Logo -->
+                    <div class="text-center mb-5">
+                        <div class="card card-body shadow-soft border-light bg-primary d-inline-block">
+                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo"
+                                style="height: 50px; width: auto;">
+                        </div>
+                    </div>
+
+
                     <!-- Messages -->
                     {% if messages %}
                     {% for message in messages %}
@@ -44,14 +53,6 @@
                     </div>
                     {% endfor %}
                     {% endif %}
-
-                    <!-- Logo -->
-                    <div class="text-center mb-5">
-                        <div class="card card-body shadow-soft border-light bg-primary d-inline-block">
-                            <img src="{% static 'main/images/ysemlogo.png' %}" alt="YSEM Logo"
-                                style="height: 50px; width: auto;">
-                        </div>
-                    </div>
 
                     <!-- Progress Section -->
                     <div class="card card-body shadow-soft border-light bg-primary mb-4">
@@ -113,7 +114,7 @@
                             <div class="row">
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-id-card mr-2"></span>Informations
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-id-card mr-2"></span>Informations
                                             personnelles</h5>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">{{ form.nom.label_tag }}{{ form.nom }}</div>
@@ -137,7 +138,7 @@
                                 </div>
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-envelope mr-2"></span>Coordonnées</h5>
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-envelope mr-2"></span>Coordonnées</h5>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">{{ form.courriel.label_tag }}{{ form.courriel }}
                                             </div>
@@ -147,7 +148,7 @@
                                 </div>
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-globe mr-2"></span>Informations
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-globe mr-2"></span>Informations
                                             complémentaires</h5>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">{{ form.nationalite.label_tag }}{{ form.nationalite }}</div>
@@ -166,7 +167,7 @@
                             {% elif step == 2 %}
                             <!-- Étape 2: Informations familiales -->
                             <div class="mb-4 card card-body border-light">
-                                <h6 class="text-muted mb-3">
+                                <h6 class="text-muted mb-3 border-bottom pb-2">
                                     <span class="fas fa-male mr-2"></span>
                                     Informations du père
                                 </h6>
@@ -274,7 +275,7 @@
                                 </div>
                             </div>
                             <div class="mb-4 card card-body border-light">
-                                <h6 class="text-muted mb-3">
+                                <h6 class="text-muted mb-3 border-bottom pb-2">
                                     <span class="fas fa-female mr-2"></span>
                                     Informations de la mère
                                 </h6>
@@ -382,7 +383,7 @@
                                 </div>
                             </div>
                             <div class="mb-4 card card-body border-light">
-                                <h6 class="text-muted mb-3">
+                                <h6 class="text-muted mb-3 border-bottom pb-2">
                                     <span class="fas fa-user-friends mr-2"></span>
                                     Informations du tuteur ou parrain
                                 </h6>
@@ -473,7 +474,7 @@
                             <div class="row">
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus scolaire</h5>
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-school mr-2"></span>Cursus scolaire</h5>
                                         <div class="row">
                                             <div class="col-md-4 mb-3">{{ form.bepc_cap_serie.label_tag }}{{ form.bepc_cap_serie }}</div>
                                             <div class="col-md-4 mb-3">{{ form.bepc_cap_annee.label_tag }}{{ form.bepc_cap_annee }}</div>
@@ -497,7 +498,7 @@
                                 </div>
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-university mr-2"></span>Cursus
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-university mr-2"></span>Cursus
                                             universitaire</h5>
                                         <div class="row">
                                             <div class="col-md-6 mb-3">{{ form.diplome_niveau_1.label_tag }}{{ form.diplome_niveau_1 }}</div>
@@ -513,9 +514,10 @@
                                 </div>
                                 <div class="col-12 mb-4">
                                     <div class="card card-body border-light">
-                                        <h5 class="mb-3"><span class="fas fa-graduation-cap mr-2"></span>Choix de
+                                        <h5 class="mb-3 border-bottom pb-2"><span class="fas fa-graduation-cap mr-2"></span>Choix de
                                             spécialité</h5>
                                         <div class="row">
+                                            <div class="col-12 mb-3">{{ form.programme.label_tag }}{{ form.programme }}</div>
                                             <div class="col-md-6 mb-3">{{ form.specialite_choisie_1.label_tag }}{{ form.specialite_choisie_1 }}</div>
                                             <div class="col-md-6 mb-3">{{ form.specialite_choisie_2.label_tag }}{{ form.specialite_choisie_2 }}</div>
                                         </div>
@@ -659,6 +661,79 @@
         src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
     <!-- <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js' %}"></script> -->
+
+    <script>
+    // Script pour gérer la sélection dynamique des spécialités
+    document.addEventListener('DOMContentLoaded', function() {
+        const programSelect = document.getElementById('id_programme');
+        const specialite1Select = document.getElementById('id_specialite_choisie_1');
+        const specialite2Select = document.getElementById('id_specialite_choisie_2');
+
+        function loadSpecialities(programId) {
+            if (!programId) {
+                // Réinitialiser les champs spécialité
+                resetSpecialitySelects();
+                return;
+            }
+
+            // Faire la requête AJAX pour récupérer les spécialités
+            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Vider les selects et ajouter l'option par défaut
+                        specialite1Select.innerHTML = '<option value="">Sélectionner une spécialité</option>';
+                        specialite2Select.innerHTML = '<option value="">Sélectionner une spécialité (optionnel)</option>';
+
+                        // Ajouter les spécialités
+                        data.specialities.forEach(speciality => {
+                            const option1 = document.createElement('option');
+                            option1.value = speciality.id;
+                            option1.textContent = speciality.name;
+                            specialite1Select.appendChild(option1);
+
+                            const option2 = document.createElement('option');
+                            option2.value = speciality.id;
+                            option2.textContent = speciality.name;
+                            specialite2Select.appendChild(option2);
+                        });
+
+                        // Activer les champs
+                        specialite1Select.disabled = false;
+                        specialite2Select.disabled = false;
+                    } else {
+                        console.error('Erreur lors du chargement des spécialités:', data.error);
+                        resetSpecialitySelects('Erreur de chargement');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur AJAX:', error);
+                    resetSpecialitySelects('Erreur de chargement');
+                });
+        }
+
+        function resetSpecialitySelects(message = 'Sélectionner d\'abord un programme') {
+            specialite1Select.innerHTML = `<option value="">${message}</option>`;
+            specialite2Select.innerHTML = `<option value="">${message}</option>`;
+            specialite1Select.disabled = true;
+            specialite2Select.disabled = true;
+        }
+
+        // Événement sur le changement de programme
+        if (programSelect) {
+            programSelect.addEventListener('change', function() {
+                loadSpecialities(this.value);
+            });
+
+            // Initialisation
+            if (programSelect.value) {
+                loadSpecialities(programSelect.value);
+            } else {
+                resetSpecialitySelects();
+            }
+        }
+    });
+    </script>
 
 </body>
 

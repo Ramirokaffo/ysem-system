@@ -15,33 +15,39 @@
 {% block content %}
 <div class="container-fluid">
     <!-- En-tête de page -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">{{ page_title }}</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'main:documents' %}">Documents</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {% if action == 'create' %}Nouveau document{% else %}Modifier document{% endif %}
-                    </li>
-                </ol>
-            </nav>
+    <!-- <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0">{{ page_title }}</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'main:documents' %}">Documents</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    {% if action == 'create' %}Nouveau document{% else %}Modifier document{% endif %}
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft">
+                            <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
-            </a>
-        </div>
-    </div>
+    </div> -->
 
     <!-- Formulaire -->
     <div class="row justify-content-center">
         <div class="col-12 col-lg-8">
             <div class="card bg-primary shadow-soft border-light">
-                <div class="card-header text-center pb-0">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-file-alt me-2"></i>
+                <div class="card-header bg-primary border-light text-center pb-0">
+                    <h5 class="card-title mb-3">
+                        <span class="fas fa-file-alt mr-2"></span>
                         {% if action == 'create' %}
                             Informations du nouveau document
                         {% else %}
@@ -64,10 +70,17 @@
 
                     <!-- Étudiant -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.student.id_for_label }}" class="form-label required-field">
+                        <label for="{{ form.student.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.student.label }}
                         </label>
-                        {{ form.student }}
+                        <select class="form-control shadow-inset border-light" name="{{ form.student.name }}" id="{{ form.student.id_for_label }}">
+                            <option value="">---------</option>
+                            {% for value, label in form.student.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}" {% if form.student.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                         {% if form.student.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.student.errors %}
@@ -82,10 +95,17 @@
 
                     <!-- Niveau -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.level.id_for_label }}" class="form-label required-field">
+                        <label for="{{ form.level.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.level.label }}
                         </label>
-                        {{ form.level }}
+                        <select class="form-control shadow-inset border-light" name="{{ form.level.name }}" id="{{ form.level.id_for_label }}">
+                            <option value="">---------</option>
+                            {% for value, label in form.level.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}" {% if form.level.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                         {% if form.level.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.level.errors %}
@@ -100,10 +120,17 @@
 
                     <!-- Année académique -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.academic_year.id_for_label }}" class="form-label required-field">
+                        <label for="{{ form.academic_year.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.academic_year.label }}
                         </label>
-                        {{ form.academic_year }}
+                        <select class="form-control shadow-inset border-light" name="{{ form.academic_year.name }}" id="{{ form.academic_year.id_for_label }}">
+                            <option value="">---------</option>
+                            {% for value, label in form.academic_year.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}" {% if form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                         {% if form.academic_year.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.academic_year.errors %}
@@ -118,10 +145,17 @@
 
                     <!-- Type de document -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.type.id_for_label }}" class="form-label required-field">
+                        <label for="{{ form.type.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.type.label }}
                         </label>
-                        {{ form.type }}
+                        <select class="form-control shadow-inset border-light" name="{{ form.type.name }}" id="{{ form.type.id_for_label }}">
+                            <option value="">---------</option>
+                            {% for value, label in form.type.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}" {% if form.type.value == value %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                         {% if form.type.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.type.errors %}
@@ -133,10 +167,14 @@
 
                     <!-- Statut -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                        <label for="{{ form.status.id_for_label }}" class="form-label font-weight-bold">
                             {{ form.status.label }}
                         </label>
-                        {{ form.status }}
+                        <select class="form-control shadow-inset border-light" name="{{ form.status.name }}" id="{{ form.status.id_for_label }}">
+                            {% for value, label in form.status.field.choices %}
+                                <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
                         {% if form.status.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.status.errors %}
@@ -148,10 +186,10 @@
 
                     <!-- Date de retrait -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.withdrawn_date.id_for_label }}" class="form-label">
+                        <label for="{{ form.withdrawn_date.id_for_label }}" class="form-label font-weight-bold">
                             {{ form.withdrawn_date.label }}
                         </label>
-                        {{ form.withdrawn_date }}
+                        <input type="date" class="form-control shadow-inset border-light" name="{{ form.withdrawn_date.name }}" value="{{ form.withdrawn_date.value|date:'Y-m-d'|default:'' }}" id="{{ form.withdrawn_date.id_for_label }}">
                         {% if form.withdrawn_date.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.withdrawn_date.errors %}
@@ -174,14 +212,16 @@
                     {% endif %}
 
                     <!-- Boutons d'action -->
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Annuler
-                        </a>
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-save me-2"></i>
-                            {% if action == 'create' %}Créer le document{% else %}Enregistrer les modifications{% endif %}
-                        </button>
+                    <div class="card bg-primary shadow-soft border-light p-3 mt-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft mx-2">
+                                <span class="fas fa-times mr-2"></span>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary shadow-soft">
+                                <span class="fas fa-save mr-2"></span>
+                                {% if action == 'create' %}Créer le document{% else %}Enregistrer les modifications{% endif %}
+                            </button>
+                        </div>
                     </div>
                 </form>
                 </div>

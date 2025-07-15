@@ -35,16 +35,16 @@ class SpecialityAdmin(admin.ModelAdmin):
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     """Administration des départements"""
-    list_display = ['label', 'speciality', 'created_at']
-    list_filter = ['speciality', 'created_at']
-    search_fields = ['label', 'speciality__name']
-    ordering = ['speciality__name', 'label']
+    list_display = ['label', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['label', 'description']
+    ordering = ['label']
     list_per_page = 25
     date_hierarchy = 'created_at'
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('label', 'speciality')
+            'fields': ('label', 'description')
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),

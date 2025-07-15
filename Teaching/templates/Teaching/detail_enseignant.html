@@ -1,0 +1,160 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block title %}Détails Enseignant - YSEM{% endblock %}
+
+{% block page_title %}Détails de l'enseignant{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        <div class="text-center">
+          <a href="{% url 'teaching:enseignants' %}" class="btn btn-outline-secondary shadow-soft">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% elif enseignant %}
+
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'teaching:enseignants' %}" class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux enseignants
+                    </a>
+                </div>
+                <div>
+                    <span class="badge text-success fs-6">
+                        <i class="fas fa-user-tie me-1 mr-1"></i>{{ enseignant.grade }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations principales -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3">
+                    <span class="fas fa-user-tie mr-2"></span>Informations personnelles
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Matricule</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ enseignant.matricule }}</div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Prénom</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ enseignant.firstname }}</div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Nom de famille</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ enseignant.lastname }}</div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Date de naissance</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ enseignant.date_naiss|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Grade/Titre</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ enseignant.grade }}</div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Genre</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                {% if enseignant.gender == 'M' %}
+                                    <i class="fas fa-mars text-primary me-2"></i>Masculin
+                                {% else %}
+                                    <i class="fas fa-venus text-pink me-2"></i>Féminin
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Langue</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-language text-secondary me-2"></i>{{ enseignant.lang|upper }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations de contact -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-address-book me-2"></i>
+                Contact
+            </h5>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Téléphone</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if enseignant.phone_number %}
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <a href="tel:{{ enseignant.phone_number }}" class="text-decoration-none">{{ enseignant.phone_number }}</a>
+                    {% else %}
+                        <i class="fas fa-phone-slash text-muted me-2"></i>
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Email</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if enseignant.email %}
+                        <i class="fas fa-envelope text-info me-2"></i>
+                        <a href="mailto:{{ enseignant.email }}" class="text-decoration-none">{{ enseignant.email }}</a>
+                    {% else %}
+                        <i class="fas fa-envelope-open text-muted me-2"></i>
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boutons d'action -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'teaching:enseignants' %}" class="btn btn-outline-secondary shadow-soft">
+                    <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
+                </a>
+                <a href="{% url 'teaching:modifier_enseignant' enseignant.matricule %}" class="btn btn-warning shadow-soft mx-2">
+                    <span class="fas fa-edit mr-2"></span>Modifier
+                </a>
+                <a href="{% url 'teaching:supprimer_enseignant' enseignant.matricule %}" class="btn btn-danger shadow-soft" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?')">
+                    <span class="fas fa-trash mr-2"></span>Supprimer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

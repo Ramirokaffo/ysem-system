@@ -1,29 +1,16 @@
+# from django.db.models import Count
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
-
-class Speciality(models.Model):
-    """
-    Modèle pour les spécialités académiques
-    """
-    name = models.CharField(max_length=200)
-    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
-    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Spécialité"
-        verbose_name_plural = "Spécialités"
 
 
 class Department(models.Model):
     """
     Modèle pour les départements
     """
-    id = models.IntegerField(primary_key=True)
     label = models.CharField(max_length=200)
-    speciality = models.ForeignKey(Speciality, on_delete=models.CASCADE, related_name='departments')
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
@@ -51,25 +38,6 @@ class Level(models.Model):
         verbose_name_plural = "Niveaux"
 
 
-class Course(models.Model):
-    """
-    Modèle pour les cours
-    """
-    course_code = models.CharField(max_length=20, primary_key=True)
-    label = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    credit_count = models.IntegerField()
-    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='courses')
-    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
-    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
-
-    def __str__(self):
-        return f"{self.course_code} - {self.label}"
-
-    class Meta:
-        verbose_name = "Cours"
-        verbose_name_plural = "Cours"
-
 
 class Program(models.Model):
     """
@@ -86,6 +54,48 @@ class Program(models.Model):
     class Meta:
         verbose_name = "Programme"
         verbose_name_plural = "Programmes"
+
+
+
+class Speciality(models.Model):
+    """
+    Modèle pour les spécialités académiques
+    """
+    name = models.CharField(max_length=200)
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='specialities')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='specialities')
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Spécialité"
+        verbose_name_plural = "Spécialités"
+
+
+class Course(models.Model):
+    """
+    Modèle pour les cours
+    """
+    course_code = models.CharField(max_length=20, primary_key=True)
+    label = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    credit_count = models.IntegerField()
+    speciality = models.ForeignKey(Speciality, on_delete=models.SET_NULL, null=True, related_name='courses')
+    level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, related_name='courses')
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='courses')
+
+    def __str__(self):
+        return f"{self.course_code} - {self.label}"
+
+    class Meta:
+        verbose_name = "Cours"
+        verbose_name_plural = "Cours"
+
 
 
 class AcademicYear(models.Model):

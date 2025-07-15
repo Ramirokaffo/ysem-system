@@ -8,10 +8,10 @@ class SystemSettings(models.Model):
     # Paramètres généraux
     institution_name = models.CharField(max_length=200, default="YSEM - École Supérieure")
     institution_code = models.CharField(max_length=50, default="YSEM001")
-    address = models.TextField(default="123 Avenue de l'Université, Douala, Cameroun")
+    address = models.TextField(default="Damas, Yaoundé, Cameroun")
     phone = models.CharField(max_length=20, default="+237 XXX XXX XXX")
-    email = models.EmailField(default="contact@ysem.edu.cm")
-    website = models.URLField(default="https://www.ysem.edu.cm")
+    email = models.EmailField(default="contact@ysem.education")
+    website = models.URLField(default="https://www.ysem.education")
     timezone = models.CharField(max_length=50, default="Africa/Douala")
     language = models.CharField(max_length=10, default="fr")
 

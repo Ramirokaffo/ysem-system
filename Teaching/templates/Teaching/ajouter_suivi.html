@@ -1,0 +1,240 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block title %}Ajouter un suivi - YSEM{% endblock %}
+
+{% block page_title %}Nouveau Suivi de Cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- En-tête -->
+            <div class="card shadow-soft border-light mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="h3 mb-0">
+                                <i class="fas fa-plus-circle text-primary me-2"></i>
+                                Nouveau Suivi de Cours
+                            </h4>
+                            <p class="text-muted mb-0">Ajouter un nouveau suivi d'enseignement</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        Informations du suivi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Informations principales -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.date.label }}</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.academic_year.label }}</label>
+                                {{ form.academic_year }}
+                                {% if form.academic_year.errors %}
+                                    <div class="text-danger small mt-1">{{ form.academic_year.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Relations -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.lecturer.label }}</label>
+                                {{ form.lecturer }}
+                                {% if form.lecturer.errors %}
+                                    <div class="text-danger small mt-1">{{ form.lecturer.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.course.label }}</label>
+                                {{ form.course }}
+                                {% if form.course.errors %}
+                                    <div class="text-danger small mt-1">{{ form.course.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.level.label }}</label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small mt-1">{{ form.level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Chapitres et séances -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.totalChapterCount.label }}</label>
+                                {{ form.totalChapterCount }}
+                                {% if form.totalChapterCount.errors %}
+                                    <div class="text-danger small mt-1">{{ form.totalChapterCount.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.chapitre_fait.label }}</label>
+                                {{ form.chapitre_fait }}
+                                {% if form.chapitre_fait.errors %}
+                                    <div class="text-danger small mt-1">{{ form.chapitre_fait.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.contenu_seance_prevu.label }}</label>
+                                {{ form.contenu_seance_prevu }}
+                                {% if form.contenu_seance_prevu.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contenu_seance_prevu.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">{{ form.contenu_effectif_seance.label }}</label>
+                                {{ form.contenu_effectif_seance }}
+                                {% if form.contenu_effectif_seance.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contenu_effectif_seance.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Activités pédagogiques -->
+                        <div class="card bg-light border-light mb-4">
+                            <div class="card-header bg-transparent border-light">
+                                <h6 class="mb-0">Activités pédagogiques</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.travaux_preparatoires }}
+                                            <label class="form-check-label" for="{{ form.travaux_preparatoires.id_for_label }}">
+                                                {{ form.travaux_preparatoires.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.groupWork }}
+                                            <label class="form-check-label" for="{{ form.groupWork.id_for_label }}">
+                                                {{ form.groupWork.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.classWork }}
+                                            <label class="form-check-label" for="{{ form.classWork.id_for_label }}">
+                                                {{ form.classWork.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.homeWork }}
+                                            <label class="form-check-label" for="{{ form.homeWork.id_for_label }}">
+                                                {{ form.homeWork.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.pedagogicActivities }}
+                                            <label class="form-check-label" for="{{ form.pedagogicActivities.id_for_label }}">
+                                                {{ form.pedagogicActivities.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            {{ form.TDandTP }}
+                                            <label class="form-check-label" for="{{ form.TDandTP.id_for_label }}">
+                                                {{ form.TDandTP.label }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observations et projets -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.projet_fin_cours.label }}</label>
+                                {{ form.projet_fin_cours }}
+                                {% if form.projet_fin_cours.errors %}
+                                    <div class="text-danger small mt-1">{{ form.projet_fin_cours.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.association_pratique_aux_enseigements.label }}</label>
+                                {{ form.association_pratique_aux_enseigements }}
+                                {% if form.association_pratique_aux_enseigements.errors %}
+                                    <div class="text-danger small mt-1">{{ form.association_pratique_aux_enseigements.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.observation.label }}</label>
+                                {{ form.observation }}
+                                {% if form.observation.errors %}
+                                    <div class="text-danger small mt-1">{{ form.observation.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.solution.label }}</label>
+                                {{ form.solution }}
+                                {% if form.solution.errors %}
+                                    <div class="text-danger small mt-1">{{ form.solution.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.generalObservation.label }}</label>
+                                {{ form.generalObservation }}
+                                {% if form.generalObservation.errors %}
+                                    <div class="text-danger small mt-1">{{ form.generalObservation.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Enregistrer le suivi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block title %}Détails Évaluation - YSEM{% endblock %}
+
+{% block page_title %}Détails de l'évaluation{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        <div class="text-center">
+          <a href="{% url 'teaching:evaluations' %}" class="btn btn-outline-secondary shadow-soft">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% elif evaluation %}
+
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'teaching:evaluations' %}" class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux évaluations
+                    </a>
+                </div>
+                <div>
+                    <span class="badge text-info fs-6">
+                        <i class="fas fa-star me-1 mr-1"></i>Évaluation #{{ evaluation.id }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations principales -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3">
+                    <span class="fas fa-user-graduate mr-2"></span>Informations de l'évaluation
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Date d'évaluation</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-calendar text-info me-2"></i>{{ evaluation.evaluationDat|date:"d/m/Y"|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Étudiant</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-user text-secondary me-2"></i>
+                                {% if evaluation.student %}
+                                    {{ evaluation.student.lastname }} {{ evaluation.student.firstname }} ({{ evaluation.student.matricule }})
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Niveau</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-graduation-cap text-warning me-2"></i>
+                                {% if evaluation.level %}
+                                    {{ evaluation.level.cycle }} - {{ evaluation.level }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Cours</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-book text-success me-2"></i>
+                                {% if evaluation.course %}
+                                    {{ evaluation.course.label }}
+                                {% else %}
+                                    Non renseigné
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Année académique</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-calendar text-info me-2"></i>
+                                {% if evaluation.academic_year %}
+                                    {{ evaluation.academic_year }}
+                                {% else %}
+                                    Non renseignée
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Méthodologie du cours</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-cogs text-info me-2"></i>{{ evaluation.courseMethodology|default:"Non renseignée" }}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Difficultés rencontrées</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                {% if evaluation.difficulte_rencontree %}
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>{{ evaluation.quelles_difficultes_rencontrees|default:"Oui, mais non spécifiées" }}
+                                {% else %}
+                                    <i class="fas fa-check-circle text-success me-2"></i>Aucune difficulté
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label text-muted font-weight-bold">Propositions des étudiants</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>{{ evaluation.propositionEtudiants|default:"Aucune proposition" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Évaluations et observations -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-clipboard-check me-2"></i>
+                Évaluations
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Support de cours accessible</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if evaluation.support_cours_acessible %}
+                        <i class="fas fa-check text-success me-2"></i><span class="text-success">Oui</span>
+                    {% else %}
+                        <i class="fas fa-times text-danger me-2"></i><span class="text-danger">Non</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Bonne explication du cours</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if evaluation.bonne_explication_cours %}
+                        <i class="fas fa-check text-success me-2"></i><span class="text-success">Oui</span>
+                    {% else %}
+                        <i class="fas fa-times text-danger me-2"></i><span class="text-danger">Non</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Bonne réponse aux questions</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if evaluation.bonne_reponse_questions %}
+                        <i class="fas fa-check text-success me-2"></i><span class="text-success">Oui</span>
+                    {% else %}
+                        <i class="fas fa-times text-danger me-2"></i><span class="text-danger">Non</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Donne des TD</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if evaluation.donne_TD %}
+                        <i class="fas fa-check text-success me-2"></i><span class="text-success">Oui</span>
+                    {% else %}
+                        <i class="fas fa-times text-danger me-2"></i><span class="text-danger">Non</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted font-weight-bold">Donne des projets</label>
+                <div class="form-control shadow-inset border-light bg-primary">
+                    {% if evaluation.donne_projet %}
+                        <i class="fas fa-check text-success me-2"></i><span class="text-success">Oui</span>
+                    {% else %}
+                        <i class="fas fa-times text-danger me-2"></i><span class="text-danger">Non</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Observations SSAC -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-comments me-2"></i>
+                Observations et actions SSAC
+            </h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="form-label text-muted font-weight-bold">Observation SSAC</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            <i class="fas fa-eye text-info me-2"></i>{{ evaluation.observationSSAC|default:"Aucune observation" }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label class="form-label text-muted font-weight-bold">Action SSAC</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            <i class="fas fa-tasks text-warning me-2"></i>{{ evaluation.actionSSAC|default:"Aucune action" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boutons d'action -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'teaching:evaluations' %}" class="btn btn-outline-secondary shadow-soft">
+                    <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
+                </a>
+                <a href="{% url 'teaching:modifier_evaluation' evaluation.id %}" class="btn btn-warning shadow-soft mx-2">
+                    <span class="fas fa-edit mr-2"></span>Modifier
+                </a>
+                <a href="{% url 'teaching:supprimer_evaluation' evaluation.id %}" class="btn btn-danger shadow-soft" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette évaluation ?')">
+                    <span class="fas fa-trash mr-2"></span>Supprimer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

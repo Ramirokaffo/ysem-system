@@ -11,6 +11,15 @@ urlpatterns = [
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
     path('enseignants/ajouter/', views.ajouter_enseignantView.as_view(), name='ajouter_enseignant'),
-    
+    path('enseignants/<str:matricule>/', views.DetailEnseignantView.as_view(), name='detail_enseignant'),
+    path('enseignants/<str:matricule>/modifier/', views.ModifierEnseignantView.as_view(), name='modifier_enseignant'),
+    path('enseignants/<str:matricule>/supprimer/', views.SupprimerEnseignantView.as_view(), name='supprimer_enseignant'),
+    path('evaluations/ajouter/', views.ajouter_evaluationView.as_view(), name='ajouter_evaluation'),
+    path('evaluations/<int:pk>/', views.DetailEvaluationView.as_view(), name='detail_evaluation'),
+    path('evaluations/<int:pk>/modifier/', views.ModifierEvaluationView.as_view(), name='modifier_evaluation'),
+    path('evaluations/<int:pk>/supprimer/', views.SupprimerEvaluationView.as_view(), name='supprimer_evaluation'),
+    path('suivi_cours/ajouter/', views.ajouter_suiviView.as_view(), name='ajouter_suivi'),
+
+
  ]
 """path('enseignants/liste', views.liste_enseignants, name='liste_enseignants'),  # ta vue principale"""

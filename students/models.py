@@ -172,8 +172,9 @@ class OfficialDocument(models.Model):
     """
     student_level = models.ForeignKey(StudentLevel, on_delete=models.CASCADE, null=True, related_name='official_documents')
     type = models.CharField(max_length=100, choices=[("student_card", "Carte d'étudiant"), ("transcript", "Relevé de notes"), ("diploma", "Diplôme"), ("certificate", "Certificat de scolarité")])
-    status = models.CharField(max_length=50, choices=[('available', 'Non déchargé'), ('withdrawn', 'Déchargé'), ('lost', 'Perdu')], default='available')
+    status = models.CharField(max_length=50, choices=[('available', 'Non déchargé'), ('withdrawn', 'Déchargé'), ('returned', 'Retourné'), ('lost', 'Perdu')], default='available')
     withdrawn_date = models.DateField(blank=True, null=True)
+    returned_at = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 

@@ -18,7 +18,7 @@
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
-                    <h5 class="mb-0">34</h5>
+                    <h5 class="mb-0">{{ kpis.total_lecturers|default:0 }}</h5>
                     <p class="text-muted mb-0">Enseignants</p>
                 </div>
             </div>
@@ -30,13 +30,12 @@
             <div class="d-flex align-items-center">
                 <div class="flex-shrink-0 mr-3">
                     <div class="stat-icon success">
-                        <i class="fas fa-tasks"></i>
+                        <i class="fas fa-percentage"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
-                    <!--<h5 class="mb-0">89</h5>-->
-                    
-                    <p class="text-muted mb-0">Etat d'avancement</p>
+                    <h5 class="mb-0">{{ kpis.global_coverage|default:0 }}%</h5>
+                    <p class="text-muted mb-0">Taux de couverture</p>
                 </div>
             </div>
         </div>
@@ -45,14 +44,14 @@
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card-neumorphic">
             <div class="d-flex align-items-center">
-                <div class="flex-shrink-0 mr-3 mr-3">
+                <div class="flex-shrink-0 mr-3">
                     <div class="stat-icon warning">
-                        <i class="fas fa-file-alt"></i>
+                        <i class="fas fa-book"></i>
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
-                    <h5 class="mb-0">456</h5>
-                    <p class="text-muted mb-0">Cours</p>
+                    <h5 class="mb-0">{{ kpis.total_courses|default:0 }}</h5>
+                    <p class="text-muted mb-0">Cours suivis</p>
                 </div>
             </div>
         </div>
@@ -67,7 +66,7 @@
                     </div>
                 </div>
                 <div class="flex-grow-1 ms-3">
-                    <h5 class="mb-0">02</h5>
+                    <h5 class="mb-0">{{ kpis.active_programs|default:0 }}</h5>
                     <p class="text-muted mb-0">Programmes actifs</p>
                 </div>
             </div>
@@ -76,7 +75,7 @@
 </div>
 
 <div class="row">
-    <!-- Recent Activities -->
+    <!-- Activités récentes -->
     <div class="col-lg-8 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
@@ -84,55 +83,40 @@
                 Activités récentes
             </h5>
             <div class="list-group list-group-flush">
-                <div class="list-group-item border-0 bg-transparent">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 mr-3">
-                            <div class="activity-icon primary">
-                                <i class="fas fa-file-alt"></i>
+                {% if recent_monitorings %}
+                    {% for monitoring in recent_monitorings %}
+                        <div class="list-group-item border-0 bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 mr-3">
+                                    <div class="activity-icon
+                                        {% if monitoring.statut_avancement == 'termine' %}success
+                                        {% elif monitoring.statut_avancement == 'en_cours' %}primary
+                                        {% else %}warning{% endif %}">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ monitoring.course.label }}</h6>
+                                    <p class="mb-1 text-muted">
+                                        {{ monitoring.lecturer.firstname }} {{ monitoring.lecturer.lastname }} -
+                                        {{ monitoring.level.name }} -
+                                        {{ monitoring.chapitre_fait }}/{{ monitoring.totalChapterCount }} chapitres
+                                    </p>
+                                    <small class="text-muted">{{ monitoring.date }}</small>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Nouveau cours</h6>
-                            <p class="mb-1 text-muted">Monsieur TAZO a commencé le cours d'anlyse des données en Master 2</p>
-                            <small class="text-muted">Il y a 30 minuites</small>
-                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Aucune activité récente</p>
                     </div>
-                </div>
-
-                <div class="list-group-item border-0 bg-transparent">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 mr-3">
-                            <div class="activity-icon success">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Prochain cours</h6>
-                            <p class="mb-1 text-muted">Monsieur MBUMBO commencera le cours de IT Project en Master 1</p>
-                            <small class="text-muted">Dans 20 minuites</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="list-group-item border-0 bg-transparent">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 mr-3">
-                            <div class="activity-icon warning">
-                                <i class="fas fa-exclamation"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-1">Cours à ratrapper</h6>
-                            <p class="mb-1 text-muted">Dr TARA ratrappera le cours de leadership en gestion niveau 3</p>
-                            <small class="text-muted">Samedi à 11H00</small>
-                        </div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Actions rapides -->
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
@@ -140,51 +124,183 @@
                 Actions rapides
             </h5>
             <div class="d-grid gap-3">
-                <a href="{% url 'main:inscriptions' %}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-file-alt"></i>
-                    Prochain cours
+                <a href="{% url 'teaching:ajouter_suivi' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    Ajouter suivi
                 </a>
-                <a href="{% url 'main:etudiants' %}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-search me-2"></i>
-                    Recherche Enseignant
+                <a href="{% url 'teaching:enseignants' %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-users me-2"></i>
+                    Voir enseignants
                 </a>
-                <a href="{% url 'main:documents' %}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-tasks"></i>
-                    Etat d'avancement
+                <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-info btn-lg">
+                    <i class="fas fa-tasks me-2"></i>
+                    Suivi des cours
                 </a>
-                <a href="{% url 'main:statistiques' %}" class="btn btn-primary btn-lg">
+                <a href="{% url 'teaching:statistiques' %}" class="btn btn-warning btn-lg">
                     <i class="fas fa-chart-bar me-2"></i>
-                    Voir statistiques
+                    Statistiques
                 </a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Calendar Widget -->
+<!-- Informations académiques -->
 <div class="row">
-    <div class="col-12">
+    <!-- Calendrier académique -->
+    <div class="col-md-6 mb-4">
         <div class="card-neumorphic">
             <h5 class="mb-4">
                 <i class="fas fa-calendar-alt me-2"></i>
                 Calendrier académique
             </h5>
             <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="p-3 bg-light rounded">
-                        <h6 class="text-secondary">Inscriptions</h6>
-                        <p class="mb-1">Période d'inscription</p>
-                        <small class="text-muted">15 Sept - 30 Sept 2024</small>
+                {% if current_year %}
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h6 class="text-primary">Année académique</h6>
+                            <p class="mb-1">{{ current_year.name }}</p>
+                            <small class="text-muted">{{ academic_year_start|date:"d M Y" }} - {{ academic_year_end|date:"d M Y" }}</small>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="p-3 bg-light rounded">
-                        <h6 class="text-success">Examens</h6>
-                        <p class="mb-1">Session d'examens</p>
-                        <small class="text-muted">15 Déc - 20 Déc 2024</small>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h6 class="text-success">Période de cours</h6>
+                            <p class="mb-1">Enseignements</p>
+                            <small class="text-muted">{{ course_period.start|date:"d M Y" }} - {{ course_period.end|date:"d M Y" }}</small>
+                        </div>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h6 class="text-warning">Examens</h6>
+                            <p class="mb-1">Session d'examens</p>
+                            <small class="text-muted">{{ exam_period.start|date:"d M Y" }} - {{ exam_period.end|date:"d M Y" }}</small>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">Aucune année académique active</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Séances du jour -->
+    <div class="col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-day me-2"></i>
+                Séances du jour
+            </h5>
+            {% if today_sessions %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Heure</th>
+                                <th>Cours</th>
+                                <th>Enseignant</th>
+                                <th>Salle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in today_sessions %}
+                                <tr>
+                                    <td>{{ session.time_slot.start_time|time:"H:i" }}</td>
+                                    <td>{{ session.course.label }}</td>
+                                    <td>{{ session.lecturer.firstname }} {{ session.lecturer.lastname }}</td>
+                                    <td>{{ session.classroom.name }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">Aucune séance programmée aujourd'hui</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Alertes et prochaines séances -->
+<div class="row">
+    <!-- Alertes -->
+    <div class="col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Alertes de suivi
+            </h5>
+            <div class="list-group list-group-flush">
+                {% if delayed_monitorings %}
+                    {% for monitoring in delayed_monitorings %}
+                        <div class="list-group-item border-0 bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 mr-3">
+                                    <div class="activity-icon warning">
+                                        <i class="fas fa-exclamation"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ monitoring.course.label }}</h6>
+                                    <p class="mb-1 text-muted">
+                                        {{ monitoring.lecturer.firstname }} {{ monitoring.lecturer.lastname }} -
+                                        {{ monitoring.level.name }} -
+                                        Avancement: {{ monitoring.contenu_effectif_seance }}/{{ monitoring.contenu_seance_prevu }}
+                                    </p>
+                                    <small class="text-muted">{{ monitoring.date }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Aucun cours en retard</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Prochaines séances -->
+    <div class="col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar-week me-2"></i>
+                Prochaines séances
+            </h5>
+            <div class="list-group list-group-flush">
+                {% if upcoming_sessions %}
+                    {% for session in upcoming_sessions %}
+                        <div class="list-group-item border-0 bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 mr-3">
+                                    <div class="activity-icon success">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ session.course.label }}</h6>
+                                    <p class="mb-1 text-muted">
+                                        {{ session.lecturer.firstname }} {{ session.lecturer.lastname }} -
+                                        {{ session.level.name }} -
+                                        Salle: {{ session.classroom.name }}
+                                    </p>
+                                    <small class="text-muted">{{ session.date }} à {{ session.time_slot.start_time|time:"H:i" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Aucune séance programmée prochainement</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

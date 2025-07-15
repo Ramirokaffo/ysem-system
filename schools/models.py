@@ -5,10 +5,15 @@ class School(models.Model):
     """
     Modèle pour les établissements scolaires
     """
+    LEVEL_CHOICE = [
+        ('primary', 'Primaire'),
+        ('secondary', 'Secondaire'),
+        ('higher', 'Supérieur'),
+    ]
     name = models.CharField(max_length=200)
     address = models.TextField(blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    level = models.CharField(max_length=100)  # Niveau de l'école (primaire, secondaire, supérieur)
+    level = models.CharField(max_length=100, choices=LEVEL_CHOICE) # Niveau de l'école (primaire, secondaire, supérieur)
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 

@@ -136,7 +136,7 @@
     <!-- Actions et statut -->
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-cogs me-2"></i>
                 Actions
             </h5>
@@ -145,7 +145,7 @@
                 <div class="d-grid gap-2">
                     <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
+                        <button type="submit" class="btn btn-success w-100 mb-2" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
                             <i class="fas fa-check me-2"></i>
                             Approuver l'inscription
                         </button>
@@ -185,7 +185,7 @@
         
         <!-- Informations système -->
         <div class="card-neumorphic p-4">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-info-circle me-2"></i>
                 Informations système
             </h5>
@@ -253,26 +253,26 @@
                     <div class="p-3 bg-light rounded">
                         {% if student.godfather %}
                             <div class="mb-2">
-                                <i class="fas fa-user-tie me-2"></i>{{ student.godfather.full_name }}
+                                <i class="fas fa-user-tie me-2 mr-1"></i>{{ student.godfather.full_name }}
                             </div>
                             {% if student.godfather.occupation %}
                             <div class="mb-1">
                                 <small class="text-muted">
-                                    <i class="fas fa-briefcase me-1"></i>{{ student.godfather.occupation }}
+                                    <i class="fas fa-briefcase me-1 mr-1"></i>{{ student.godfather.occupation }}
                                 </small>
                             </div>
                             {% endif %}
                             {% if student.godfather.phone_number %}
                             <div class="mb-1">
                                 <small class="text-muted">
-                                    <i class="fas fa-phone me-1"></i>{{ student.godfather.phone_number }}
+                                    <i class="fas fa-phone me-1 mr-1"></i>{{ student.godfather.phone_number }}
                                 </small>
                             </div>
                             {% endif %}
                             {% if student.godfather.email %}
                             <div class="mb-1">
                                 <small class="text-muted">
-                                    <i class="fas fa-envelope me-1"></i>{{ student.godfather.email }}
+                                    <i class="fas fa-envelope me-1 mr-1"></i>{{ student.godfather.email }}
                                 </small>
                             </div>
                             {% endif %}
@@ -339,8 +339,8 @@
             <div class="row">
                 <!-- Informations sur la mère -->
                 <div class="col-md-6 mb-4">
-                    <h6 class="text-primary mb-3">
-                        <i class="fas fa-female me-2"></i>Informations sur la mère
+                    <h6 class="text-primary mb-3 text-secondary">
+                        <i class="fas fa-female me-2 mr-1"></i>Informations sur la mère
                     </h6>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -386,8 +386,8 @@
 
                 <!-- Informations sur le père -->
                 <div class="col-md-6 mb-4">
-                    <h6 class="text-primary mb-3">
-                        <i class="fas fa-male me-2"></i>Informations sur le père
+                    <h6 class="text-primary mb-3 text-secondary">
+                        <i class="fas fa-male me-2 mr-1"></i>Informations sur le père
                     </h6>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -447,8 +447,8 @@
             <div class="row">
                 <!-- Adresse d'origine -->
                 <div class="col-md-6 mb-4">
-                    <h6 class="text-primary mb-3">
-                        <i class="fas fa-home me-2"></i>Adresse d'origine
+                    <h6 class="text-primary mb-3 text-secondary">
+                        <i class="fas fa-home me-2 mr-1"></i>Adresse d'origine
                     </h6>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -480,8 +480,8 @@
 
                 <!-- Adresse de résidence -->
                 <div class="col-md-6 mb-4">
-                    <h6 class="text-primary mb-3">
-                        <i class="fas fa-building me-2"></i>Adresse de résidence
+                    <h6 class="text-primary mb-3 text-secondary">
+                        <i class="fas fa-building me-2 mr-1"></i>Adresse de résidence
                     </h6>
                     <div class="row">
                         <div class="col-12 mb-2">
@@ -517,8 +517,8 @@
                     <label class="form-label fw-bold">Dossier complet</label>
                     <div class="p-2 bg-light rounded">
                         {% if student.metadata.is_complete %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-check me-1"></i>Complet
+                            <span class="badge bg-success text-primary">
+                                <i class="fas fa-check me-1 mr-1"></i>Complet
                             </span>
                         {% else %}
                             <span class="badge bg-warning">
@@ -534,8 +534,8 @@
                     <label class="form-label fw-bold">Acte de naissance</label>
                     <div class="p-2 bg-light rounded">
                         {% if student.metadata.acte_naissance %}
-                            <a href="{{ student.metadata.acte_naissance.url }}" target="_blank" class="text-primary">
-                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            <a href="{{ student.metadata.acte_naissance.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
                             </a>
                         {% else %}
                             <span class="text-muted">Non fourni</span>
@@ -547,8 +547,8 @@
                     <label class="form-label fw-bold">Preuve du baccalauréat</label>
                     <div class="p-2 bg-light rounded">
                         {% if student.metadata.preuve_baccalaureat %}
-                            <a href="{{ student.metadata.preuve_baccalaureat.url }}" target="_blank" class="text-primary">
-                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            <a href="{{ student.metadata.preuve_baccalaureat.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
                             </a>
                         {% else %}
                             <span class="text-muted">Non fourni</span>
@@ -560,8 +560,8 @@
                     <label class="form-label fw-bold">Relevé de notes du bac</label>
                     <div class="p-2 bg-light rounded">
                         {% if student.metadata.releve_notes_bac %}
-                            <a href="{{ student.metadata.releve_notes_bac.url }}" target="_blank" class="text-primary">
-                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            <a href="{{ student.metadata.releve_notes_bac.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
                             </a>
                         {% else %}
                             <span class="text-muted">Non fourni</span>
@@ -573,8 +573,8 @@
                     <label class="form-label fw-bold">Bulletins de terminale</label>
                     <div class="p-2 bg-light rounded">
                         {% if student.metadata.bulletins_terminale %}
-                            <a href="{{ student.metadata.bulletins_terminale.url }}" target="_blank" class="text-primary">
-                                <i class="fas fa-file-pdf me-1"></i>Voir le document
+                            <a href="{{ student.metadata.bulletins_terminale.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
                             </a>
                         {% else %}
                             <span class="text-muted">Non fourni</span>

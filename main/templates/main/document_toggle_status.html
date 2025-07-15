@@ -1,0 +1,138 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ action|capfirst }} document - YSEM{% endblock %}
+
+{% block page_title %}{{ action|capfirst }} document{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light text-center pb-0">
+                <div class="icon-container mb-3">
+                    {% if action == 'décharger' %}
+                        <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-warning text-white mx-auto d-flex align-items-center justify-content-center">
+                            <span class="fas fa-download fa-2x"></span>
+                        </div>
+                    {% elif action == 'retourner' %}
+                        <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-info text-white mx-auto d-flex align-items-center justify-content-center">
+                            <span class="fas fa-undo fa-2x"></span>
+                        </div>
+                    {% else %}
+                        <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center">
+                            <span class="fas fa-edit fa-2x"></span>
+                        </div>
+                    {% endif %}
+                </div>
+                <h4 class="mb-3">Confirmation de l'action</h4>
+                <p class="text-muted">
+                    Êtes-vous sûr de vouloir {{ action_description }} ?
+                </p>
+            </div>
+
+            <div class="card-body">
+                <!-- Informations du document -->
+                <div class="card bg-primary shadow-inset border-light p-3 mb-4">
+                    <h6 class="mb-3 text-primary">
+                        <span class="fas fa-file-alt mr-2"></span>Informations du document
+                    </h6>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Étudiant</label>
+                                <div class="form-control shadow-inset border-light bg-primary">
+                                    <strong>{{ document.student_level.student.matricule }}</strong> -
+                                    {{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Niveau</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.student_level.level.name }}</div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Année académique</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.student_level.academic_year.name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Type de document</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.get_type_display }}</div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Statut actuel</label>
+                                <div class="form-control shadow-inset border-light bg-primary">
+                                    {% if document.status == 'available' %}
+                                        <span class="badge badge-success">{{ document.get_status_display }}</span>
+                                    {% elif document.status == 'withdrawn' %}
+                                        <span class="badge badge-warning">{{ document.get_status_display }}</span>
+                                    {% elif document.status == 'returned' %}
+                                        <span class="badge badge-info">{{ document.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">{{ document.get_status_display }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Date de création</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.created_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+
+                            {% if document.withdrawn_date %}
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Date de décharge</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.withdrawn_date|date:"d/m/Y" }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if document.returned_at %}
+                            <div class="form-group mb-3">
+                                <label class="form-label text-muted font-weight-bold">Date de retour</label>
+                                <div class="form-control shadow-inset border-light bg-primary">{{ document.returned_at|date:"d/m/Y" }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card bg-primary shadow-soft border-light p-3">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft px-4 mx-1s">
+                            <span class="fas fa-times mr-2"></span>Annuler
+                        </a>
+                        <form method="post" class="d-inline mx-1">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary shadow-soft px-4">
+                                {% if action == 'décharger' %}
+                                    <span class="fas fa-download mr-2"></span>Décharger
+                                {% elif action == 'retourner' %}
+                                    <span class="fas fa-undo mr-2"></span>Retourner
+                                {% else %}
+                                    <span class="fas fa-edit mr-2"></span>Modifier statut
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.icon-container {
+    padding: 1rem;
+}
+</style>
+{% endblock %}

@@ -27,6 +27,7 @@ urlpatterns = [
     path('document/nouveau/', views.document_create, name='document_create'),
     path('document/<int:pk>/modifier/', views.document_edit, name='document_edit'),
     path('document/<int:pk>/supprimer/', views.document_delete, name='document_delete'),
+    path('document/<int:pk>/toggle-status/', views.document_toggle_status, name='document_toggle_status'),
     path('document/creation-masse/', views.document_bulk_create, name='document_bulk_create'),
     path('document/preview-masse/', views.document_bulk_preview, name='document_bulk_preview'),
 
@@ -35,6 +36,9 @@ urlpatterns = [
     path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
     path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
     path('nouvelle_inscription/', views.NouvelleInscriptionView.as_view(), name='nouvelle_inscription'),
+
+    # AJAX endpoints
+    path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
 
     re_path(r'^favicon\.ico$', favicon_view),
 ]

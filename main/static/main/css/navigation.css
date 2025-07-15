@@ -71,24 +71,8 @@
 /* Bouton de déconnexion */
 .logout-btn {
     width: 100%;
-    padding: 12px 20px;
-    background: transparent;
-    border: 1px solid rgba(220, 53, 69, 0.3);
-    border-radius: 10px;
-    color: #dc3545;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
 }
 
-.logout-btn:hover {
-    background: rgba(220, 53, 69, 0.1);
-    border-color: #dc3545;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
-}
 
 /* Responsive pour le logo */
 @media (max-width: 768px) {

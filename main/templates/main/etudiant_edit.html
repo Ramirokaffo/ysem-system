@@ -8,12 +8,14 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4><i class="fas fa-edit me-2"></i>Modification de {{ student.firstname }} {{ student.lastname }}</h4>
-            <div>
-                <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour aux détails
-                </a>
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><span class="fas fa-edit mr-2"></span>Modification de {{ student.firstname }} {{ student.lastname }}</h4>
+                <div>
+                    <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-outline-secondary shadow-soft">
+                        <span class="fas fa-arrow-left mr-2"></span>Retour aux détails
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -21,90 +23,106 @@
 
 <form method="post" novalidate>
     {% csrf_token %}
-    
+
     <!-- Informations principales -->
     <div class="row">
         <div class="col-12">
-            <div class="card-neumorphic p-4 mb-4">
-                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-user me-2"></i>Informations principales</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Matricule :</strong></label>
-                            <input type="text" class="form-control" value="{{ student.matricule }}" readonly>
-                            <small class="text-muted">Le matricule ne peut pas être modifié</small>
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-user mr-2"></span>Informations principales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">Matricule</label>
+                                <input type="text" class="form-control shadow-inset border-light" value="{{ student.matricule }}" readonly>
+                                <small class="text-muted">Le matricule ne peut pas être modifié</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.status.label_tag }}
-                            {{ student_form.status }}
-                            {% if student_form.status.errors %}
-                                <div class="text-danger small">{{ student_form.status.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.status.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.status.name }}" id="{{ student_form.status.id_for_label }}">
+                                    {% for value, label in student_form.status.field.choices %}
+                                        <option value="{{ value }}" {% if student_form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.status.errors %}
+                                    <div class="text-danger small">{{ student_form.status.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.firstname.label_tag }}
-                            {{ student_form.firstname }}
-                            {% if student_form.firstname.errors %}
-                                <div class="text-danger small">{{ student_form.firstname.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.firstname.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ student_form.firstname.name }}" value="{{ student_form.firstname.value|default:'' }}" id="{{ student_form.firstname.id_for_label }}">
+                                {% if student_form.firstname.errors %}
+                                    <div class="text-danger small">{{ student_form.firstname.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.lastname.label_tag }}
-                            {{ student_form.lastname }}
-                            {% if student_form.lastname.errors %}
-                                <div class="text-danger small">{{ student_form.lastname.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.lastname.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ student_form.lastname.name }}" value="{{ student_form.lastname.value|default:'' }}" id="{{ student_form.lastname.id_for_label }}">
+                                {% if student_form.lastname.errors %}
+                                    <div class="text-danger small">{{ student_form.lastname.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.date_naiss.label_tag }}
-                            {{ student_form.date_naiss }}
-                            {% if student_form.date_naiss.errors %}
-                                <div class="text-danger small">{{ student_form.date_naiss.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.date_naiss.label }}</label>
+                                <input type="date" class="form-control shadow-inset border-light" name="{{ student_form.date_naiss.name }}" value="{{ student_form.date_naiss.value|date:'Y-m-d'|default:'' }}" id="{{ student_form.date_naiss.id_for_label }}">
+                                {% if student_form.date_naiss.errors %}
+                                    <div class="text-danger small">{{ student_form.date_naiss.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.gender.label_tag }}
-                            {{ student_form.gender }}
-                            {% if student_form.gender.errors %}
-                                <div class="text-danger small">{{ student_form.gender.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.gender.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.gender.name }}" id="{{ student_form.gender.id_for_label }}">
+                                    {% for value, label in student_form.gender.field.choices %}
+                                        <option value="{{ value }}" {% if student_form.gender.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.gender.errors %}
+                                    <div class="text-danger small">{{ student_form.gender.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.lang.label_tag }}
-                            {{ student_form.lang }}
-                            {% if student_form.lang.errors %}
-                                <div class="text-danger small">{{ student_form.lang.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.lang.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.lang.name }}" id="{{ student_form.lang.id_for_label }}">
+                                    {% for value, label in student_form.lang.field.choices %}
+                                        <option value="{{ value }}" {% if student_form.lang.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.lang.errors %}
+                                    <div class="text-danger small">{{ student_form.lang.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ student_form.phone_number.label_tag }}
-                            {{ student_form.phone_number }}
-                            {% if student_form.phone_number.errors %}
-                                <div class="text-danger small">{{ student_form.phone_number.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.phone_number.label }}</label>
+                                <input type="tel" class="form-control shadow-inset border-light" name="{{ student_form.phone_number.name }}" value="{{ student_form.phone_number.value|default:'' }}" id="{{ student_form.phone_number.id_for_label }}">
+                                {% if student_form.phone_number.errors %}
+                                    <div class="text-danger small">{{ student_form.phone_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            {{ student_form.email.label_tag }}
-                            {{ student_form.email }}
-                            {% if student_form.email.errors %}
-                                <div class="text-danger small">{{ student_form.email.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.email.label }}</label>
+                                <input type="email" class="form-control shadow-inset border-light" name="{{ student_form.email.name }}" value="{{ student_form.email.value|default:'' }}" id="{{ student_form.email.id_for_label }}">
+                                {% if student_form.email.errors %}
+                                    <div class="text-danger small">{{ student_form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -115,34 +133,59 @@
     <!-- Relations -->
     <div class="row">
         <div class="col-12">
-            <div class="card-neumorphic p-4 mb-4">
-                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-link me-2"></i>Relations</h5>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            {{ student_form.school.label_tag }}
-                            {{ student_form.school }}
-                            {% if student_form.school.errors %}
-                                <div class="text-danger small">{{ student_form.school.errors.0 }}</div>
-                            {% endif %}
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-link mr-2"></span>Relations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.school.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.school.name }}" id="{{ student_form.school.id_for_label }}">
+                                    <option value="">---------</option>
+                                    {% for value, label in student_form.school.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.school.value == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.school.errors %}
+                                    <div class="text-danger small">{{ student_form.school.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            {{ student_form.program.label_tag }}
-                            {{ student_form.program }}
-                            {% if student_form.program.errors %}
-                                <div class="text-danger small">{{ student_form.program.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.program.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.program.name }}" id="{{ student_form.program.id_for_label }}">
+                                    <option value="">---------</option>
+                                    {% for value, label in student_form.program.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.program.value == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.program.errors %}
+                                    <div class="text-danger small">{{ student_form.program.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            {{ student_form.godfather.label_tag }}
-                            {{ student_form.godfather }}
-                            {% if student_form.godfather.errors %}
-                                <div class="text-danger small">{{ student_form.godfather.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.godfather.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.godfather.name }}" id="{{ student_form.godfather.id_for_label }}">
+                                    <option value="">---------</option>
+                                    {% for value, label in student_form.godfather.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.godfather.value == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.godfather.errors %}
+                                    <div class="text-danger small">{{ student_form.godfather.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -153,61 +196,65 @@
     <!-- Informations géographiques -->
     <div class="row">
         <div class="col-12">
-            <div class="card-neumorphic p-4 mb-4">
-                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-map-marker-alt me-2"></i>Informations géographiques</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.original_country.label_tag }}
-                            {{ metadata_form.original_country }}
-                            {% if metadata_form.original_country.errors %}
-                                <div class="text-danger small">{{ metadata_form.original_country.errors.0 }}</div>
-                            {% endif %}
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-map-marker-alt mr-2"></span>Informations géographiques</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.original_country.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.original_country.name }}" value="{{ metadata_form.original_country.value|default:'' }}" id="{{ metadata_form.original_country.id_for_label }}">
+                                {% if metadata_form.original_country.errors %}
+                                    <div class="text-danger small">{{ metadata_form.original_country.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.original_region.label_tag }}
-                            {{ metadata_form.original_region }}
-                            {% if metadata_form.original_region.errors %}
-                                <div class="text-danger small">{{ metadata_form.original_region.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.original_region.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.original_region.name }}" value="{{ metadata_form.original_region.value|default:'' }}" id="{{ metadata_form.original_region.id_for_label }}">
+                                {% if metadata_form.original_region.errors %}
+                                    <div class="text-danger small">{{ metadata_form.original_region.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.original_department.label_tag }}
-                            {{ metadata_form.original_department }}
-                            {% if metadata_form.original_department.errors %}
-                                <div class="text-danger small">{{ metadata_form.original_department.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.original_department.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.original_department.name }}" value="{{ metadata_form.original_department.value|default:'' }}" id="{{ metadata_form.original_department.id_for_label }}">
+                                {% if metadata_form.original_department.errors %}
+                                    <div class="text-danger small">{{ metadata_form.original_department.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.original_district.label_tag }}
-                            {{ metadata_form.original_district }}
-                            {% if metadata_form.original_district.errors %}
-                                <div class="text-danger small">{{ metadata_form.original_district.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.original_district.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.original_district.name }}" value="{{ metadata_form.original_district.value|default:'' }}" id="{{ metadata_form.original_district.id_for_label }}">
+                                {% if metadata_form.original_district.errors %}
+                                    <div class="text-danger small">{{ metadata_form.original_district.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.residence_city.label_tag }}
-                            {{ metadata_form.residence_city }}
-                            {% if metadata_form.residence_city.errors %}
-                                <div class="text-danger small">{{ metadata_form.residence_city.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.residence_city.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.residence_city.name }}" value="{{ metadata_form.residence_city.value|default:'' }}" id="{{ metadata_form.residence_city.id_for_label }}">
+                                {% if metadata_form.residence_city.errors %}
+                                    <div class="text-danger small">{{ metadata_form.residence_city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ metadata_form.residence_quarter.label_tag }}
-                            {{ metadata_form.residence_quarter }}
-                            {% if metadata_form.residence_quarter.errors %}
-                                <div class="text-danger small">{{ metadata_form.residence_quarter.errors.0 }}</div>
-                            {% endif %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.residence_quarter.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.residence_quarter.name }}" value="{{ metadata_form.residence_quarter.value|default:'' }}" id="{{ metadata_form.residence_quarter.id_for_label }}">
+                                {% if metadata_form.residence_quarter.errors %}
+                                    <div class="text-danger small">{{ metadata_form.residence_quarter.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,78 +265,84 @@
     <!-- Informations familiales -->
     <div class="row">
         <div class="col-12">
-            <div class="card-neumorphic p-4 mb-4">
-                <h5 class="mb-4 border-bottom pb-2"><i class="fas fa-users me-2"></i>Informations familiales</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-3">Informations de la mère</h6>
-                        <div class="mb-3">
-                            {{ metadata_form.mother_full_name.label_tag }}
-                            {{ metadata_form.mother_full_name }}
-                            {% if metadata_form.mother_full_name.errors %}
-                                <div class="text-danger small">{{ metadata_form.mother_full_name.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.mother_live_city.label_tag }}
-                            {{ metadata_form.mother_live_city }}
-                            {% if metadata_form.mother_live_city.errors %}
-                                <div class="text-danger small">{{ metadata_form.mother_live_city.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.mother_email.label_tag }}
-                            {{ metadata_form.mother_email }}
-                            {% if metadata_form.mother_email.errors %}
-                                <div class="text-danger small">{{ metadata_form.mother_email.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.mother_occupation.label_tag }}
-                            {{ metadata_form.mother_occupation }}
-                            {% if metadata_form.mother_occupation.errors %}
-                                <div class="text-danger small">{{ metadata_form.mother_occupation.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.mother_phone_number.label_tag }}
-                            {{ metadata_form.mother_phone_number }}
-                            {% if metadata_form.mother_phone_number.errors %}
-                                <div class="text-danger small">{{ metadata_form.mother_phone_number.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-3">Informations du père</h6>
-                        <div class="mb-3">
-                            {{ metadata_form.father_full_name.label_tag }}
-                            {{ metadata_form.father_full_name }}
-                            {% if metadata_form.father_full_name.errors %}
-                                <div class="text-danger small">{{ metadata_form.father_full_name.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.father_occupation.label_tag }}
-                            {{ metadata_form.father_occupation }}
-                            {% if metadata_form.father_occupation.errors %}
-                                <div class="text-danger small">{{ metadata_form.father_occupation.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ metadata_form.father_phone_number.label_tag }}
-                            {{ metadata_form.father_phone_number }}
-                            {% if metadata_form.father_phone_number.errors %}
-                                <div class="text-danger small">{{ metadata_form.father_phone_number.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                {{ metadata_form.is_complete }}
-                                {{ metadata_form.is_complete.label_tag }}
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-users mr-2"></span>Informations familiales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Informations de la mère</h6>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.mother_full_name.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.mother_full_name.name }}" value="{{ metadata_form.mother_full_name.value|default:'' }}" id="{{ metadata_form.mother_full_name.id_for_label }}">
+                                {% if metadata_form.mother_full_name.errors %}
+                                    <div class="text-danger small">{{ metadata_form.mother_full_name.errors.0 }}</div>
+                                {% endif %}
                             </div>
-                            {% if metadata_form.is_complete.errors %}
-                                <div class="text-danger small">{{ metadata_form.is_complete.errors.0 }}</div>
-                            {% endif %}
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.mother_live_city.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.mother_live_city.name }}" value="{{ metadata_form.mother_live_city.value|default:'' }}" id="{{ metadata_form.mother_live_city.id_for_label }}">
+                                {% if metadata_form.mother_live_city.errors %}
+                                    <div class="text-danger small">{{ metadata_form.mother_live_city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.mother_email.label }}</label>
+                                <input type="email" class="form-control shadow-inset border-light" name="{{ metadata_form.mother_email.name }}" value="{{ metadata_form.mother_email.value|default:'' }}" id="{{ metadata_form.mother_email.id_for_label }}">
+                                {% if metadata_form.mother_email.errors %}
+                                    <div class="text-danger small">{{ metadata_form.mother_email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.mother_occupation.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.mother_occupation.name }}" value="{{ metadata_form.mother_occupation.value|default:'' }}" id="{{ metadata_form.mother_occupation.id_for_label }}">
+                                {% if metadata_form.mother_occupation.errors %}
+                                    <div class="text-danger small">{{ metadata_form.mother_occupation.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.mother_phone_number.label }}</label>
+                                <input type="tel" class="form-control shadow-inset border-light" name="{{ metadata_form.mother_phone_number.name }}" value="{{ metadata_form.mother_phone_number.value|default:'' }}" id="{{ metadata_form.mother_phone_number.id_for_label }}">
+                                {% if metadata_form.mother_phone_number.errors %}
+                                    <div class="text-danger small">{{ metadata_form.mother_phone_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">Informations du père</h6>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.father_full_name.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.father_full_name.name }}" value="{{ metadata_form.father_full_name.value|default:'' }}" id="{{ metadata_form.father_full_name.id_for_label }}">
+                                {% if metadata_form.father_full_name.errors %}
+                                    <div class="text-danger small">{{ metadata_form.father_full_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.father_occupation.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.father_occupation.name }}" value="{{ metadata_form.father_occupation.value|default:'' }}" id="{{ metadata_form.father_occupation.id_for_label }}">
+                                {% if metadata_form.father_occupation.errors %}
+                                    <div class="text-danger small">{{ metadata_form.father_occupation.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.father_phone_number.label }}</label>
+                                <input type="tel" class="form-control shadow-inset border-light" name="{{ metadata_form.father_phone_number.name }}" value="{{ metadata_form.father_phone_number.value|default:'' }}" id="{{ metadata_form.father_phone_number.id_for_label }}">
+                                {% if metadata_form.father_phone_number.errors %}
+                                    <div class="text-danger small">{{ metadata_form.father_phone_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input shadow-inset border-light" name="{{ metadata_form.is_complete.name }}" id="{{ metadata_form.is_complete.id_for_label }}" {% if metadata_form.is_complete.value %}checked{% endif %}>
+                                    <label class="form-check-label font-weight-bold" for="{{ metadata_form.is_complete.id_for_label }}">
+                                        {{ metadata_form.is_complete.label }}
+                                    </label>
+                                </div>
+                                {% if metadata_form.is_complete.errors %}
+                                    <div class="text-danger small">{{ metadata_form.is_complete.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -300,13 +353,16 @@
     <!-- Boutons d'action -->
     <div class="row">
         <div class="col-12">
-            <div class="d-flex gap-2 mb-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Enregistrer les modifications
-                </button>
-                <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-secondary">
-                    <i class="fas fa-times me-2"></i>Annuler
-                </a>
+            <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                    <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-outline-secondary shadow-soft mx-2">
+                        <span class="fas fa-times mr-2"></span>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary shadow-soft">
+                        <span class="fas fa-save mr-2"></span>Enregistrer les modifications
+                    </button>
+                    
+                </div>
             </div>
         </div>
     </div>

@@ -204,54 +204,169 @@
 
             <!-- Gender Distribution -->
             <div class="mb-4">
-                <h6 class="mb-3">
+                <h6 class="mb-3 text-info">
                     <i class="fas fa-venus-mars me-2"></i>
                     Répartition par genre
                 </h6>
                 {% if gender_stats %}
-                    {% for stat in gender_stats %}
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>
-                                {% if stat.gender == 'M' %}
-                                    <i class="fas fa-mars text-primary me-1"></i> Masculin
-                                {% elif stat.gender == 'F' %}
-                                    <i class="fas fa-venus text-danger me-1"></i> Féminin
-                                {% else %}
-                                    <i class="fas fa-question text-muted me-1"></i> Non spécifié
-                                {% endif %}
-                            </span>
-                            <span class="fw-bold">{{ stat.count }}</span>
-                        </div>
-                    {% endfor %}
+                    <div class="row g-2">
+                        {% for stat in gender_stats %}
+                            <div class="col-12">
+                                <div class="stat-card-mini">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            {% if stat.gender == 'M' %}
+                                                <div class="stat-icon-mini shadow-inset bg-primary mr-1">
+                                                    <i class="fas fa-mars text-danger"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Masculin</span>
+                                            {% elif stat.gender == 'F' %}
+                                                <div class="stat-icon-mini shadow-inset bg-danger mr-1">
+                                                    <i class="fas fa-venus text-success"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Féminin</span>
+                                            {% else %}
+                                                <div class="stat-icon-mini shadow-inset bg-secondary mr-1">
+                                                    <i class="fas fa-question"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Non spécifié</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="stat-number">{{ stat.count }}</div>
+                                            {% if total_students > 0 %}
+                                                {% widthratio stat.count total_students 100 as percentage %}
+                                                <small class="text-muted">{{ percentage }}%</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if total_students > 0 %}
+                                        {% widthratio stat.count total_students 100 as percentage %}
+                                        <div class="progress-mini mt-2">
+                                            <div class="progress-bar-mini" style="width: {{ percentage }}%"></div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% else %}
-                    <p class="text-muted">Aucune donnée disponible</p>
+                    <div class="empty-state-mini">
+                        <i class="fas fa-venus-mars fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Aucune donnée disponible</p>
+                    </div>
                 {% endif %}
             </div>
 
             <!-- Document Status -->
             <div class="mb-4">
-                <h6 class="mb-3">
+                <h6 class="mb-3 text-info">
                     <i class="fas fa-file-alt me-2"></i>
                     État des documents
                 </h6>
                 {% if document_stats %}
-                    {% for stat in document_stats %}
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>
-                                {% if stat.status == 'available' %}
-                                    <i class="fas fa-check-circle text-success me-1"></i> Disponibles
-                                {% elif stat.status == 'withdrawn' %}
-                                    <i class="fas fa-download text-warning me-1"></i> Retirés
-                                {% elif stat.status == 'lost' %}
-                                    <i class="fas fa-exclamation-triangle text-danger me-1"></i> Perdus
-                                {% endif %}
-                            </span>
-                            <span class="fw-bold">{{ stat.count }}</span>
-                        </div>
-                    {% endfor %}
+                    <div class="row g-2">
+                        {% for stat in document_stats %}
+                            <div class="col-12">
+                                <div class="stat-card-mini">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            {% if stat.status == 'available' %}
+                                                <div class="stat-icon-mini bg-success mr-1">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Disponibles</span>
+                                            {% elif stat.status == 'withdrawn' %}
+                                                <div class="stat-icon-mini bg-warning mr-1">
+                                                    <i class="fas fa-download"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Retirés</span>
+                                            {% elif stat.status == 'lost' %}
+                                                <div class="stat-icon-mini bg-danger mr-1">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <span class="ms-2 fw-medium">Perdus</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="stat-number">{{ stat.count }}</div>
+                                            {% if total_documents > 0 %}
+                                                {% widthratio stat.count total_documents 100 as percentage %}
+                                                <small class="text-muted">{{ percentage }}%</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% if total_documents > 0 %}
+                                        {% widthratio stat.count total_documents 100 as percentage %}
+                                        <div class="progress-mini mt-2">
+                                            <div class="progress-bar-mini
+                                                {% if stat.status == 'available' %}bg-success
+                                                {% elif stat.status == 'withdrawn' %}bg-warning
+                                                {% elif stat.status == 'lost' %}bg-danger
+                                                {% endif %}"
+                                                style="width: {{ percentage }}%"></div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% else %}
-                    <p class="text-muted">Aucun document enregistré</p>
+                    <div class="empty-state-mini">
+                        <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Aucun document enregistré</p>
+                    </div>
                 {% endif %}
+            </div>
+
+            <!-- Quick Stats Summary -->
+            <div class="quick-stats-summary">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-icon bg-info">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="quick-stat-content">
+                                <div class="quick-stat-number">
+                                    {% if gender_stats and total_students > 0 %}
+                                        {% for stat in gender_stats %}
+                                            {% if stat.gender == 'M' %}
+                                                {% widthratio stat.count total_students 100 as male_percentage %}
+                                                {{ male_percentage }}%
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </div>
+                                <div class="quick-stat-label">Masculin</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-icon bg-danger">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="quick-stat-content">
+                                <div class="quick-stat-number">
+                                    {% if gender_stats and total_students > 0 %}
+                                        {% for stat in gender_stats %}
+                                            {% if stat.gender == 'F' %}
+                                                {% widthratio stat.count total_students 100 as female_percentage %}
+                                                {{ female_percentage }}%
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </div>
+                                <div class="quick-stat-label">Féminin</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -358,6 +473,165 @@
         height: 12px;
         border-radius: 50%;
         margin-right: 8px;
+    }
+
+    /* Nouveaux styles pour le résumé des statistiques */
+    .stat-card-mini {
+        background: var(--primary-color);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 8px;
+        box-shadow: 3px 3px 6px #b8b9be, -3px -3px 6px #fff;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-mini:hover {
+        box-shadow: 5px 5px 10px #b8b9be, -5px -5px 10px #fff;
+        transform: translateY(-1px);
+    }
+
+    .stat-icon-mini {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .progress-mini {
+        height: 4px;
+        background: rgba(0,0,0,0.1);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-bar-mini {
+        height: 100%;
+        background: linear-gradient(90deg, #4e73df, #36b9cc);
+        border-radius: 2px;
+        transition: width 0.6s ease;
+    }
+
+    .progress-bar-mini.bg-success {
+        background: linear-gradient(90deg, #1cc88a, #17a2b8);
+    }
+
+    .progress-bar-mini.bg-warning {
+        background: linear-gradient(90deg, #f6c23e, #fd7e14);
+    }
+
+    .progress-bar-mini.bg-danger {
+        background: linear-gradient(90deg, #e74a3b, #dc3545);
+    }
+
+    .empty-state-mini {
+        text-align: center;
+        padding: 20px;
+        background: var(--primary-color);
+        border-radius: 12px;
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .quick-stats-summary {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .quick-stat-item {
+        background: var(--primary-color);
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 2px 2px 4px #b8b9be, -2px -2px 4px #fff;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .quick-stat-item:hover {
+        box-shadow: 4px 4px 8px #b8b9be, -4px -4px 8px #fff;
+    }
+
+    .quick-stat-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        margin-right: 8px;
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .quick-stat-content {
+        flex: 1;
+    }
+
+    .quick-stat-number {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .quick-stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 2px;
+    }
+
+    /* Animation pour les barres de progression */
+    @keyframes progressAnimation {
+        from {
+            width: 0%;
+        }
+        to {
+            width: var(--target-width);
+        }
+    }
+
+    .progress-bar-mini {
+        animation: progressAnimation 1s ease-out;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .stat-card-mini {
+            padding: 10px;
+        }
+
+        .stat-icon-mini {
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+        }
+
+        .stat-number {
+            font-size: 16px;
+        }
+
+        .quick-stat-item {
+            padding: 10px;
+        }
+
+        .quick-stat-number {
+            font-size: 14px;
+        }
     }
 </style>
 {% endblock %}

@@ -101,8 +101,8 @@ class StudentMetaDataAdmin(admin.ModelAdmin):
 @admin.register(OfficialDocument)
 class OfficialDocumentAdmin(admin.ModelAdmin):
     """Administration des documents officiels"""
-    list_display = ['student_info', 'type', 'status', 'withdrawn_date', 'created_at']
-    list_filter = ['type', 'status', 'created_at', 'withdrawn_date']
+    list_display = ['student_info', 'type', 'status', 'withdrawn_date', 'returned_at', 'created_at']
+    list_filter = ['type', 'status', 'created_at', 'withdrawn_date', 'returned_at']
     search_fields = [
         'student_level__student__matricule',
         'student_level__student__firstname',

@@ -365,22 +365,16 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
-    # Choix de spécialité
-    SPECIALITE_CHOICES = [
-        ('', 'Sélectionner une spécialité'),
-        ('informatique', 'Informatique'),
-        ('gestion', 'Gestion'),
-        ('marketing', 'Marketing'),
-        ('comptabilite', 'Comptabilité'),
-        ('finance', 'Finance'),
-        ('ressources_humaines', 'Ressources Humaines'),
-        ('autre', 'Autre'),
-    ]
-
-    specialite_souhaitee = forms.ChoiceField(
-        choices=SPECIALITE_CHOICES,
+    # Choix de spécialité (dynamique basé sur le programme sélectionné)
+    specialite_souhaitee = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),  # Vide par défaut
         label="Spécialité souhaitée",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'disabled': True  # Désactivé par défaut jusqu'à ce qu'un programme soit sélectionné
+        }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False
     )
 
     autre_specialite = forms.CharField(
@@ -392,6 +386,25 @@ class InscriptionCompleteForm(forms.Form):
         }),
         required=False
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Si un programme est fourni dans les données initiales ou POST
+        program_id = None
+        if self.data:
+            program_id = self.data.get('programme')
+        elif self.initial:
+            program_id = self.initial.get('programme')
+
+        if program_id:
+            try:
+                # Filtrer les spécialités par programme
+                self.fields['specialite_souhaitee'].queryset = Speciality.objects.filter(program_id=program_id)
+                self.fields['specialite_souhaitee'].widget.attrs['disabled'] = False
+                self.fields['specialite_souhaitee'].empty_label = "Sélectionner une spécialité"
+            except (ValueError, TypeError):
+                pass
 
     # === SECTION 4: DOCUMENTS REQUIS ===
     # Documents obligatoires
@@ -800,7 +813,7 @@ class InscriptionEtape4Form(forms.Form):
     # Cursus scolaire
     bepc_cap_serie = forms.CharField(
         max_length=50,
-        label="BEPC / CAP - Série",
+        label="BEPC / CAP - Série / spécialité",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Série'
@@ -839,7 +852,7 @@ class InscriptionEtape4Form(forms.Form):
 
     probatoire_serie = forms.CharField(
         max_length=50,
-        label="Probatoire - Série",
+        label="Probatoire - Série / spécialité",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Série'
@@ -1006,26 +1019,34 @@ class InscriptionEtape4Form(forms.Form):
         required=False
     )
 
-    # Choix de spécialité
-    SPECIALITE_CHOICES = [
-        ('', 'Sélectionner une spécialité'),
-        ('communication_entreprise', 'Communication d\'Entreprise'),
-        ('edition', 'Édition'),
-        ('information_documentaire', 'Information Documentaire'),
-        ('journalisme', 'Journalisme'),
-        ('publicite_marketing', 'Publicité et Marketing'),
-    ]
-
-    specialite_choisie_1 = forms.ChoiceField(
-        choices=SPECIALITE_CHOICES,
-        label="Première spécialité choisie",
-        widget=forms.Select(attrs={'class': 'form-control'})
+    # Choix de programme (ajouté pour permettre la sélection dynamique)
+    programme = forms.ModelChoiceField(
+        queryset=Program.objects.all(),
+        label="Programme",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Sélectionner un programme"
     )
 
-    specialite_choisie_2 = forms.ChoiceField(
-        choices=SPECIALITE_CHOICES,
+    # Choix de spécialité (dynamique basé sur le programme sélectionné)
+    specialite_choisie_1 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),  # Vide par défaut
+        label="Première spécialité choisie",
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'disabled': True  # Désactivé par défaut jusqu'à ce qu'un programme soit sélectionné
+        }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False
+    )
+
+    specialite_choisie_2 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),  # Vide par défaut
         label="Deuxième spécialité choisie",
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'disabled': True  # Désactivé par défaut jusqu'à ce qu'un programme soit sélectionné
+        }),
+        empty_label="Sélectionner d'abord un programme",
         required=False
     )
 
@@ -1095,6 +1116,27 @@ class InscriptionEtape4Form(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Si un programme est fourni dans les données initiales ou POST
+        program_id = None
+        if self.data:
+            program_id = self.data.get('programme')
+        elif self.initial:
+            program_id = self.initial.get('programme')
+
+        if program_id:
+            try:
+                # Filtrer les spécialités par programme
+                self.fields['specialite_choisie_1'].queryset = Speciality.objects.filter(program_id=program_id)
+                self.fields['specialite_choisie_1'].widget.attrs['disabled'] = False
+                self.fields['specialite_choisie_1'].empty_label = "Sélectionner une spécialité"
+
+                self.fields['specialite_choisie_2'].queryset = Speciality.objects.filter(program_id=program_id)
+                self.fields['specialite_choisie_2'].widget.attrs['disabled'] = False
+                self.fields['specialite_choisie_2'].empty_label = "Sélectionner une spécialité (optionnel)"
+            except (ValueError, TypeError):
+                pass
+
         # Ajouter une note d'information pour les documents
         self.document_info = {
             'title': 'IMPORTANT - Documents requis',
@@ -1337,7 +1379,7 @@ class OfficialDocumentForm(forms.ModelForm):
 
     class Meta:
         model = OfficialDocument
-        fields = ['type', 'status', 'withdrawn_date']
+        fields = ['type', 'status', 'withdrawn_date', 'returned_at']
         widgets = {
             'type': forms.Select(attrs={
                 'class': 'form-select',
@@ -1350,11 +1392,16 @@ class OfficialDocumentForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
+            'returned_at': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
         }
         labels = {
             'type': 'Type de document',
             'status': 'Statut',
             'withdrawn_date': 'Date de retrait',
+            'returned_at': 'Date de retour',
         }
 
     def __init__(self, *args, **kwargs):
@@ -1571,7 +1618,6 @@ class BulkDocumentCreationForm(forms.Form):
         academic_year = self.cleaned_data.get('academic_year')
         level = self.cleaned_data.get('level')
         program = self.cleaned_data.get('program')
-
         # Filtrer les étudiants qui ont un StudentLevel correspondant
         students = Student.objects.filter(
             student_levels__academic_year=academic_year,

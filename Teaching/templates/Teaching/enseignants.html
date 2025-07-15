@@ -1,67 +1,158 @@
 {% extends 'Teaching/base.html' %}
 {% load static %}
 
-{% block title %}Enseignants-YSEM{% endblock %}
+{% block title %}Enseignants - YSEM{% endblock %}
 
 {% block page_title %}Enseignants{% endblock %}
 
 {% block content %}
 
-<!-- C'est ici que je commence à modifier en creant la table de suivi des enseignements de YSEM -->
-<div class="bg-primary text-dark">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
-                <div class="mb-4 row justify-content-between px-3">
-                    <span class="h5">Visualisation des enseignants de YSEM</span>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-secondary">
-                            <i class="fas fa-download me-2"></i>
-                            Exporter
-                        </button>
-                        <button >
-                            <a href="{% url 'teaching:ajouter_enseignant' %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-plus me-2"></i> 
-                                    Ajouter enseignant
-                            </a>
-
-                        </button>
-                    </div>
+<!-- En-tête avec actions -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <span class="fas fa-users mr-2"></span>Gestion des enseignants
+                    </h4>
+                    <p class="text-muted mb-0">{{ enseignants.count }} enseignant{{ enseignants.count|pluralize }} enregistré{{ enseignants.count|pluralize }}</p>
                 </div>
-                <div class="mb-5">
-                    <table class="table shadow-soft rounded">
-                        <tr>
-                            <th class="border-0" scope="col" id="matricul">Matricule</th>
-                            <th class="border-0" scope="col" id="nom">Nom et Prénom</th>
-                            <th class="border-0" scope="col" id="prog">Grade</th>
-                            <th class="border-0" scope="col" id="matière">Téléphone</th>
-                            <th class="border-0" scope="col" id="level">Email</th>
-                            <th class="border-0" scope="col" id="action">Action</th>
-
-                        </tr>
-                        {% for lecturer in enseignants %}
-<tr>
-                            <th scope="row" id="firstyear3">{{ lecturer.matricule }}</th>
-                            <th scope="row" id="Bolter3" headers="firstyear3 teacher3">{{ lecturer.lastname }} {{ lecturer.firstname }}</th>
-                            <td headers="firstyear3 Bolter3 males3">{{ lecturer.grade }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ lecturer.phone_number }}</td>
-                            <td headers="firstyear3 Bolter3 females3">{{ lecturer.email }}</td>
-                            <td headers="firstyear3 Bolter3 females3"><button class="btn btn-outline-success">
-                            <i class="fas fa-edit me-2"></i>Modifier</button></td>
-                            
-                        </tr>
-                        {% endfor %}
-                        
-                    </table>
+                <div class="btn-group">
+                    <button class="btn btn-outline-dark shadow-soft">
+                        <i class="fas fa-download me-2"></i>
+                        Exporter
+                    </button>
+                    <a href="{% url 'teaching:ajouter_enseignant' %}" class="btn btn-success shadow-soft">
+                        <i class="fas fa-plus me-2"></i>
+                        Ajouter enseignant
+                    </a>
                 </div>
-
-
             </div>
         </div>
     </div>
 </div>
 
-
-
+<!-- Tableau des enseignants -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light">
+            <div class="card-body p-0">
+                {% if enseignants %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-primary border-light">
+                            <tr>
+                                <th class="border-0 text-muted font-weight-bold" scope="col">
+                                    <i class="fas fa-id-card me-2 mr-1"></i>Matricule
+                                </th>
+                                <th class="border-0 text-muted font-weight-bold" scope="col">
+                                    <i class="fas fa-user me-2 mr-1"></i>Nom et Prénom
+                                </th>
+                                <th class="border-0 text-muted font-weight-bold" scope="col">
+                                    <i class="fas fa-graduation-cap me-2 mr-1"></i>Grade
+                                </th>
+                                <th class="border-0 text-muted font-weight-bold" scope="col">
+                                    <i class="fas fa-phone me-2 mr-1"></i>Téléphone
+                                </th>
+                                <th class="border-0 text-muted font-weight-bold" scope="col">
+                                    <i class="fas fa-envelope me-2 mr-1"></i>Email
+                                </th>
+                                <th class="border-0 text-muted font-weight-bold text-center" scope="col">
+                                    <i class="fas fa-cogs me-2 mr-1"></i>Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lecturer in enseignants %}
+                            <tr class="border-light">
+                                <td class="border-light">
+                                    <span class="badge text-secondary">{{ lecturer.matricule }}</span>
+                                </td>
+                                <td class="border-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm bg-secondary rounded-circle me-3 d-flex align-items-center justify-content-center mr-1">
+                                            <span class="text-white font-weight-bold">
+                                                {{ lecturer.firstname.0 }}{{ lecturer.lastname.0 }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="font-weight-bold">{{ lecturer.lastname }} {{ lecturer.firstname }}</span>
+                                            <div class="small text-muted">
+                                                {% if lecturer.gender == 'M' %}
+                                                    <i class="fas fa-mars text-danger"></i> Masculin
+                                                {% else %}
+                                                    <i class="fas fa-venus text-success"></i> Féminin
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="border-light">
+                                    <span class="badge text-info">{{ lecturer.grade }}</span>
+                                </td>
+                                <td class="border-light">
+                                    {% if lecturer.phone_number %}
+                                        <a href="tel:{{ lecturer.phone_number }}" class="text-decoration-none">
+                                            <i class="fas fa-phone text-success me-1 mr-1"></i>{{ lecturer.phone_number }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-phone-slash me-1 mr-1"></i>Non renseigné
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="border-light">
+                                    {% if lecturer.email %}
+                                        <a href="mailto:{{ lecturer.email }}" class="text-decoration-none">
+                                            <i class="fas fa-envelope text-info me-1 mr-1"></i>{{ lecturer.email|truncatechars:25 }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-envelope-open me-1 mr-1"></i>Non renseigné
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="border-light text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'teaching:detail_enseignant' lecturer.matricule %}"
+                                           class="btn btn-outline-info btn-sm shadow-soft"
+                                           title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'teaching:modifier_enseignant' lecturer.matricule %}"
+                                           class="btn btn-outline-warning btn-sm shadow-soft"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'teaching:supprimer_enseignant' lecturer.matricule %}"
+                                           class="btn btn-outline-danger btn-sm shadow-soft"
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-user-times fa-3x text-muted"></i>
+                    </div>
+                    <h5 class="text-muted">Aucun enseignant enregistré</h5>
+                    <p class="text-muted">Commencez par ajouter votre premier enseignant.</p>
+                    <a href="{% url 'teaching:ajouter_enseignant' %}" class="btn btn-success shadow-soft">
+                        <i class="fas fa-plus me-2"></i>Ajouter un enseignant
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

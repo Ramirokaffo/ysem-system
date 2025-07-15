@@ -1,0 +1,156 @@
+{% extends "Teaching/base.html" %}
+{% load static %}
+
+{% block title %}Supprimer Évaluation - YSEM{% endblock %}
+
+{% block page_title %}Supprimer l'évaluation{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+        <div class="text-center">
+          <a href="{% url 'teaching:evaluations' %}" class="btn btn-outline-secondary shadow-soft">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% elif evaluation %}
+
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card bg-primary shadow-soft border-light p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'teaching:detail_evaluation' evaluation.id %}" class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux détails
+                    </a>
+                </div>
+                <div>
+                    <span class="badge bg-danger fs-6">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Suppression
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation de suppression -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3 text-danger">
+                    <span class="fas fa-exclamation-triangle mr-2"></span>Confirmation de suppression
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning shadow-soft">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Attention !</strong> Cette action est irréversible et supprimera définitivement cette évaluation du système.
+                </div>
+                
+                <p class="mb-4 text-center">Êtes-vous sûr de vouloir supprimer cette évaluation ?</p>
+                
+                <!-- Récapitulatif de l'évaluation -->
+                <div class="card bg-primary shadow-inset border-light p-4 mb-4">
+                    <h6 class="text-secondary mb-3">
+                        <span class="fas fa-star mr-2"></span>Informations de l'évaluation à supprimer
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">ID de l'évaluation</label>
+                                <div class="text-dark">#{{ evaluation.id }}</div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Date d'évaluation</label>
+                                <div class="text-dark">{{ evaluation.evaluationDat|date:"d/m/Y"|default:"Non renseignée" }}</div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Étudiant</label>
+                                <div class="text-dark">
+                                    {% if evaluation.student %}
+                                        {{ evaluation.student.lastname }} {{ evaluation.student.firstname }} ({{ evaluation.student.matricule }})
+                                    {% else %}
+                                        Non renseigné
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Niveau</label>
+                                <div class="text-dark">
+                                    {% if evaluation.level %}
+                                        {{ evaluation.level.cycle }} - {{ evaluation.level }}
+                                    {% else %}
+                                        Non renseigné
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Cours évalué</label>
+                                <div class="text-dark">
+                                    {% if evaluation.course %}
+                                        {{ evaluation.course.label }}
+                                    {% else %}
+                                        Non renseigné
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Évaluation globale</label>
+                                <div class="text-dark">
+                                    <i class="{{ evaluation|evaluation_icon }} me-1"></i>{{ evaluation|evaluation_text }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if evaluation.quelles_difficultes_rencontrees %}
+                    <div class="mt-3">
+                        <label class="form-label text-muted font-weight-bold">Difficultés mentionnées</label>
+                        <div class="text-dark bg-light p-2 rounded">{{ evaluation.quelles_difficultes_rencontrees }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <form method="POST" id="supprimer-form">
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Boutons d'action -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'teaching:detail_evaluation' evaluation.id %}" class="btn btn-outline-secondary shadow-soft">
+                    <span class="fas fa-times mr-2"></span>Annuler
+                </a>
+                <a href="{% url 'teaching:evaluations' %}" class="btn btn-outline-primary shadow-soft">
+                    <span class="fas fa-list mr-2"></span>Liste des évaluations
+                </a>
+                <button type="submit" form="supprimer-form" class="btn btn-danger shadow-soft" onclick="return confirm('Confirmez-vous la suppression définitive de cette évaluation ?')">
+                    <span class="fas fa-trash mr-2"></span>Supprimer définitivement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
