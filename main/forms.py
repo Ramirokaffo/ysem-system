@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from students.models import Student, StudentMetaData, OfficialDocument, StudentLevel
+from students.models import Student, StudentMetaData, OfficialDocument, StudentLevel, PaymentStatus
 from accounts.models import BaseUser, Godfather
 from academic.models import Speciality, Program, Level, AcademicYear
 from schools.models import School
@@ -1835,3 +1835,218 @@ class DataManagementSettingsForm(forms.ModelForm):
             'backup_frequency': forms.Select(attrs={'class': 'form-select', 'id': 'backup-frequency'}),
             'data_retention': forms.NumberInput(attrs={'class': 'form-control', 'id': 'data-retention', 'min': 1, 'max': 20}),
         }
+
+
+class PaymentStatusForm(forms.ModelForm):
+    """Formulaire pour la création et modification des statuts de paiement"""
+
+    # Champ pour sélectionner l'étudiant
+    student = forms.ModelChoiceField(
+        queryset=Student.objects.filter(status='approved'),
+        label="Étudiant",
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'required': True
+        }),
+        empty_label="Sélectionner un étudiant"
+    )
+
+    class Meta:
+        model = PaymentStatus
+        fields = [
+            'student', 'academic_year', 'total_amount_due', 'amount_paid',
+            'status', 'due_date', 'last_payment_date', 'documents_blocked',
+            'blocking_reason', 'has_payment_plan', 'payment_plan_details'
+        ]
+        widgets = {
+            'academic_year': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'total_amount_due': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'amount_paid': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0.00'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'due_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'last_payment_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'documents_blocked': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'blocking_reason': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Raison du blocage des documents...'
+            }),
+            'has_payment_plan': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'payment_plan_details': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Détails de l\'échéancier personnalisé...'
+            }),
+        }
+        labels = {
+            'student': 'Étudiant',
+            'academic_year': 'Année académique',
+            'total_amount_due': 'Montant total dû (FCFA)',
+            'amount_paid': 'Montant payé (FCFA)',
+            'status': 'Statut de paiement',
+            'due_date': 'Date d\'échéance',
+            'last_payment_date': 'Dernière date de paiement',
+            'documents_blocked': 'Bloquer les documents',
+            'blocking_reason': 'Raison du blocage',
+            'has_payment_plan': 'Échéancier personnalisé',
+            'payment_plan_details': 'Détails de l\'échéancier',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Personnaliser l'affichage des étudiants
+        self.fields['student'].queryset = Student.objects.filter(status='approved').order_by('matricule')
+
+        # Personnaliser les choix pour afficher matricule - nom prénom
+        student_choices = [('', 'Sélectionner un étudiant')]
+        for student in self.fields['student'].queryset:
+            label = f"{student.matricule} - {student.firstname} {student.lastname}"
+            student_choices.append((student.pk, label))
+        self.fields['student'].choices = student_choices
+
+        # Ordonner les années académiques (les plus récentes en premier)
+        self.fields['academic_year'].queryset = AcademicYear.objects.all().order_by('-start_at')
+
+        # Rendre certains champs optionnels
+        self.fields['due_date'].required = False
+        self.fields['last_payment_date'].required = False
+        self.fields['blocking_reason'].required = False
+        self.fields['payment_plan_details'].required = False
+
+        # Si on modifie un statut existant, pré-remplir l'étudiant
+        if self.instance and self.instance.pk:
+            self.fields['student'].initial = self.instance.student
+
+    def clean(self):
+        cleaned_data = super().clean()
+        total_amount_due = cleaned_data.get('total_amount_due', 0)
+        amount_paid = cleaned_data.get('amount_paid', 0)
+        documents_blocked = cleaned_data.get('documents_blocked', False)
+        blocking_reason = cleaned_data.get('blocking_reason', '')
+        has_payment_plan = cleaned_data.get('has_payment_plan', False)
+        payment_plan_details = cleaned_data.get('payment_plan_details', '')
+        student = cleaned_data.get('student')
+        academic_year = cleaned_data.get('academic_year')
+
+        # Validation : le montant payé ne peut pas être supérieur au montant dû
+        if amount_paid > total_amount_due:
+            raise forms.ValidationError(
+                "Le montant payé ne peut pas être supérieur au montant total dû."
+            )
+
+        # Validation : si les documents sont bloqués, une raison doit être fournie
+        if documents_blocked and not blocking_reason.strip():
+            raise forms.ValidationError(
+                "Une raison doit être fournie si les documents sont bloqués."
+            )
+
+        # Validation : si échéancier personnalisé, les détails doivent être fournis
+        if has_payment_plan and not payment_plan_details.strip():
+            raise forms.ValidationError(
+                "Les détails de l'échéancier doivent être fournis si un échéancier personnalisé est activé."
+            )
+
+        # Vérifier l'unicité de la combinaison étudiant/année académique
+        if student and academic_year:
+            existing = PaymentStatus.objects.filter(
+                student=student,
+                academic_year=academic_year
+            ).exclude(pk=self.instance.pk if self.instance else None)
+
+            if existing.exists():
+                raise forms.ValidationError(
+                    f"Un statut de paiement existe déjà pour {student.firstname} {student.lastname} "
+                    f"pour l'année académique {academic_year.name}."
+                )
+
+        return cleaned_data
+
+
+class PaymentStatusSearchForm(forms.Form):
+    """Formulaire de recherche et filtrage des statuts de paiement"""
+
+    student_search = forms.CharField(
+        max_length=100,
+        label="Rechercher un étudiant",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Matricule, nom ou prénom...'
+        }),
+        required=False
+    )
+
+    academic_year = forms.ModelChoiceField(
+        queryset=AcademicYear.objects.all(),
+        label="Année académique",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        empty_label="Toutes les années",
+        required=False
+    )
+
+    status = forms.ChoiceField(
+        choices=[('', 'Tous les statuts')] + PaymentStatus.PAYMENT_STATUS_CHOICES,
+        label="Statut de paiement",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        required=False
+    )
+
+    documents_blocked = forms.ChoiceField(
+        choices=[
+            ('', 'Tous'),
+            ('true', 'Documents bloqués'),
+            ('false', 'Documents non bloqués')
+        ],
+        label="Blocage des documents",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        required=False
+    )
+
+    has_payment_plan = forms.ChoiceField(
+        choices=[
+            ('', 'Tous'),
+            ('true', 'Avec échéancier'),
+            ('false', 'Sans échéancier')
+        ],
+        label="Échéancier personnalisé",
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        }),
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ordonner les années académiques (les plus récentes en premier)
+        self.fields['academic_year'].queryset = AcademicYear.objects.all().order_by('-start_at')

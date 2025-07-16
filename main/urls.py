@@ -37,6 +37,14 @@ urlpatterns = [
     path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
     path('nouvelle_inscription/', views.NouvelleInscriptionView.as_view(), name='nouvelle_inscription'),
 
+    # URLs pour la gestion des statuts de paiement
+    path('statut-paiement/', views.PaymentStatusView.as_view(), name='payment_status'),
+    path('statut-paiement/creer/', views.payment_status_create, name='payment_status_create'),
+    path('statut-paiement/<int:pk>/', views.payment_status_detail, name='payment_status_detail'),
+    path('statut-paiement/<int:pk>/modifier/', views.payment_status_edit, name='payment_status_edit'),
+    path('statut-paiement/<int:pk>/supprimer/', views.payment_status_delete, name='payment_status_delete'),
+    path('statut-paiement/<int:pk>/basculer-blocage/', views.payment_status_toggle_block, name='payment_status_toggle_block'),
+
     # AJAX endpoints
     path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
 

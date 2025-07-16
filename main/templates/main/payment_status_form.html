@@ -1,0 +1,320 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if action == 'create' %}Créer un statut de paiement{% else %}Modifier le statut de paiement{% endif %} - YSEM
+{% endblock %}
+
+{% block page_title %}
+    {% if action == 'create' %}Créer un statut de paiement{% else %}Modifier le statut de paiement{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- En-tête de la page -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>
+                    <i class="fas fa-credit-card me-2"></i>
+                    {% if action == 'create' %}Nouveau statut de paiement{% else %}Modification du statut{% endif %}
+                </h4>
+                <div>
+                    <a href="{% url 'main:payment_status' %}" class="btn btn-outline-secondary shadow-soft">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Informations de l'étudiant -->
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3">
+                        <i class="fas fa-user me-2"></i>Informations de l'étudiant
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.student.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.student.label }}</label>
+                                {{ form.student }}
+                                {% if form.student.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.student.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.academic_year.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.academic_year.label }}</label>
+                                {{ form.academic_year }}
+                                {% if form.academic_year.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.academic_year.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations financières -->
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3">
+                        <i class="fas fa-money-bill-wave me-2"></i>Informations financières
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.total_amount_due.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.total_amount_due.label }}</label>
+                                {{ form.total_amount_due }}
+                                {% if form.total_amount_due.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.total_amount_due.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.amount_paid.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.amount_paid.label }}</label>
+                                {{ form.amount_paid }}
+                                {% if form.amount_paid.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.amount_paid.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.status.label }}</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.status.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates importantes -->
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3">
+                        <i class="fas fa-calendar me-2"></i>Dates importantes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.due_date.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.due_date.label }}</label>
+                                {{ form.due_date }}
+                                {% if form.due_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.due_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="{{ form.last_payment_date.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.last_payment_date.label }}</label>
+                                {{ form.last_payment_date }}
+                                {% if form.last_payment_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.last_payment_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestion des documents -->
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3">
+                        <i class="fas fa-ban me-2"></i>Gestion des documents
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check mb-3">
+                                {{ form.documents_blocked }}
+                                <label for="{{ form.documents_blocked.id_for_label }}" class="form-check-label">
+                                    {{ form.documents_blocked.label }}
+                                </label>
+                                {% if form.documents_blocked.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.documents_blocked.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.blocking_reason.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.blocking_reason.label }}</label>
+                                {{ form.blocking_reason }}
+                                {% if form.blocking_reason.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.blocking_reason.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Échéancier personnalisé -->
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>Échéancier personnalisé
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check mb-3">
+                                {{ form.has_payment_plan }}
+                                <label for="{{ form.has_payment_plan.id_for_label }}" class="form-check-label">
+                                    {{ form.has_payment_plan.label }}
+                                </label>
+                                {% if form.has_payment_plan.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.has_payment_plan.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="{{ form.payment_plan_details.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.payment_plan_details.label }}</label>
+                                {{ form.payment_plan_details }}
+                                {% if form.payment_plan_details.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.payment_plan_details.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Erreurs générales du formulaire -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger shadow-soft">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Boutons d'action -->
+            <div class="card bg-primary shadow-soft border-light p-4">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'main:payment_status' %}" class="btn btn-secondary shadow-soft">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary shadow-soft">
+                        <i class="fas fa-save me-2"></i>
+                        {% if action == 'create' %}Créer le statut{% else %}Enregistrer les modifications{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculer automatiquement le montant restant
+    const totalAmountInput = document.getElementById('{{ form.total_amount_due.id_for_label }}');
+    const amountPaidInput = document.getElementById('{{ form.amount_paid.id_for_label }}');
+    
+    function updateRemainingAmount() {
+        const total = parseFloat(totalAmountInput.value) || 0;
+        const paid = parseFloat(amountPaidInput.value) || 0;
+        const remaining = total - paid;
+        
+        // Afficher le montant restant quelque part si nécessaire
+        console.log('Montant restant:', remaining);
+    }
+    
+    totalAmountInput.addEventListener('input', updateRemainingAmount);
+    amountPaidInput.addEventListener('input', updateRemainingAmount);
+    
+    // Gérer l'affichage conditionnel des champs
+    const documentsBlockedCheckbox = document.getElementById('{{ form.documents_blocked.id_for_label }}');
+    const blockingReasonField = document.getElementById('{{ form.blocking_reason.id_for_label }}').closest('.form-group');
+    
+    const hasPaymentPlanCheckbox = document.getElementById('{{ form.has_payment_plan.id_for_label }}');
+    const paymentPlanDetailsField = document.getElementById('{{ form.payment_plan_details.id_for_label }}').closest('.form-group');
+    
+    function toggleBlockingReason() {
+        if (documentsBlockedCheckbox.checked) {
+            blockingReasonField.style.display = 'block';
+        } else {
+            blockingReasonField.style.display = 'none';
+        }
+    }
+    
+    function togglePaymentPlanDetails() {
+        if (hasPaymentPlanCheckbox.checked) {
+            paymentPlanDetailsField.style.display = 'block';
+        } else {
+            paymentPlanDetailsField.style.display = 'none';
+        }
+    }
+    
+    documentsBlockedCheckbox.addEventListener('change', toggleBlockingReason);
+    hasPaymentPlanCheckbox.addEventListener('change', togglePaymentPlanDetails);
+    
+    // Initialiser l'affichage
+    toggleBlockingReason();
+    togglePaymentPlanDetails();
+});
+</script>
+{% endblock %}

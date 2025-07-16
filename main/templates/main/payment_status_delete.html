@@ -1,0 +1,116 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer le statut de paiement - YSEM{% endblock %}
+
+{% block page_title %}Supprimer le statut de paiement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card-neumorphic p-4">
+            <!-- En-tête -->
+            <div class="text-center mb-4">
+                <div class="icon-shape bg-danger text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-trash-alt fa-2x"></i>
+                </div>
+                <h5 class="text-danger">Confirmer la suppression</h5>
+            </div>
+
+            <!-- Informations du statut à supprimer -->
+            <div class="alert alert-warning">
+                <h6 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Attention !
+                </h6>
+                <p class="mb-0">
+                    Vous êtes sur le point de supprimer définitivement le statut de paiement pour :
+                </p>
+            </div>
+
+            <div class="card-neumorphic p-3 mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Étudiant:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.student.firstname }} {{ payment_status.student.lastname }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Matricule:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.student.matricule }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Année académique:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.academic_year.name }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Montant total dû:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.total_amount_due|floatformat:0 }} FCFA
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Montant payé:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.amount_paid|floatformat:0 }} FCFA
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Statut:</strong>
+                    </div>
+                    <div class="col-6">
+                        {% if payment_status.status == 'up_to_date' %}
+                            <span class="badge bg-success">À jour</span>
+                        {% elif payment_status.status == 'partial' %}
+                            <span class="badge bg-warning">Paiement partiel</span>
+                        {% elif payment_status.status == 'overdue' %}
+                            <span class="badge bg-danger">En retard</span>
+                        {% elif payment_status.status == 'blocked' %}
+                            <span class="badge bg-dark">Bloqué</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-danger">
+                <h6 class="alert-heading">
+                    <i class="fas fa-exclamation-circle me-2"></i>Conséquences de la suppression
+                </h6>
+                <ul class="mb-0">
+                    <li>Toutes les informations financières de cet étudiant pour cette année académique seront perdues</li>
+                    <li>L'historique des paiements sera supprimé</li>
+                    <li>Les éventuels blocages de documents seront levés</li>
+                    <li>Cette action est <strong>irréversible</strong></li>
+                </ul>
+            </div>
+
+            <!-- Formulaire de confirmation -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'main:payment_status_detail' payment_status.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Confirmer la suppression
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

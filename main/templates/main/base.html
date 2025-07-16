@@ -108,6 +108,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if 'payment_status' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'main:payment_status' %}">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Statut de paiement
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}" href="{% url 'main:statistiques' %}">
                         <i class="fas fa-chart-bar me-2"></i>
                         Statistiques

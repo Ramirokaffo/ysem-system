@@ -77,14 +77,14 @@ class Student(models.Model):
     """
     Modèle principal pour les étudiants
     """
-    matricule = models.CharField(max_length=50, primary_key=True)
-    firstname = models.CharField(max_length=100)
-    lastname = models.CharField(max_length=100)
+    matricule = models.CharField(max_length=50, primary_key=True, verbose_name="Matricule")
+    firstname = models.CharField(max_length=100, verbose_name="Prénom")
+    lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
-    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Approuvée'), ('abandoned', 'abandonné'), ('rejected', 'Rejetée')])
+    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Approuvée'), ('abandoned', 'abandonné'), ('rejected', 'Rejetée')], verbose_name="Statut")
     gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')])
     lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr')
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
     email = models.EmailField(blank=True, null=True)
 
     # Relations
@@ -134,6 +134,27 @@ class Student(models.Model):
         """
         return bool(self.external_password_hash)
 
+    def can_withdraw_documents(self, academic_year=None):
+        """
+        Vérifie si l'étudiant peut retirer des documents selon son statut de paiement
+        """
+        if not academic_year:
+            # Utiliser l'année académique active par défaut
+            academic_year = AcademicYear.objects.filter(is_active=True).first()
+
+        if not academic_year:
+            return False, "Aucune année académique active trouvée"
+
+        try:
+            payment_status = self.payment_statuses.get(academic_year=academic_year)
+            if payment_status.documents_blocked:
+                reason = payment_status.blocking_reason or "Situation financière non régularisée"
+                return False, reason
+            return True, "Autorisation accordée"
+        except PaymentStatus.DoesNotExist:
+            # Si aucun statut de paiement n'existe, autoriser par défaut
+            return True, "Aucun statut de paiement défini"
+
     class Meta:
         verbose_name = "Étudiant"
         verbose_name_plural = "Étudiants"
@@ -164,6 +185,83 @@ class StudentLevel(models.Model):
         verbose_name_plural = "Niveaux Étudiants"
         unique_together = ['student', 'level', 'academic_year']
 
+
+
+class PaymentStatus(models.Model):
+    """
+    Modèle pour gérer le statut financier des étudiants
+    """
+    PAYMENT_STATUS_CHOICES = [
+        ('up_to_date', 'À jour'),
+        ('partial', 'Paiement partiel'),
+        ('overdue', 'En retard'),
+        ('blocked', 'Bloqué'),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payment_statuses')
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='payment_statuses')
+
+    # Montants financiers
+    total_amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant total dû")
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant payé")
+    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant restant")
+
+    # Statut et dates
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='up_to_date', verbose_name="Statut de paiement")
+    due_date = models.DateField(null=True, blank=True, verbose_name="Date d'échéance")
+    last_payment_date = models.DateField(null=True, blank=True, verbose_name="Dernière date de paiement")
+
+    # Blocage des documents
+    documents_blocked = models.BooleanField(default=False, verbose_name="Documents bloqués")
+    blocking_reason = models.TextField(blank=True, null=True, verbose_name="Raison du blocage")
+
+    # Échéancier personnalisé
+    has_payment_plan = models.BooleanField(default=False, verbose_name="Échéancier personnalisé")
+    payment_plan_details = models.TextField(blank=True, null=True, verbose_name="Détails de l'échéancier")
+
+    # Métadonnées
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
+    created_by = models.ForeignKey('accounts.BaseUser', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Créé par")
+
+    class Meta:
+        verbose_name = "Statut de paiement"
+        verbose_name_plural = "Statuts de paiement"
+        unique_together = ['student', 'academic_year']
+        ordering = ['-academic_year__start_at', 'student__lastname', 'student__firstname']
+
+    def __str__(self):
+        return f"{self.student} - {self.academic_year} - {self.get_status_display()}"
+
+    @property
+    def payment_percentage(self):
+        """Calcule le pourcentage de paiement"""
+        if self.total_amount_due > 0:
+            return (self.amount_paid / self.total_amount_due) * 100
+        return 0
+
+    @property
+    def is_overdue(self):
+        """Vérifie si le paiement est en retard"""
+        from django.utils import timezone
+        if self.due_date and self.remaining_amount > 0:
+            return timezone.now().date() > self.due_date
+        return False
+
+    def save(self, *args, **kwargs):
+        """Override save pour calculer automatiquement le montant restant"""
+        self.remaining_amount = self.total_amount_due - self.amount_paid
+
+        # Mise à jour automatique du statut selon les montants
+        if self.remaining_amount <= 0:
+            self.status = 'up_to_date'
+            self.documents_blocked = False
+        elif self.amount_paid > 0:
+            self.status = 'partial'
+        elif self.is_overdue:
+            self.status = 'overdue'
+
+        super().save(*args, **kwargs)
 
 
 class OfficialDocument(models.Model):

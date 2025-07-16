@@ -1,0 +1,254 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Statut de paiement - {{ payment_status.student }} - YSEM{% endblock %}
+
+{% block page_title %}Statut de paiement - {{ payment_status.student }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informations principales -->
+    <div class="col-lg-8">
+        <div class="card-neumorphic p-4 mb-4">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-credit-card me-2"></i>Détails du statut de paiement
+                </h5>
+                <div class="btn-group">
+                    <a href="{% url 'main:payment_status_edit' payment_status.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{% url 'main:payment_status_toggle_block' payment_status.pk %}" 
+                       class="btn btn-outline-{% if payment_status.documents_blocked %}success{% else %}warning{% endif %}">
+                        <i class="fas fa-{% if payment_status.documents_blocked %}unlock{% else %}lock{% endif %} me-2"></i>
+                        {% if payment_status.documents_blocked %}Débloquer{% else %}Bloquer{% endif %} documents
+                    </a>
+                    <a href="{% url 'main:payment_status' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations de l'étudiant -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-user me-2"></i>Informations de l'étudiant
+                    </h6>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Matricule:</strong> {{ payment_status.student.matricule }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Nom complet:</strong> {{ payment_status.student.firstname }} {{ payment_status.student.lastname }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Email:</strong> {{ payment_status.student.email|default:"Non renseigné" }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Téléphone:</strong> {{ payment_status.student.phone_number|default:"Non renseigné" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Programme:</strong> {{ payment_status.student.program|default:"Non défini" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Année académique:</strong> {{ payment_status.academic_year.name }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations financières -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-money-bill-wave me-2"></i>Informations financières
+                    </h6>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-neumorphic p-3 text-center">
+                        <h5 class="text-primary mb-1">{{ payment_status.total_amount_due|floatformat:0 }} FCFA</h5>
+                        <small class="text-muted">Montant total dû</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-neumorphic p-3 text-center">
+                        <h5 class="text-success mb-1">{{ payment_status.amount_paid|floatformat:0 }} FCFA</h5>
+                        <small class="text-muted">Montant payé</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-neumorphic p-3 text-center">
+                        <h5 class="{% if payment_status.remaining_amount <= 0 %}text-success{% else %}text-danger{% endif %} mb-1">
+                            {{ payment_status.remaining_amount|floatformat:0 }} FCFA
+                        </h5>
+                        <small class="text-muted">Montant restant</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-chart-line me-2"></i>Progression du paiement
+                    </h6>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ payment_status.payment_percentage }}%" 
+                             aria-valuenow="{{ payment_status.payment_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                            {{ payment_status.payment_percentage|floatformat:1 }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">Pourcentage de paiement effectué</small>
+                </div>
+            </div>
+
+            <!-- Statut et dates -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Statut et dates
+                    </h6>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Statut de paiement:</strong>
+                        {% if payment_status.status == 'up_to_date' %}
+                            <span class="badge bg-success ms-2">À jour</span>
+                        {% elif payment_status.status == 'partial' %}
+                            <span class="badge bg-warning ms-2">Paiement partiel</span>
+                        {% elif payment_status.status == 'overdue' %}
+                            <span class="badge bg-danger ms-2">En retard</span>
+                        {% elif payment_status.status == 'blocked' %}
+                            <span class="badge bg-dark ms-2">Bloqué</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Date d'échéance:</strong> 
+                        {% if payment_status.due_date %}
+                            {{ payment_status.due_date|date:"d/m/Y" }}
+                            {% if payment_status.is_overdue %}
+                                <span class="badge bg-danger ms-2">En retard</span>
+                            {% endif %}
+                        {% else %}
+                            Non définie
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <strong>Dernière date de paiement:</strong> 
+                        {{ payment_status.last_payment_date|date:"d/m/Y"|default:"Aucun paiement" }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Créé le:</strong> {{ payment_status.created_at|date:"d/m/Y à H:i" }}
+                        {% if payment_status.created_by %}
+                            par {{ payment_status.created_by.get_full_name|default:payment_status.created_by.username }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestion des documents -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-file-alt me-2"></i>Gestion des documents
+                    </h6>
+                </div>
+                <div class="col-12">
+                    <div class="alert {% if payment_status.documents_blocked %}alert-danger{% else %}alert-success{% endif %}">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{% if payment_status.documents_blocked %}ban{% else %}check-circle{% endif %} me-3"></i>
+                            <div>
+                                <strong>
+                                    {% if payment_status.documents_blocked %}
+                                        Documents bloqués
+                                    {% else %}
+                                        Documents autorisés
+                                    {% endif %}
+                                </strong>
+                                {% if payment_status.documents_blocked and payment_status.blocking_reason %}
+                                    <div class="mt-2">
+                                        <strong>Raison:</strong> {{ payment_status.blocking_reason }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Échéancier personnalisé -->
+            {% if payment_status.has_payment_plan %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>Échéancier personnalisé
+                    </h6>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Échéancier actif</strong>
+                        <div class="mt-2">
+                            {{ payment_status.payment_plan_details|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar avec documents -->
+    <div class="col-lg-4">
+        <div class="card-neumorphic p-4">
+            <h6 class="text-primary border-bottom pb-2 mb-3">
+                <i class="fas fa-file-alt me-2"></i>Documents de l'étudiant
+            </h6>
+            
+            {% if student_levels %}
+                {% for student_level in student_levels %}
+                    <div class="mb-3">
+                        <h6 class="mb-2">{{ student_level.level.name }}</h6>
+                        {% if student_level.official_documents.all %}
+                            {% for document in student_level.official_documents.all %}
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                                    <div>
+                                        <small class="fw-bold">{{ document.get_type_display }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {% if document.status == 'available' %}
+                                                <span class="badge bg-primary">Disponible</span>
+                                            {% elif document.status == 'withdrawn' %}
+                                                <span class="badge bg-success">Déchargé</span>
+                                            {% elif document.status == 'returned' %}
+                                                <span class="badge bg-warning">Retourné</span>
+                                            {% elif document.status == 'lost' %}
+                                                <span class="badge bg-danger">Perdu</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% if document.status == 'available' and payment_status.documents_blocked %}
+                                        <i class="fas fa-ban text-danger" title="Blocage actif"></i>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">Aucun document pour ce niveau</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Aucun document trouvé pour cette année académique.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

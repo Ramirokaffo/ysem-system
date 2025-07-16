@@ -6,11 +6,13 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.db import models
 
 from academic.models import AcademicYear, Level, Program, Speciality
-from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, OfficialDocumentForm, BulkDocumentCreationForm
+from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
 from accounts.models import BaseUser, Godfather
-from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument
+from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument, PaymentStatus
 import json
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
@@ -1071,6 +1073,18 @@ def document_toggle_status(request, pk):
 
     if request.method == 'POST':
         if document.status == 'available':
+            # Vérifier le statut de paiement avant de permettre la décharge
+            can_withdraw, reason = document.student_level.student.can_withdraw_documents(
+                document.student_level.academic_year
+            )
+
+            if not can_withdraw:
+                messages.error(
+                    request,
+                    f'Impossible de décharger le document : {reason}'
+                )
+                return redirect('main:documents')
+
             # Marquer comme déchargé
             document.status = 'withdrawn'
             document.withdrawn_date = timezone.now().date()
@@ -1100,20 +1114,30 @@ def document_toggle_status(request, pk):
     if document.status == 'available':
         action = 'décharger'
         action_description = 'marquer ce document comme déchargé'
+
+        # Vérifier le statut de paiement pour l'affichage
+        can_withdraw, reason = document.student_level.student.can_withdraw_documents(
+            document.student_level.academic_year
+        )
+        payment_warning = None if can_withdraw else reason
     elif document.status == 'withdrawn':
         action = 'retourner'
         action_description = 'marquer ce document comme retourné'
+        payment_warning = None
     elif document.status == 'returned':
         action = 'remettre en déchargé'
         action_description = 'remettre ce document en statut déchargé (correction d\'erreur)'
+        payment_warning = None
     else:
         action = 'remettre disponible'
         action_description = 'remettre ce document disponible'
+        payment_warning = None
 
     context = {
         'document': document,
         'action': action,
         'action_description': action_description,
+        'payment_warning': payment_warning,
         'page_title': f'{action.capitalize()} le document - {document.get_type_display()}'
     }
     return render(request, 'main/document_toggle_status.html', context)
@@ -1278,3 +1302,218 @@ def get_specialities_by_program(request):
             'success': False,
             'error': str(e)
         })
+
+
+# ===== VUES POUR LA GESTION DES STATUTS DE PAIEMENT =====
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class PaymentStatusView(LoginRequiredMixin, TemplateView):
+    """Vue principale pour la liste des statuts de paiement"""
+    template_name = 'main/payment_status.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Statut de paiement'
+
+        # Formulaire de recherche
+        search_form = PaymentStatusSearchForm(self.request.GET)
+        context['search_form'] = search_form
+
+        # Récupération des statuts de paiement avec filtres
+        payment_statuses = PaymentStatus.objects.select_related(
+            'student', 'academic_year', 'created_by'
+        ).all()
+
+        # Application des filtres
+        if search_form.is_valid():
+            student_search = search_form.cleaned_data.get('student_search')
+            academic_year = search_form.cleaned_data.get('academic_year')
+            status = search_form.cleaned_data.get('status')
+            documents_blocked = search_form.cleaned_data.get('documents_blocked')
+            has_payment_plan = search_form.cleaned_data.get('has_payment_plan')
+
+            if student_search:
+                payment_statuses = payment_statuses.filter(
+                    models.Q(student__matricule__icontains=student_search) |
+                    models.Q(student__firstname__icontains=student_search) |
+                    models.Q(student__lastname__icontains=student_search)
+                )
+
+            if academic_year:
+                payment_statuses = payment_statuses.filter(academic_year=academic_year)
+
+            if status:
+                payment_statuses = payment_statuses.filter(status=status)
+
+            if documents_blocked == 'true':
+                payment_statuses = payment_statuses.filter(documents_blocked=True)
+            elif documents_blocked == 'false':
+                payment_statuses = payment_statuses.filter(documents_blocked=False)
+
+            if has_payment_plan == 'true':
+                payment_statuses = payment_statuses.filter(has_payment_plan=True)
+            elif has_payment_plan == 'false':
+                payment_statuses = payment_statuses.filter(has_payment_plan=False)
+
+        # Pagination
+        per_page = self.request.GET.get('per_page', 10)
+        page = self.request.GET.get('page', 1)
+
+        try:
+            per_page = int(per_page)
+            if per_page not in [10, 25, 50, 100]:
+                per_page = 10
+        except (ValueError, TypeError):
+            per_page = 10
+
+        paginator = Paginator(payment_statuses, per_page)
+        page_obj = paginator.get_page(page)
+
+        context['payment_statuses'] = page_obj
+        context['per_page'] = per_page
+
+        # Statistiques
+        total_statuses = payment_statuses.count()
+        blocked_count = payment_statuses.filter(documents_blocked=True).count()
+        overdue_count = payment_statuses.filter(status='overdue').count()
+        up_to_date_count = payment_statuses.filter(status='up_to_date').count()
+
+        context['stats'] = {
+            'total': total_statuses,
+            'blocked': blocked_count,
+            'overdue': overdue_count,
+            'up_to_date': up_to_date_count,
+        }
+
+        return context
+
+
+@login_required
+def payment_status_create(request):
+    """Vue pour créer un nouveau statut de paiement"""
+    if request.method == 'POST':
+        form = PaymentStatusForm(request.POST)
+        if form.is_valid():
+            payment_status = form.save(commit=False)
+            payment_status.created_by = request.user
+            payment_status.save()
+            messages.success(request, f'Statut de paiement créé avec succès pour {payment_status.student}.')
+            return redirect('main:payment_status')
+        else:
+            messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
+    else:
+        form = PaymentStatusForm()
+
+    context = {
+        'form': form,
+        'page_title': 'Créer un statut de paiement',
+        'action': 'create'
+    }
+    return render(request, 'main/payment_status_form.html', context)
+
+
+@login_required
+def payment_status_edit(request, pk):
+    """Vue pour modifier un statut de paiement existant"""
+    payment_status = get_object_or_404(PaymentStatus, pk=pk)
+
+    if request.method == 'POST':
+        form = PaymentStatusForm(request.POST, instance=payment_status)
+        if form.is_valid():
+            payment_status = form.save()
+            messages.success(request, f'Statut de paiement modifié avec succès pour {payment_status.student}.')
+            return redirect('main:payment_status')
+        else:
+            messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
+    else:
+        form = PaymentStatusForm(instance=payment_status)
+
+    context = {
+        'form': form,
+        'payment_status': payment_status,
+        'page_title': f'Modifier le statut de paiement - {payment_status.student}',
+        'action': 'edit'
+    }
+    return render(request, 'main/payment_status_form.html', context)
+
+
+@login_required
+def payment_status_detail(request, pk):
+    """Vue pour afficher les détails d'un statut de paiement"""
+    payment_status = get_object_or_404(
+        PaymentStatus.objects.select_related(
+            'student', 'academic_year', 'created_by'
+        ),
+        pk=pk
+    )
+
+    # Récupérer les documents de l'étudiant pour cette année académique
+    student_levels = payment_status.student.student_levels.filter(
+        academic_year=payment_status.academic_year
+    ).prefetch_related('official_documents')
+
+    context = {
+        'payment_status': payment_status,
+        'student_levels': student_levels,
+        'page_title': f'Statut de paiement - {payment_status.student}'
+    }
+
+    return render(request, 'main/payment_status_detail.html', context)
+
+
+@login_required
+def payment_status_delete(request, pk):
+    """Vue pour supprimer un statut de paiement"""
+    payment_status = get_object_or_404(PaymentStatus, pk=pk)
+
+    if request.method == 'POST':
+        student_name = f"{payment_status.student.firstname} {payment_status.student.lastname}"
+        payment_status.delete()
+        messages.success(request, f'Statut de paiement supprimé avec succès pour {student_name}.')
+        return redirect('main:payment_status')
+
+    context = {
+        'payment_status': payment_status,
+        'page_title': f'Supprimer le statut de paiement - {payment_status.student}'
+    }
+    return render(request, 'main/payment_status_delete.html', context)
+
+
+@login_required
+def payment_status_toggle_block(request, pk):
+    """Vue pour basculer le blocage des documents"""
+    payment_status = get_object_or_404(PaymentStatus, pk=pk)
+
+    if request.method == 'POST':
+        if payment_status.documents_blocked:
+            payment_status.documents_blocked = False
+            payment_status.blocking_reason = ""
+            action = "débloqués"
+        else:
+            payment_status.documents_blocked = True
+            blocking_reason = request.POST.get('blocking_reason', 'Situation financière non régularisée')
+            payment_status.blocking_reason = blocking_reason
+            action = "bloqués"
+
+        payment_status.save()
+        messages.success(
+            request,
+            f'Documents {action} avec succès pour {payment_status.student}.'
+        )
+        return redirect('main:payment_status_detail', pk=pk)
+
+    # Déterminer l'action à effectuer
+    if payment_status.documents_blocked:
+        action = 'débloquer'
+        action_description = 'débloquer les documents de cet étudiant'
+    else:
+        action = 'bloquer'
+        action_description = 'bloquer les documents de cet étudiant'
+
+    context = {
+        'payment_status': payment_status,
+        'action': action,
+        'action_description': action_description,
+        'page_title': f'{action.capitalize()} les documents - {payment_status.student}'
+    }
+    return render(request, 'main/payment_status_toggle_block.html', context)

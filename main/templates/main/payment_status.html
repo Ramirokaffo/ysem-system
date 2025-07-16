@@ -1,0 +1,255 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Statut de paiement - YSEM{% endblock %}
+
+{% block page_title %}Statut de paiement{% endblock %}
+
+{% block content %}
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary shadow-soft border border-light p-4 text-center">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle me-3 mr-1">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ stats.total }}</h5>
+                    <small class="text-muted">Total étudiants</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary shadow-soft border border-light p-4 text-center">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="icon icon-shape icon-lg bg-success shadow-soft border border-light rounded-circle me-3 mr-1">
+                    <i class="fas fa-check-circle text-white"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ stats.up_to_date }}</h5>
+                    <small class="text-muted">À jour</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary shadow-soft border border-light p-4 text-center">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="icon icon-shape icon-lg bg-warning shadow-soft border border-light rounded-circle me-3 mr-1">
+                    <i class="fas fa-exclamation-triangle text-white"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ stats.overdue }}</h5>
+                    <small class="text-muted">En retard</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary shadow-soft border border-light p-4 text-center">
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="icon icon-shape icon-lg bg-danger shadow-soft border border-light rounded-circle me-3 mr-1">
+                    <i class="fas fa-ban text-white"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ stats.blocked }}</h5>
+                    <small class="text-muted">Documents bloqués</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border border-light p-4 mb-4">
+            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-filter me-2"></i>Filtres</h5>
+            <form method="get" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="student_search" class="form-label">Rechercher un étudiant:</label>
+                        {{ search_form.student_search }}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="academic_year" class="form-label">Année académique:</label>
+                        {{ search_form.academic_year }}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Statut:</label>
+                        {{ search_form.status }}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="documents_blocked" class="form-label">Blocage:</label>
+                        {{ search_form.documents_blocked }}
+                    </div>
+                    <div class="col-md-2">
+                        <label for="has_payment_plan" class="form-label">Échéancier:</label>
+                        {{ search_form.has_payment_plan }}
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm mx-1">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{% url 'main:payment_status' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des statuts de paiement -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border border-light p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des statuts de paiement</h5>
+                <div class="btn-group">
+                    <a href="{% url 'main:payment_status_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2 mr-1"></i>Nouveau statut
+                    </a>
+                </div>
+            </div>
+            
+            {% if payment_statuses %}
+            <div class="table-responsive shadow-soft rounded">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="border-0">Matricule</th>
+                            <th class="border-0">Nom complet</th>
+                            <th class="border-0">Année académique</th>
+                            <th class="border-0">Montant dû</th>
+                            <th class="border-0">Montant payé</th>
+                            <th class="border-0">Restant</th>
+                            <th class="border-0">Statut</th>
+                            <th class="border-0">Documents</th>
+                            <th class="border-0">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment_status in payment_statuses %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'main:payment_status_detail' payment_status.pk %}" class="text-decoration-none">
+                                    {{ payment_status.student.matricule }}
+                                </a>
+                            </td>
+                            <td>{{ payment_status.student.firstname }} {{ payment_status.student.lastname }}</td>
+                            <td>{{ payment_status.academic_year.name }}</td>
+                            <td>{{ payment_status.total_amount_due|floatformat:0 }} FCFA</td>
+                            <td>{{ payment_status.amount_paid|floatformat:0 }} FCFA</td>
+                            <td>
+                                <span class="{% if payment_status.remaining_amount <= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ payment_status.remaining_amount|floatformat:0 }} FCFA
+                                </span>
+                            </td>
+                            <td>
+                                {% if payment_status.status == 'up_to_date' %}
+                                    <span class="badge bg-success">À jour</span>
+                                {% elif payment_status.status == 'partial' %}
+                                    <span class="badge bg-warning">Partiel</span>
+                                {% elif payment_status.status == 'overdue' %}
+                                    <span class="badge bg-danger">En retard</span>
+                                {% elif payment_status.status == 'blocked' %}
+                                    <span class="badge bg-dark">Bloqué</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if payment_status.documents_blocked %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-ban me-1"></i>Bloqués
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Autorisés
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'main:payment_status_detail' payment_status.pk %}" 
+                                       class="btn btn-outline-primary" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'main:payment_status_edit' payment_status.pk %}" 
+                                       class="btn btn-outline-secondary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'main:payment_status_toggle_block' payment_status.pk %}" 
+                                       class="btn btn-outline-{% if payment_status.documents_blocked %}success{% else %}warning{% endif %}" 
+                                       title="{% if payment_status.documents_blocked %}Débloquer{% else %}Bloquer{% endif %} documents">
+                                        <i class="fas fa-{% if payment_status.documents_blocked %}unlock{% else %}lock{% endif %}"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if payment_statuses.has_other_pages %}
+            <nav aria-label="Navigation des pages" class="mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">
+                            Affichage de {{ payment_statuses.start_index }} à {{ payment_statuses.end_index }} 
+                            sur {{ payment_statuses.paginator.count }} résultats
+                        </small>
+                    </div>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if payment_statuses.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ payment_statuses.previous_page_number }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in payment_statuses.paginator.page_range %}
+                            {% if payment_statuses.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > payment_statuses.number|add:'-3' and num < payment_statuses.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if payment_statuses.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ payment_statuses.next_page_number }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Aucun statut de paiement trouvé</h5>
+                <p class="text-muted">Commencez par créer un statut de paiement pour un étudiant.</p>
+                <a href="{% url 'main:payment_status_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Créer un statut de paiement
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

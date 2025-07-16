@@ -1,0 +1,140 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ action|capfirst }} les documents - YSEM{% endblock %}
+
+{% block page_title %}{{ action|capfirst }} les documents{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card-neumorphic p-4">
+            <!-- En-tête -->
+            <div class="text-center mb-4">
+                <div class="icon-shape {% if action == 'bloquer' %}bg-warning{% else %}bg-success{% endif %} text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-{% if action == 'bloquer' %}lock{% else %}unlock{% endif %} fa-2x"></i>
+                </div>
+                <h5 class="{% if action == 'bloquer' %}text-warning{% else %}text-success{% endif %}">
+                    {{ action|capfirst }} les documents
+                </h5>
+            </div>
+
+            <!-- Informations de l'étudiant -->
+            <div class="card-neumorphic p-3 mb-4">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Étudiant:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.student.firstname }} {{ payment_status.student.lastname }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Matricule:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.student.matricule }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Année académique:</strong>
+                    </div>
+                    <div class="col-6">
+                        {{ payment_status.academic_year.name }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Statut actuel:</strong>
+                    </div>
+                    <div class="col-6">
+                        {% if payment_status.documents_blocked %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-ban me-1"></i>Documents bloqués
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Documents autorisés
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations sur l'action -->
+            <div class="alert {% if action == 'bloquer' %}alert-warning{% else %}alert-success{% endif %}">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle me-2"></i>Action à effectuer
+                </h6>
+                <p class="mb-0">
+                    Vous êtes sur le point de <strong>{{ action_description }}</strong>.
+                </p>
+            </div>
+
+            <!-- Conséquences -->
+            <div class="alert {% if action == 'bloquer' %}alert-danger{% else %}alert-info{% endif %}">
+                <h6 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Conséquences
+                </h6>
+                <ul class="mb-0">
+                    {% if action == 'bloquer' %}
+                        <li>L'étudiant ne pourra plus retirer de documents officiels</li>
+                        <li>Toute tentative de décharge sera automatiquement bloquée</li>
+                        <li>Un message explicatif sera affiché lors des tentatives de décharge</li>
+                        <li>Le blocage restera actif jusqu'à régularisation de la situation</li>
+                    {% else %}
+                        <li>L'étudiant pourra à nouveau retirer ses documents officiels</li>
+                        <li>Les décharges de documents seront autorisées</li>
+                        <li>La raison du blocage sera effacée</li>
+                        <li>L'accès normal aux services sera rétabli</li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- Formulaire -->
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if action == 'bloquer' %}
+                <!-- Champ pour la raison du blocage -->
+                <div class="form-group mb-4">
+                    <label for="blocking_reason" class="form-label">
+                        <strong>Raison du blocage <span class="text-danger">*</span></strong>
+                    </label>
+                    <textarea name="blocking_reason" id="blocking_reason" class="form-control" rows="3" 
+                              placeholder="Expliquez la raison du blocage des documents..." required>{{ payment_status.blocking_reason|default:"Situation financière non régularisée" }}</textarea>
+                    <small class="form-text text-muted">
+                        Cette raison sera affichée lors des tentatives de décharge de documents.
+                    </small>
+                </div>
+                {% endif %}
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'main:payment_status_detail' payment_status.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn {% if action == 'bloquer' %}btn-warning{% else %}btn-success{% endif %}">
+                        <i class="fas fa-{% if action == 'bloquer' %}lock{% else %}unlock{% endif %} me-2"></i>
+                        {{ action|capfirst }} les documents
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus sur le champ de raison si c'est un blocage
+    {% if action == 'bloquer' %}
+    const reasonField = document.getElementById('blocking_reason');
+    if (reasonField) {
+        reasonField.focus();
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

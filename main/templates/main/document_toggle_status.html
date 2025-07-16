@@ -102,6 +102,22 @@
                     </div>
                 </div>
 
+                <!-- Avertissement de paiement -->
+                {% if payment_warning %}
+                <div class="alert alert-danger mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-3"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Blocage financier actif</h6>
+                            <p class="mb-0">{{ payment_warning }}</p>
+                            <small class="text-muted">
+                                Contactez le service financier pour régulariser la situation avant de pouvoir décharger ce document.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Actions -->
                 <div class="card bg-primary shadow-soft border-light p-3">
                     <div class="d-flex justify-content-center gap-3">
@@ -110,7 +126,8 @@
                         </a>
                         <form method="post" class="d-inline mx-1">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-primary shadow-soft px-4">
+                            <button type="submit" class="btn btn-primary shadow-soft px-4"
+                                    {% if payment_warning and action == 'décharger' %}disabled title="Blocage financier actif"{% endif %}>
                                 {% if action == 'décharger' %}
                                     <span class="fas fa-download mr-2"></span>Décharger
                                 {% elif action == 'retourner' %}
