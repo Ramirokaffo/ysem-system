@@ -689,7 +689,7 @@ class InscriptionExterneStepView(TemplateView):
 
 
 class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
-    """Vue pour le formulaire d'inscription complet (sans étapes)"""
+    """Vue pour le formulaire d'inscription complet (sans étapes) - PUBLIQUE"""
     template_name = 'main/nouvelle_inscription.html'
 
     def get_context_data(self, **kwargs):
@@ -871,7 +871,7 @@ class InscriptionExterneConfirmationView(TemplateView):
     #         messages.error(request, f'Une erreur est survenue lors de l\'enregistrement: {str(e)}')
     #         return self.render_to_response(self.get_context_data(**kwargs))
 
-
+@login_required
 def etudiant_detail(request, pk):
     """
     Vue pour afficher les détails complets d'un étudiant avec toutes ses relations

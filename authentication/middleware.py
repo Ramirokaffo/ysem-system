@@ -43,15 +43,31 @@ class RoleBasedAccessMiddleware:
     
     def __call__(self, request):
         # Ignorer les requêtes pour les fichiers statiques et media
-        if (request.path.startswith('/static/') or 
+        if (request.path.startswith('/static/') or
             request.path.startswith('/media/') or
             request.path.startswith('/favicon.ico')):
             return self.get_response(request)
-        
+
+        # Pages publiques qui doivent être accessibles sans authentification
+        public_paths = [
+            '/auth/login/',
+            '/auth/logout/',
+            '/portail-etudiant/',
+            '/inscription-externe/',
+            '/nouvelle_inscription/',
+            '/ajax/',
+            '/',  # Page d'accueil
+        ]
+
+        # Vérifier si c'est une page publique
+        for public_path in public_paths:
+            if request.path.startswith(public_path):
+                return self.get_response(request)
+
         # Ignorer si l'utilisateur n'est pas authentifié (sera géré par les décorateurs login_required)
         if not request.user.is_authenticated:
             return self.get_response(request)
-        
+
         # Ignorer si c'est un étudiant connecté au portail (géré par StudentPortalSecurityMiddleware)
         if request.session.get('student_authenticated'):
             return self.get_response(request)
@@ -127,30 +143,30 @@ class DashboardRedirectMiddleware:
     """
     Middleware pour rediriger automatiquement vers le bon dashboard après connexion
     """
-    
+
     def __init__(self, get_response):
         self.get_response = get_response
-    
+
     def __call__(self, request):
-        # Redirection automatique pour la page d'accueil
-        if (request.path == '/' and 
-            request.user.is_authenticated and 
+        # Redirection automatique pour la page d'accueil SEULEMENT si l'utilisateur est authentifié
+        if (request.path == '/' and
+            request.user.is_authenticated and
             not request.session.get('student_authenticated')):
-            
+
             user_role = getattr(request.user, 'role', 'student')
-            
+
             # Définir les URLs de redirection par rôle
             role_redirects = {
-                'scholar': 'main:dashboard',
-                'teaching': 'teaching:Teaching',
-                'planning': 'planification:dashboard',
-                'super_admin': 'main:dashboard',
-                'student': 'authentication:login'  # Les étudiants doivent utiliser le portail
+                'scholar': '/scholar/',
+                'teaching': '/teach/',
+                'planning': '/planning/',
+                'super_admin': '/scholar/',
+                'student': '/portail-etudiant/connexion/'  # Les étudiants doivent utiliser le portail
             }
-            
-            redirect_url = role_redirects.get(user_role, 'main:dashboard')
+
+            redirect_url = role_redirects.get(user_role, '/scholar/')
             return redirect(redirect_url)
-        
+
         return self.get_response(request)
 
 

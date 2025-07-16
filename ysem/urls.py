@@ -33,6 +33,13 @@ urlpatterns = [
     path("planning/", include("planification.urls")),
     path("prospection/", include("prospection.urls")),
     path("portail-etudiant/", include("student_portal.urls")),
+
+    # URLs publiques pour l'inscription externe
+    path('inscription-externe/', views.InscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/', views.NouvelleInscriptionView.as_view(), name='nouvelle_inscription'),
+    path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
 ]
 
 # Serve static files during development
