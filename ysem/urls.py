@@ -22,11 +22,13 @@ from django.conf.urls.static import static
 
 # Configuration du site d'administration
 from . import admin_config
+from main import views
 
 urlpatterns = [
+    path('', views.HomeView.as_view(), name='home'),
     path("admin/", admin.site.urls),
     path("auth/", include("authentication.urls")),
-    path("", include("main.urls")),
+    path("scholar/", include("main.urls")),
     path("teach/", include("Teaching.urls")),
     path("planning/", include("planification.urls")),
     path("prospection/", include("prospection.urls")),

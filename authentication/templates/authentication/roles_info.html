@@ -1,0 +1,293 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Rôles et Permissions - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Rôles et Permissions{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="h3 mb-0">
+                                <i class="fas fa-users-cog text-primary me-2"></i>
+                                Système de Rôles et Permissions
+                            </h4>
+                            <p class="text-muted mb-0">Contrôle d'accès basé sur les rôles utilisateur</p>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-success fs-6 px-3 py-2">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Sécurisé
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rôles disponibles -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-tag text-primary me-2"></i>
+                        Rôles Disponibles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Responsable de Scolarité -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm bg-primary text-white rounded-circle me-3">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Responsable de Scolarité</h6>
+                                            <small class="text-muted">Role: scholar</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm mb-2">Gestion des étudiants, inscriptions et documents officiels.</p>
+                                    <div class="mb-2">
+                                        <strong>Accès autorisé :</strong>
+                                        <ul class="list-unstyled small text-muted mb-0">
+                                            <li>• Dashboard Scolarité (/scholar/)</li>
+                                            <li>• Gestion des étudiants</li>
+                                            <li>• Documents officiels</li>
+                                            <li>• Module Prospection</li>
+                                            <li>• Administration Django</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Responsable des Enseignements -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm bg-success text-white rounded-circle me-3">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Responsable des Enseignements</h6>
+                                            <small class="text-muted">Role: teaching</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm mb-2">Gestion des enseignants, cours et suivi pédagogique.</p>
+                                    <div class="mb-2">
+                                        <strong>Accès autorisé :</strong>
+                                        <ul class="list-unstyled small text-muted mb-0">
+                                            <li>• Dashboard Enseignements (/teach/)</li>
+                                            <li>• Gestion des enseignants</li>
+                                            <li>• Suivi des cours</li>
+                                            <li>• Évaluations</li>
+                                            <li>• Administration Django</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Responsable de Planification -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm bg-warning text-white rounded-circle me-3">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Responsable de Planification</h6>
+                                            <small class="text-muted">Role: planning</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm mb-2">Gestion des emplois du temps, salles et planification.</p>
+                                    <div class="mb-2">
+                                        <strong>Accès autorisé :</strong>
+                                        <ul class="list-unstyled small text-muted mb-0">
+                                            <li>• Dashboard Planification (/planning/)</li>
+                                            <li>• Gestion des salles</li>
+                                            <li>• Emplois du temps</li>
+                                            <li>• Créneaux horaires</li>
+                                            <li>• Administration Django</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Super Administrateur -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm bg-danger text-white rounded-circle me-3">
+                                            <i class="fas fa-crown"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Super Administrateur</h6>
+                                            <small class="text-muted">Role: super_admin</small>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm mb-2">Accès complet à tous les modules du système.</p>
+                                    <div class="mb-2">
+                                        <strong>Accès autorisé :</strong>
+                                        <ul class="list-unstyled small text-muted mb-0">
+                                            <li>• Tous les dashboards</li>
+                                            <li>• Toutes les fonctionnalités</li>
+                                            <li>• Administration complète</li>
+                                            <li>• Gestion des utilisateurs</li>
+                                            <li>• Configuration système</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sécurité et contrôles -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        Mécanismes de Sécurité
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Middlewares de contrôle d'accès</strong>
+                            <br><small class="text-muted">Vérification automatique des permissions</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Décorateurs de protection</strong>
+                            <br><small class="text-muted">Sécurisation au niveau des vues</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Redirection intelligente</strong>
+                            <br><small class="text-muted">Redirection vers le dashboard approprié</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            <strong>Protection du portail étudiant</strong>
+                            <br><small class="text-muted">Isolation complète des sessions étudiants</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-route text-info me-2"></i>
+                        Redirection par Rôle
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Rôle</th>
+                                    <th>Dashboard par défaut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-primary">scholar</span></td>
+                                    <td>/scholar/</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">teaching</span></td>
+                                    <td>/teach/</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">planning</span></td>
+                                    <td>/planning/</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">super_admin</span></td>
+                                    <td>/scholar/</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-secondary">student</span></td>
+                                    <td>/portail-etudiant/</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations techniques -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cogs text-secondary me-2"></i>
+                        Informations Techniques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Middlewares Actifs</h6>
+                            <ul class="list-unstyled small text-muted">
+                                <li>• RoleBasedAccessMiddleware</li>
+                                <li>• DashboardRedirectMiddleware</li>
+                                <li>• ProspectionAccessMiddleware</li>
+                                <li>• StudentPortalSecurityMiddleware</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Décorateurs Disponibles</h6>
+                            <ul class="list-unstyled small text-muted">
+                                <li>• @scholar_admin_required</li>
+                                <li>• @teaching_admin_required</li>
+                                <li>• @planning_admin_required</li>
+                                <li>• @super_admin_required</li>
+                                <li>• @role_required('role1', 'role2')</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Méthodes de Vérification</h6>
+                            <ul class="list-unstyled small text-muted">
+                                <li>• user.is_scholar_admin()</li>
+                                <li>• user.is_study_admin()</li>
+                                <li>• user.is_planning_admin()</li>
+                                <li>• user.role == 'super_admin'</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

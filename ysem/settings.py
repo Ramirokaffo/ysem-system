@@ -81,6 +81,10 @@ MIDDLEWARE = [
     # Middlewares de sécurité pour le portail étudiant
     "student_portal.middleware.StudentSessionCleanupMiddleware",
     "student_portal.middleware.StudentPortalSecurityMiddleware",
+    # Middlewares de contrôle d'accès basé sur les rôles
+    "authentication.middleware.DashboardRedirectMiddleware",
+    "authentication.middleware.RoleBasedAccessMiddleware",
+    "authentication.middleware.ProspectionAccessMiddleware",
 ]
 
 ROOT_URLCONF = "ysem.urls"
