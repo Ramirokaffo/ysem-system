@@ -1,0 +1,210 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Former une Équipe - YSEM{% endblock %}
+
+{% block page_title %}Former une Équipe{% endblock %}
+
+{% block breadcrumb_title %}Ajouter Équipe{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:equipes' %}" class="btn btn-neumorphic">
+    <i class="fas fa-arrow-left me-2"></i>
+    Retour à la liste
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+
+<div class="row justify-content-center">
+    <div class="m-3">
+        <div class="">
+            <h5 class="mb-4">
+                <i class="fas fa-users me-2"></i>
+                Formation d'équipe de prospection
+            </h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations générales</h6>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Nom de l'équipe :</strong> Le nom sera généré automatiquement basé sur le chef d'équipe et l'établissement cible.
+                                <div id="nom-preview" class="mt-2" style="display: none;">
+                                    <strong>Aperçu :</strong> <span id="nom-preview-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.campagne.id_for_label }}" class="form-label">
+                                Campagne <span class="text-danger">*</span>
+                            </label>
+                            {{ form.campagne }}
+                            {% if form.campagne.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.campagne.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.chef_equipe.id_for_label }}" class="form-label">
+                                Chef d'équipe
+                            </label>
+                            {{ form.chef_equipe }}
+                            <small class="form-text text-muted">Le chef d'équipe doit faire partie des agents sélectionnés</small>
+                            {% if form.chef_equipe.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.chef_equipe.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.etablissement_cible.id_for_label }}" class="form-label">
+                                Établissement cible
+                            </label>
+                            {{ form.etablissement_cible }}
+                            {% if form.etablissement_cible.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.etablissement_cible.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Objectifs et assignation -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Objectifs et assignation</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.objectif_prospects.id_for_label }}" class="form-label">
+                                Objectif prospects <span class="text-danger">*</span>
+                            </label>
+                            {{ form.objectif_prospects }}
+                            <small class="form-text text-muted">Nombre de prospects à collecter par cette équipe</small>
+                            {% if form.objectif_prospects.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.objectif_prospects.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_assignation.id_for_label }}" class="form-label">
+                                Date d'assignation <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_assignation }}
+                            {% if form.date_assignation.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_assignation.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Informations sur les contraintes -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Contraintes d'équipe</h6>
+                            <ul class="mb-0 small">
+                                <li>Une équipe doit avoir entre 2 et 4 agents</li>
+                                <li>Le chef d'équipe doit faire partie des agents sélectionnés</li>
+                                <li>Seuls les agents actifs peuvent être sélectionnés</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sélection des agents -->
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Sélection des agents <span class="text-danger">*</span></h6>
+                        <div class="card-neumorphic shadow-inset p-3">
+                            <div class="row">
+                                {% for agent in form.agents %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        {{ agent.tag }}
+                                        <label class="form-check-label" for="{{ agent.id_for_label }}">
+                                            <strong>{{ agent.choice_label }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ agent.data.value.telephone }} - {{ agent.data.value.get_type_agent_display }}</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.agents.errors %}
+                                <div class="text-danger small mt-2">
+                                    {{ form.agents.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-3">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <!-- Submit buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'prospection:equipes' %}" class="btn btn-neumorphic mx-2">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Former l'équipe
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chefEquipeSelect = document.getElementById('{{ form.chef_equipe.id_for_label }}');
+    const etablissementSelect = document.getElementById('{{ form.etablissement_cible.id_for_label }}');
+    const nomPreview = document.getElementById('nom-preview');
+    const nomPreviewText = document.getElementById('nom-preview-text');
+
+    function updateNomPreview() {
+        const chefEquipe = chefEquipeSelect.options[chefEquipeSelect.selectedIndex];
+        const etablissement = etablissementSelect.options[etablissementSelect.selectedIndex];
+
+        let nomGenere = '';
+
+        if (chefEquipe && chefEquipe.value && etablissement && etablissement.value) {
+            nomGenere = `Équipe ${chefEquipe.text} - ${etablissement.text}`;
+        } else if (chefEquipe && chefEquipe.value) {
+            nomGenere = `Équipe ${chefEquipe.text}`;
+        }
+
+        if (nomGenere) {
+            nomPreviewText.textContent = nomGenere;
+            nomPreview.style.display = 'block';
+        } else {
+            nomPreview.style.display = 'none';
+        }
+    }
+
+    chefEquipeSelect.addEventListener('change', updateNomPreview);
+    etablissementSelect.addEventListener('change', updateNomPreview);
+
+    // Mise à jour initiale
+    updateNomPreview();
+});
+</script>
+{% endblock %}

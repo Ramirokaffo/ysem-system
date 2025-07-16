@@ -1,0 +1,287 @@
+{% extends 'Teaching/base.html' %}
+{% load static %}
+
+{% block title %}Détails du suivi - {{ suivi.course.label }} - YSEM{% endblock %}
+
+{% block page_title %}Détails du Suivi de Cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- En-tête avec titre et actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-body">
+                    <div class="row align-items-center d-flex justify-content-between">
+                        <div class="">
+                            <h4 class="h3 mb-0">
+                                <i class="fas fa-chart-line text-dark me-2"></i>
+                                Détails du Suivi de Cours
+                            </h4>
+                            <p class="text-muted mb-0">{{ suivi.course.label }} - {{ suivi.lecturer.firstname }} {{ suivi.lecturer.lastname }}</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="btn-group">
+                                <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-outline-dark btn-sm">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Retour à la liste
+                                </a>
+                                <a href="{% url 'teaching:modifier_suivi' suivi.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Modifier
+                                </a>
+                                <a href="{% url 'teaching:supprimer_suivi' suivi.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash me-2"></i>
+                                    Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations générales -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle text-dark me-2"></i>
+                        Informations générales
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Date :</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge bg-light text-dark">{{ suivi.date|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Enseignant :</strong></div>
+                        <div class="col-sm-8">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-primary text-white rounded-circle me-2">
+                                    {{ suivi.lecturer.firstname|first }}{{ suivi.lecturer.lastname|first }}
+                                </div>
+                                <div>
+                                    <div>{{ suivi.lecturer.firstname }} {{ suivi.lecturer.lastname }}</div>
+                                    <small class="text-muted">{{ suivi.lecturer.matricule }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Cours :</strong></div>
+                        <div class="col-sm-8">
+                            <div>{{ suivi.course.label }}</div>
+                            <small class="text-muted">{{ suivi.course.course_code }}</small>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Niveau :</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge bg-info text-white">{{ suivi.level.name }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Année académique :</strong></div>
+                        <div class="col-sm-8">{{ suivi.academic_year }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques de progression -->
+        <div class="col-md-6">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar text-dark me-2"></i>
+                        Progression du cours
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Progression des chapitres -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Chapitres</span>
+                            <span class="badge bg-primary">{{ suivi.chapitre_fait }}/{{ suivi.totalChapterCount }}</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 25px;">
+                            <div class="progress-bar bg-primary" 
+                                 role="progressbar" 
+                                 style="width: {{ suivi.taux_couverture_chapitre }}%"
+                                 aria-valuenow="{{ suivi.taux_couverture_chapitre }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ suivi.taux_couverture_chapitre|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progression des séances -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Séances</span>
+                            <span class="badge bg-secondary">{{ suivi.contenu_effectif_seance }}/{{ suivi.contenu_seance_prevu }}</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 25px;">
+                            <div class="progress-bar {{ suivi.couleur_barre }}" 
+                                 role="progressbar" 
+                                 style="width: {{ suivi.taux_couverture_seance }}%"
+                                 aria-valuenow="{{ suivi.taux_couverture_seance }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ suivi.taux_couverture_seance|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statut d'avancement -->
+                    <div class="text-center">
+                        <span class="badge 
+                            {% if suivi.statut_avancement == 'retard' %}bg-danger
+                            {% elif suivi.statut_avancement == 'en_cours' %}bg-warning
+                            {% else %}bg-success
+                            {% endif %} fs-6 px-3 py-2">
+                            {% if suivi.statut_avancement == 'retard' %}En retard
+                            {% elif suivi.statut_avancement == 'en_cours' %}En cours
+                            {% else %}Terminé
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails des activités pédagogiques -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tasks text-dark me-2"></i>
+                        Activités pédagogiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Travaux préparatoires :</label>
+                                <p class="text-muted">
+                                    {% if suivi.travaux_preparatoires %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Travaux de groupe :</label>
+                                <p class="text-muted">
+                                    {% if suivi.groupWork %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Travaux en classe :</label>
+                                <p class="text-muted">
+                                    {% if suivi.classWork %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Devoirs à domicile :</label>
+                                <p class="text-muted">
+                                    {% if suivi.homeWork %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Activités pédagogiques :</label>
+                                <p class="text-muted">
+                                    {% if suivi.pedagogicActivities %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">TD et TP :</label>
+                                <p class="text-muted">
+                                    {% if suivi.TDandTP %}
+                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Projet de fin de cours :</label>
+                                <p class="text-muted">{{ suivi.projet_fin_cours|default:"Non renseigné" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Association pratique aux enseignements :</label>
+                                <p class="text-muted">{{ suivi.association_pratique_aux_enseigements|default:"Non renseigné" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observations -->
+    {% if suivi.observation or suivi.solution or suivi.generalObservation %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-soft border-light">
+                <div class="card-header bg-white border-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-comment text-dark me-2"></i>
+                        Observations et solutions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if suivi.observation %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Observation :</label>
+                        <p class="text-muted">{{ suivi.observation }}</p>
+                    </div>
+                    {% endif %}
+                    {% if suivi.solution %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Solution :</label>
+                        <p class="text-muted">{{ suivi.solution }}</p>
+                    </div>
+                    {% endif %}
+                    {% if suivi.generalObservation %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Observation générale :</label>
+                        <p class="text-muted">{{ suivi.generalObservation }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,195 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Ajouter un Prospect - YSEM{% endblock %}
+
+{% block page_title %}Ajouter un Prospect{% endblock %}
+
+{% block breadcrumb_title %}Ajouter Prospect{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:prospects' %}" class="btn btn-neumorphic">
+    <i class="fas fa-arrow-left me-2"></i>
+    Retour à la liste
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-user-plus me-2"></i>
+                Informations du prospect
+            </h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Informations personnelles -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations personnelles</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                                Nom <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.nom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.prenom.id_for_label }}" class="form-label">
+                                Prénom <span class="text-danger">*</span>
+                            </label>
+                            {{ form.prenom }}
+                            {% if form.prenom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.prenom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.telephone.id_for_label }}" class="form-label">
+                                Téléphone <span class="text-danger">*</span>
+                            </label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.telephone.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.etablissement_origine.id_for_label }}" class="form-label">
+                                Établissement d'origine
+                            </label>
+                            {{ form.etablissement_origine }}
+                            {% if form.etablissement_origine.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.etablissement_origine.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Contacts familiaux et assignation -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Contacts familiaux</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.telephone_pere.id_for_label }}" class="form-label">
+                                <i class="fas fa-male me-1"></i>
+                                Téléphone du père
+                            </label>
+                            {{ form.telephone_pere }}
+                            {% if form.telephone_pere.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.telephone_pere.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.telephone_mere.id_for_label }}" class="form-label">
+                                <i class="fas fa-female me-1"></i>
+                                Téléphone de la mère
+                            </label>
+                            {{ form.telephone_mere }}
+                            {% if form.telephone_mere.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.telephone_mere.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <h6 class="text-muted mb-3 mt-4">Assignation</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.equipe.id_for_label }}" class="form-label">
+                                Équipe <span class="text-danger">*</span>
+                            </label>
+                            {{ form.equipe }}
+                            {% if form.equipe.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.equipe.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.agent_collecteur.id_for_label }}" class="form-label">
+                                Agent collecteur
+                            </label>
+                            {{ form.agent_collecteur }}
+                            {% if form.agent_collecteur.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.agent_collecteur.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-muted mb-3">Notes complémentaires</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                Notes
+                            </label>
+                            {{ form.notes }}
+                            <small class="form-text text-muted">Informations complémentaires sur le prospect</small>
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.notes.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations importantes -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Informations importantes</h6>
+                    <ul class="mb-0 small">
+                        <li>Le téléphone du prospect est obligatoire et doit être unique par équipe</li>
+                        <li>Les numéros des parents sont optionnels mais recommandés</li>
+                        <li>L'agent collecteur doit faire partie de l'équipe sélectionnée</li>
+                        <li>La date de collecte sera automatiquement enregistrée</li>
+                    </ul>
+                </div>
+                
+                <!-- Form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <!-- Submit buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'prospection:prospects' %}" class="btn btn-neumorphic">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer le prospect
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

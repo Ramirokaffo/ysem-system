@@ -1,0 +1,166 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Gestion des Équipes - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Équipes{% endblock %}
+
+{% block breadcrumb_title %}Équipes{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:ajouter_equipe' %}" class="btn btn-primary">
+    <i class="fas fa-users me-2"></i>
+    Nouvelle équipe
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<!-- Search and Filters -->
+<div class="mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-5">
+            {{ search_form.search }}
+        </div>
+        <div class="col-md-5">
+            {{ search_form.campagne }}
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>
+                Rechercher
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Équipes List -->
+<div class="card-neumorphic shadow-inset">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h5 class="mb-0">
+            <i class="fas fa-users me-2"></i>
+            Liste des équipes ({{ equipes|length }})
+        </h5>
+    </div>
+    
+    {% if equipes %}
+    <div class="table-responsive">
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Campagne</th>
+                    <th>Chef d'équipe</th>
+                    <th>Agents</th>
+                    <th>Établissement</th>
+                    <th>Objectif</th>
+                    <th>Collectés</th>
+                    <th>Taux</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipe in equipes %}
+                <tr>
+                    <td>
+                        <a href="{% url 'prospection:detail_equipe' equipe.pk %}" class="text-decoration-none">
+                            <strong>{{ equipe.nom }}</strong>
+                        </a>
+                    </td>
+                    <td>
+                        <small class="text-muted">{{ equipe.campagne.nom|truncatechars:20 }}</small>
+                    </td>
+                    <td>
+                        {% if equipe.chef_equipe %}
+                            <span class="badge badge-danger">{{ equipe.chef_equipe.nom_complet }}</span>
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ equipe.nombre_agents }} agent{{ equipe.nombre_agents|pluralize }}</span>
+                    </td>
+                    <td>
+                        {% if equipe.etablissement_cible %}
+                            {{ equipe.etablissement_cible.name|truncatechars:15 }}
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ equipe.objectif_prospects }}</td>
+                    <td>{{ equipe.prospects_collectes }}</td>
+                    <td>
+                        <span class="badge badge-{% if equipe.taux_realisation >= 100 %}success{% elif equipe.taux_realisation >= 75 %}warning{% else %}danger{% endif %}">
+                            {{ equipe.taux_realisation|floatformat:1 }}%
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'prospection:detail_equipe' equipe.pk %}" 
+                               class="btn btn-neumorphic" title="Voir détails">
+                                <i class="fas fa-eye text-secondary"></i>
+                            </a>
+                            <a href="{% url 'prospection:modifier_equipe' equipe.pk %}" 
+                               class="btn btn-neumorphic" title="Modifier">
+                                <i class="fas fa-edit text-warning"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Navigation des pages" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.campagne %}&campagne={{ request.GET.campagne }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.campagne %}&campagne={{ request.GET.campagne }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link btn-neumorphic">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.campagne %}&campagne={{ request.GET.campagne }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.campagne %}&campagne={{ request.GET.campagne }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Aucune équipe trouvée</h5>
+        <p class="text-muted">Commencez par former des équipes de prospection.</p>
+        <a href="{% url 'prospection:ajouter_equipe' %}" class="btn btn-primary">
+            <i class="fas fa-users me-2"></i>
+            Former la première équipe
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

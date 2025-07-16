@@ -1,0 +1,280 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Équipe {{ equipe.nom }} - YSEM{% endblock %}
+
+{% block page_title %}Équipe {{ equipe.nom }}{% endblock %}
+
+{% block breadcrumb_title %}{{ equipe.nom }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'prospection:equipes' %}" class="btn btn-neumorphic">
+        <i class="fas fa-arrow-left me-2"></i>
+        Retour à la liste
+    </a>
+    <a href="{% url 'prospection:modifier_equipe' equipe.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit me-2"></i>
+        Modifier
+    </a>
+    <a href="{% url 'prospection:ajouter_prospect' %}?equipe={{ equipe.pk }}" class="btn btn-success">
+        <i class="fas fa-user-plus me-2"></i>
+        Ajouter prospect
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row">
+    <!-- Informations générales -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations générales
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Nom de l'équipe</label>
+                <p class="fw-bold">{{ equipe.nom }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Campagne</label>
+                <p>
+                    <a href="{% url 'prospection:detail_campagne' equipe.campagne.pk %}" class="text-decoration-none">
+                        {{ equipe.campagne.nom }}
+                    </a>
+                    <br>
+                    <small class="text-muted">{{ equipe.campagne.annee_academique }}</small>
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Chef d'équipe</label>
+                <p>
+                    {% if equipe.chef_equipe %}
+                        <a href="{% url 'prospection:detail_agent' equipe.chef_equipe.matricule %}" class="text-decoration-none">
+                            <span class="badge badge-primary">{{ equipe.chef_equipe.nom_complet }}</span>
+                        </a>
+                    {% else %}
+                        <span class="text-muted">Non assigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Établissement cible</label>
+                <p>
+                    {% if equipe.etablissement_cible %}
+                        {{ equipe.etablissement_cible.name }}
+                        <br>
+                        <small class="text-muted">{{ equipe.etablissement_cible.address }}</small>
+                    {% else %}
+                        <span class="text-muted">Non assigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Date d'assignation</label>
+                <p>{{ equipe.date_assignation|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques et performance -->
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic mb-4">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-bar me-2"></i>
+                Performance de l'équipe
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon primary mb-2">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 class="mb-0">{{ equipe.nombre_agents }}</h4>
+                        <small class="text-muted">Agent{{ equipe.nombre_agents|pluralize }}</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h4 class="mb-0">{{ equipe.objectif_prospects }}</h4>
+                        <small class="text-muted">Objectif</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon success mb-2">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <h4 class="mb-0">{{ equipe.prospects_collectes }}</h4>
+                        <small class="text-muted">Collectés</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon {% if equipe.taux_realisation >= 100 %}success{% elif equipe.taux_realisation >= 75 %}warning{% else %}danger{% endif %} mb-2">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h4 class="mb-0">{{ equipe.taux_realisation|floatformat:1 }}%</h4>
+                        <small class="text-muted">Réalisation</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barre de progression -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Progression</span>
+                    <span class="text-muted">{{ equipe.prospects_collectes }}/{{ equipe.objectif_prospects }}</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar {% if equipe.taux_realisation >= 100 %}bg-success{% elif equipe.taux_realisation >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                         role="progressbar" 
+                         style="width: {% if equipe.taux_realisation > 100 %}100{% else %}{{ equipe.taux_realisation }}{% endif %}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Agents de l'équipe -->
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-users-cog me-2"></i>
+                Agents de l'équipe ({{ equipe.nombre_agents }})
+            </h5>
+            
+            {% if equipe.agents.all %}
+            <div class="row">
+                {% for agent in equipe.agents.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card-neumorphic p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="stat-icon {% if agent == equipe.chef_equipe %}primary{% else %}secondary{% endif %}">
+                                    <i class="fas fa-user{% if agent == equipe.chef_equipe %}-tie{% endif %}"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'prospection:detail_agent' agent.matricule %}" class="text-decoration-none">
+                                        {{ agent.nom_complet }}
+                                    </a>
+                                    {% if agent == equipe.chef_equipe %}
+                                        <span class="badge badge-primary ms-2">Chef</span>
+                                    {% endif %}
+                                </h6>
+                                <p class="mb-1 text-muted">{{ agent.matricule }}</p>
+                                <small class="text-muted">
+                                    {{ agent.telephone }} • {{ agent.get_type_agent_display }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-3">
+                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                <p class="text-muted">Aucun agent assigné à cette équipe</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Prospects collectés -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-address-book me-2"></i>
+                    Prospects collectés ({{ prospects|length }})
+                </h5>
+                <a href="{% url 'prospection:ajouter_prospect' %}?equipe={{ equipe.pk }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Ajouter prospect
+                </a>
+            </div>
+            
+            {% if prospects %}
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Nom complet</th>
+                            <th>Téléphone</th>
+                            <th>Téléphone père</th>
+                            <th>Téléphone mère</th>
+                            <th>Agent collecteur</th>
+                            <th>Date collecte</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prospect in prospects %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'prospection:detail_prospect' prospect.pk %}" class="text-decoration-none">
+                                    {{ prospect.nom_complet }}
+                                </a>
+                            </td>
+                            <td>{{ prospect.telephone }}</td>
+                            <td>{{ prospect.telephone_pere|default:"-" }}</td>
+                            <td>{{ prospect.telephone_mere|default:"-" }}</td>
+                            <td>
+                                {% if prospect.agent_collecteur %}
+                                    <a href="{% url 'prospection:detail_agent' prospect.agent_collecteur.matricule %}" class="text-decoration-none">
+                                        {{ prospect.agent_collecteur.nom_complet }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ prospect.date_collecte|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'prospection:detail_prospect' prospect.pk %}" 
+                                       class="btn btn-neumorphic" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'prospection:modifier_prospect' prospect.pk %}" 
+                                       class="btn btn-neumorphic" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-address-book fa-3x text-muted mb-3"></i>
+                <h6 class="text-muted">Aucun prospect collecté</h6>
+                <p class="text-muted">Cette équipe n'a pas encore collecté de prospects.</p>
+                <a href="{% url 'prospection:ajouter_prospect' %}?equipe={{ equipe.pk }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Ajouter le premier prospect
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

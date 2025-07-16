@@ -1,0 +1,177 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Gestion des Prospects - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Prospects{% endblock %}
+
+{% block breadcrumb_title %}Prospects{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:ajouter_prospect' %}" class="btn btn-primary">
+    <i class="fas fa-user-plus me-2"></i>
+    Nouveau prospect
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<!-- Search and Filters -->
+<div class="mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            {{ search_form.search }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.equipe }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.agent_collecteur }}
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>
+                Rechercher
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Prospects List -->
+<div class="card-neumorphic shadow-inset">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h5 class="mb-0">
+            <i class="fas fa-address-book me-2"></i>
+            Liste des prospects ({{ prospects|length }})
+        </h5>
+    </div>
+    
+    {% if prospects %}
+    <div class="table-responsive">
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>Nom complet</th>
+                    <th>Téléphone</th>
+                    <th>Contacts parents</th>
+                    <th>Équipe</th>
+                    <th>Agent collecteur</th>
+                    <th>Établissement</th>
+                    <th>Date collecte</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prospect in prospects %}
+                <tr>
+                    <td>
+                        <a href="{% url 'prospection:detail_prospect' prospect.pk %}" class="text-decoration-none">
+                            <strong>{{ prospect.nom_complet }}</strong>
+                        </a>
+                    </td>
+                    <td>{{ prospect.telephone }}</td>
+                    <td>
+                        <small class="text-muted">
+                            {% if prospect.telephone_pere %}
+                                <i class="fas fa-male me-1"></i>{{ prospect.telephone_pere }}<br>
+                            {% endif %}
+                            {% if prospect.telephone_mere %}
+                                <i class="fas fa-female me-1"></i>{{ prospect.telephone_mere }}
+                            {% endif %}
+                            {% if not prospect.telephone_pere and not prospect.telephone_mere %}
+                                <span class="text-muted">Non renseigné</span>
+                            {% endif %}
+                        </small>
+                    </td>
+                    <td>
+                        <a href="{% url 'prospection:detail_equipe' prospect.equipe.pk %}" class="text-decoration-none">
+                            <span class="badge badge-danger">{{ prospect.equipe.nom }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        {% if prospect.agent_collecteur %}
+                            <a href="{% url 'prospection:detail_agent' prospect.agent_collecteur.matricule %}" class="text-decoration-none">
+                                {{ prospect.agent_collecteur.nom_complet }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non assigné</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if prospect.etablissement_origine %}
+                            {{ prospect.etablissement_origine.name|truncatechars:15 }}
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ prospect.date_collecte|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'prospection:detail_prospect' prospect.pk %}" 
+                               class="btn btn-neumorphic" title="Voir détails">
+                                <i class="fas fa-eye text-secondary"></i>
+                            </a>
+                            <a href="{% url 'prospection:modifier_prospect' prospect.pk %}" 
+                               class="btn btn-neumorphic" title="Modifier">
+                                <i class="fas fa-edit text-warning"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Navigation des pages" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.equipe %}&equipe={{ request.GET.equipe }}{% endif %}{% if request.GET.agent_collecteur %}&agent_collecteur={{ request.GET.agent_collecteur }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.equipe %}&equipe={{ request.GET.equipe }}{% endif %}{% if request.GET.agent_collecteur %}&agent_collecteur={{ request.GET.agent_collecteur }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link btn-neumorphic">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.equipe %}&equipe={{ request.GET.equipe }}{% endif %}{% if request.GET.agent_collecteur %}&agent_collecteur={{ request.GET.agent_collecteur }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.equipe %}&equipe={{ request.GET.equipe }}{% endif %}{% if request.GET.agent_collecteur %}&agent_collecteur={{ request.GET.agent_collecteur }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-address-book fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Aucun prospect trouvé</h5>
+        <p class="text-muted">Commencez par collecter des prospects.</p>
+        <a href="{% url 'prospection:ajouter_prospect' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>
+            Ajouter le premier prospect
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard Prospection - YSEM{% endblock %}
+
+{% block page_title %}Dashboard Prospection{% endblock %}
+
+{% block breadcrumb_title %}Dashboard{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'prospection:ajouter_agent' %}" class="btn btn-primary">
+        <i class="fas fa-user-plus me-2"></i>
+        Nouvel agent
+    </a>
+    <a href="{% url 'prospection:ajouter_campagne' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>
+        Nouvelle campagne
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+
+<!-- <link type="text/css" href="{% static 'main/css/dashboard.css' %}" rel="stylesheet"> -->
+
+<style>
+    .my-action {
+    border-radius: 12px;
+    border: none;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: var(--text-color);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 12px 20px;
+}
+
+.my-action:hover {
+    background: rgba(0,0,0,0.02);
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.my-action {
+    background: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: none;
+}
+
+.my-action:hover, .my-action:focus {
+    background: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    text-decoration: none;
+}
+
+.my-action:active {
+    background: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+}
+
+</style>
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users-cog text-secondary"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_agents|default:0 }}</h5>
+                    <p class="text-muted mb-0">Agents actifs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon success">
+                        <i class="fas fa-bullhorn text-success"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.campagnes_actives|default:0 }}</h5>
+                    <p class="text-muted mb-0">Campagnes actives</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-users text-danger"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_equipes|default:0 }}</h5>
+                    <p class="text-muted mb-0">Équipes formées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card-neumorphic">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-address-book text-warning"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="mb-0">{{ stats.total_prospects|default:0 }}</h5>
+                    <p class="text-muted mb-0">Prospects collectés</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Actions & Recent Campaigns -->
+    <div class="col-lg-4 mb-4">
+        <!-- Quick Actions -->
+        <div class="card-neumorphic mb-4 shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-bolt me-2"></i>
+                Actions rapides
+            </h5>
+            <div class="d-grid gap-2">
+                <a href="{% url 'prospection:agents' %}" class="btn btn-primary my-action">
+                    <i class="fas fa-users-cog me-2"></i>
+                    Gérer les agents
+                </a>
+                <a href="{% url 'prospection:ajouter_equipe' %}" class="btn btn-primary my-action">
+                    <i class="fas fa-users me-2"></i>
+                    Former une équipe
+                </a>
+                <a href="{% url 'prospection:prospects' %}" class="btn btn-primary my-action">
+                    <i class="fas fa-address-book me-2"></i>
+                    Voir prospects
+                </a>
+                <a href="{% url 'prospection:statistiques' %}" class="btn btn-primary my-action">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Statistiques détaillées
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Campaigns -->
+        {% if campagnes_recentes %}
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-history me-2"></i>
+                Campagnes récentes
+            </h5>
+            <div class="list-group list-group-flush">
+                {% for campagne in campagnes_recentes %}
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ campagne.nom }}</h6>
+                            <p class="mb-1 text-muted">{{ campagne.annee_academique }}</p>
+                            <small class="text-muted">
+                                <span class="badge badge-{{ campagne.statut|yesno:'success,warning,danger' }}">
+                                    {{ campagne.get_statut_display }}
+                                </span>
+                            </small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <a href="{% url 'prospection:detail_campagne' campagne.pk %}" class="btn btn-sm btn-outline-primary text-secondary">
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Best Teams & Recent Prospects -->
+    <div class="col-lg-8 mb-4">
+        <!-- Best Teams -->
+        {% if meilleures_equipes %}
+        <div class="card-neumorphic mb-4 shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-trophy me-2"></i>
+                Meilleures équipes
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Équipe</th>
+                            <th>Campagne</th>
+                            <th>Objectif</th>
+                            <th>Collectés</th>
+                            <th>Taux</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipe in meilleures_equipes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'prospection:detail_equipe' equipe.pk %}" class="text-decoration-none">
+                                    {{ equipe.nom }}
+                                </a>
+                            </td>
+                            <td>{{ equipe.campagne.nom|truncatechars:20 }}</td>
+                            <td>{{ equipe.objectif_prospects }}</td>
+                            <td>{{ equipe.prospects_collectes }}</td>
+                            <td>
+                                <span class="badge badge-{% if equipe.taux_realisation >= 100 %}success{% elif equipe.taux_realisation >= 75 %}warning{% else %}danger{% endif %}">
+                                    {{ equipe.taux_realisation|floatformat:1 }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Prospects -->
+        {% if prospects_recents %}
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-clock me-2"></i>
+                Prospects récents
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Téléphone</th>
+                            <th>Équipe</th>
+                            <th>Agent</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prospect in prospects_recents %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'prospection:detail_prospect' prospect.pk %}" class="text-decoration-none">
+                                    {{ prospect.nom_complet }}
+                                </a>
+                            </td>
+                            <td>{{ prospect.telephone }}</td>
+                            <td>{{ prospect.equipe.nom|truncatechars:15 }}</td>
+                            <td>{{ prospect.agent_collecteur.nom_complet|default:"N/A" }}</td>
+                            <td>{{ prospect.date_collecte|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

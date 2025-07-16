@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, FormView
+from django.views.generic import TemplateView, FormView, DetailView, UpdateView, DeleteView
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
@@ -365,8 +365,33 @@ class Suivi_CoursView(LoginRequiredMixin, TemplateView):
         # Filtrage par année académique active si disponible
         from academic.models import AcademicYear, Course, Level
         active_year = AcademicYear.objects.filter(is_active=True).first()
-        if active_year:
+
+        # Application des filtres depuis les paramètres GET
+        lecturer_filter = self.request.GET.get('lecturer')
+        course_filter = self.request.GET.get('course')
+        level_filter = self.request.GET.get('level')
+        academic_year_filter = self.request.GET.get('academic_year')
+
+        # Filtrage par année académique
+        if academic_year_filter:
+            suivi_cours = suivi_cours.filter(academic_year_id=academic_year_filter)
+        elif active_year:
             suivi_cours = suivi_cours.filter(academic_year=active_year)
+
+        # Filtrage par enseignant
+        if lecturer_filter:
+            suivi_cours = suivi_cours.filter(lecturer__matricule=lecturer_filter)
+
+        # Filtrage par cours
+        if course_filter:
+            suivi_cours = suivi_cours.filter(course__course_code=course_filter)
+
+        # Filtrage par niveau
+        if level_filter:
+            suivi_cours = suivi_cours.filter(level_id=level_filter)
+
+        # Tri par date décroissante
+        suivi_cours = suivi_cours.order_by('-date', 'lecturer__lastname')
 
         context['suivi_cours'] = suivi_cours
         context['avancements'] = suivi_cours
@@ -378,6 +403,14 @@ class Suivi_CoursView(LoginRequiredMixin, TemplateView):
         context['levels'] = Level.objects.all()
         context['academic_years'] = AcademicYear.objects.all()
         context['active_year'] = active_year
+
+        # Conserver les valeurs des filtres pour l'affichage
+        context['current_filters'] = {
+            'lecturer': lecturer_filter,
+            'course': course_filter,
+            'level': level_filter,
+            'academic_year': academic_year_filter,
+        }
 
         return context
     
@@ -391,17 +424,66 @@ class ajouter_suiviView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = Suivi_CoursForm()
+        context['page_title'] = 'Ajouter un suivi de cours'
         return context
 
     def post(self, request, *args, **kwargs):
         form = Suivi_CoursForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('teaching:suivi_cours') 
+            messages.success(request, 'Suivi de cours ajouté avec succès.')
+            return redirect('teaching:suivi_cours')
         else:
             context = self.get_context_data(**kwargs)
             context ['form'] = form
             return self.render_to_response(context)
+
+
+class DetailSuiviView(LoginRequiredMixin, DetailView):
+    """Vue pour les détails d'un suivi de cours"""
+    model = TeachingMonitoring
+    template_name = 'Teaching/detail_suivi.html'
+    context_object_name = 'suivi'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = f'Détails du suivi - {self.object.course.label}'
+        return context
+
+
+class ModifierSuiviView(LoginRequiredMixin, UpdateView):
+    """Vue pour modifier un suivi de cours"""
+    model = TeachingMonitoring
+    form_class = Suivi_CoursForm
+    template_name = 'Teaching/modifier_suivi.html'
+
+    def get_success_url(self):
+        return reverse_lazy('teaching:detail_suivi', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = f'Modifier le suivi - {self.object.course.label}'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Suivi de cours modifié avec succès.')
+        return super().form_valid(form)
+
+
+class SupprimerSuiviView(LoginRequiredMixin, DeleteView):
+    """Vue pour supprimer un suivi de cours"""
+    model = TeachingMonitoring
+    template_name = 'Teaching/supprimer_suivi.html'
+    success_url = reverse_lazy('teaching:suivi_cours')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = f'Supprimer le suivi - {self.object.course.label}'
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Suivi de cours supprimé avec succès.')
+        return super().delete(request, *args, **kwargs)
 
 
 

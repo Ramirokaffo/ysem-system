@@ -18,6 +18,7 @@ urlpatterns = [
     path('documents/', views.DocumentsView.as_view(), name='documents'),
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
     path('parametres/', views.ParametresView.as_view(), name='parametres'),
+    path('toggle-prospection/', views.toggle_prospection, name='toggle_prospection'),
     path('profil/', views.ProfilView.as_view(), name='profil'),
     path('etudiant/<str:pk>/', views.etudiant_detail, name='etudiant_detail'),
     path('etudiant/<str:pk>/modifier/', views.etudiant_edit, name='etudiant_edit'),

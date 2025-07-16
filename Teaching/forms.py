@@ -93,6 +93,116 @@ class Suivi_CoursForm(forms.ModelForm):
             }),
             'totalChapterCount': forms.NumberInput(attrs={
                 'class': 'form-control shadow-inset border-light bg-primary',
+                'min': '0',
+                'placeholder': 'Nombre de chapitres prévus'
+            }),
+            'chapitre_fait': forms.NumberInput(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'min': '0',
+                'placeholder': 'Nombre de chapitres réalisés'
+            }),
+            'contenu_seance_prevu': forms.NumberInput(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'min': '0',
+                'placeholder': 'Contenu prévu'
+            }),
+            'contenu_effectif_seance': forms.NumberInput(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'min': '0',
+                'placeholder': 'Contenu effectif'
+            }),
+            'travaux_preparatoires': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'groupWork': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'classWork': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'homeWork': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'pedagogicActivities': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'TDandTP': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'projet_fin_cours': forms.Textarea(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'rows': 3,
+                'placeholder': 'Décrivez le projet de fin de cours...'
+            }),
+            'association_pratique_aux_enseigements': forms.Textarea(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'rows': 3,
+                'placeholder': 'Décrivez l\'association pratique...'
+            }),
+            'observation': forms.Textarea(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'rows': 4,
+                'placeholder': 'Vos observations...'
+            }),
+            'solution': forms.Textarea(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'rows': 4,
+                'placeholder': 'Solutions proposées...'
+            }),
+            'generalObservation': forms.Textarea(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'rows': 4,
+                'placeholder': 'Observation générale...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Définir l'année académique active par défaut
+        from academic.models import AcademicYear
+        active_year = AcademicYear.objects.filter(is_active=True).first()
+        if active_year and not self.instance.pk:
+            self.fields['academic_year'].initial = active_year
+
+    def clean(self):
+        cleaned_data = super().clean()
+        chapitre_fait = cleaned_data.get('chapitre_fait')
+        total_chapters = cleaned_data.get('totalChapterCount')
+        contenu_effectif = cleaned_data.get('contenu_effectif_seance')
+        contenu_prevu = cleaned_data.get('contenu_seance_prevu')
+
+        # Validation des chapitres
+        if chapitre_fait and total_chapters and chapitre_fait > total_chapters:
+            raise forms.ValidationError(
+                "Le nombre de chapitres faits ne peut pas être supérieur au nombre total de chapitres prévus."
+            )
+
+        # Validation du contenu des séances
+        if contenu_effectif and contenu_prevu and contenu_effectif > contenu_prevu:
+            raise forms.ValidationError(
+                "Le contenu effectif ne peut pas être supérieur au contenu prévu."
+            )
+
+        return cleaned_data
+        widgets = {
+            'date': forms.DateInput(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
+                'type': 'date'
+            }),
+            'lecturer': forms.Select(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary'
+            }),
+            'course': forms.Select(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary'
+            }),
+            'level': forms.Select(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary'
+            }),
+            'academic_year': forms.Select(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary'
+            }),
+            'totalChapterCount': forms.NumberInput(attrs={
+                'class': 'form-control shadow-inset border-light bg-primary',
                 'min': '0'
             }),
             'chapitre_fait': forms.NumberInput(attrs={

@@ -18,14 +18,15 @@ class StudentPortalSecurityMiddleware:
             '/auth/',
             '/scholar',
             '/etudiants/',
-            '/documents/',
             '/statistiques/',
             '/parametres/',
             '/etudiant/',
             '/document/',
+            '/documents/',
             '/inscription/',
             '/teach/',
             '/planning/',
+            '/prospection/',
         ]
     
     def __call__(self, request):

@@ -1,0 +1,172 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Ajouter un Agent - YSEM{% endblock %}
+
+{% block page_title %}Ajouter un Agent{% endblock %}
+
+{% block breadcrumb_title %}Ajouter Agent{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:agents' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left me-2"></i>
+    Retour à la liste
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-user-plus me-2"></i>
+                Informations de l'agent
+            </h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Informations personnelles -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations personnelles</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.matricule.id_for_label }}" class="form-label">
+                                Matricule <span class="text-danger">*</span>
+                            </label>
+                            {{ form.matricule }}
+                            {% if form.matricule.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.matricule.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                                Nom <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.nom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.prenom.id_for_label }}" class="form-label">
+                                Prénom <span class="text-danger">*</span>
+                            </label>
+                            {{ form.prenom }}
+                            {% if form.prenom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.prenom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.telephone.id_for_label }}" class="form-label">
+                                Téléphone <span class="text-danger">*</span>
+                            </label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.telephone.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                Email
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Informations professionnelles -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations professionnelles</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.type_agent.id_for_label }}" class="form-label">
+                                Type d'agent <span class="text-danger">*</span>
+                            </label>
+                            {{ form.type_agent }}
+                            {% if form.type_agent.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.type_agent.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.statut.id_for_label }}" class="form-label">
+                                Statut <span class="text-danger">*</span>
+                            </label>
+                            {{ form.statut }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.statut.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_embauche.id_for_label }}" class="form-label">
+                                Date d'embauche <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_embauche }}
+                            {% if form.date_embauche.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_embauche.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.adresse.id_for_label }}" class="form-label">
+                                Adresse
+                            </label>
+                            {{ form.adresse }}
+                            {% if form.adresse.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.adresse.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <!-- Submit buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'prospection:agents' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

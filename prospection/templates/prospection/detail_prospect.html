@@ -1,0 +1,278 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Prospect {{ prospect.nom_complet }} - YSEM{% endblock %}
+
+{% block page_title %}Prospect {{ prospect.nom_complet }}{% endblock %}
+
+{% block breadcrumb_title %}{{ prospect.nom_complet }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'prospection:prospects' %}" class="btn btn-neumorphic">
+        <i class="fas fa-arrow-left me-2"></i>
+        Retour à la liste
+    </a>
+    <a href="{% url 'prospection:modifier_prospect' prospect.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit me-2"></i>
+        Modifier
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row">
+    <!-- Informations personnelles -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-user me-2"></i>
+                Informations personnelles
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Nom complet</label>
+                <p class="fw-bold">{{ prospect.nom_complet }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Téléphone principal</label>
+                <p>
+                    <i class="fas fa-phone me-2"></i>
+                    <a href="tel:{{ prospect.telephone }}" class="text-decoration-none">{{ prospect.telephone }}</a>
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Établissement d'origine</label>
+                <p>
+                    {% if prospect.etablissement_origine %}
+                        <i class="fas fa-school me-2"></i>
+                        {{ prospect.etablissement_origine.name }}
+                        <br>
+                        <small class="text-muted">{{ prospect.etablissement_origine.address }}</small>
+                    {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Date de collecte</label>
+                <p>
+                    <i class="fas fa-calendar me-2"></i>
+                    {{ prospect.date_collecte|date:"d/m/Y à H:i" }}
+                    <br>
+                    <small class="text-muted">Il y a {{ prospect.date_collecte|timesince }}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contacts familiaux -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-users me-2"></i>
+                Contacts familiaux
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">
+                    <i class="fas fa-male me-1"></i>
+                    Téléphone du père
+                </label>
+                <p>
+                    {% if prospect.telephone_pere %}
+                        <a href="tel:{{ prospect.telephone_pere }}" class="text-decoration-none">{{ prospect.telephone_pere }}</a>
+                    {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">
+                    <i class="fas fa-female me-1"></i>
+                    Téléphone de la mère
+                </label>
+                <p>
+                    {% if prospect.telephone_mere %}
+                        <a href="tel:{{ prospect.telephone_mere }}" class="text-decoration-none">{{ prospect.telephone_mere }}</a>
+                    {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Résumé des contacts -->
+            <div class="alert alert-info">
+                <h6><i class="fas fa-phone me-2"></i>Résumé des contacts</h6>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <strong>1</strong>
+                        <br>
+                        <small>Principal</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{% if prospect.telephone_pere %}1{% else %}0{% endif %}</strong>
+                        <br>
+                        <small>Père</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{% if prospect.telephone_mere %}1{% else %}0{% endif %}</strong>
+                        <br>
+                        <small>Mère</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Informations de collecte -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-clipboard-list me-2"></i>
+                Informations de collecte
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Équipe</label>
+                <p>
+                    <a href="{% url 'prospection:detail_equipe' prospect.equipe.pk %}" class="text-decoration-none">
+                        <span class="badge badge-primary">{{ prospect.equipe.nom }}</span>
+                    </a>
+                    <br>
+                    <small class="text-muted">Campagne: {{ prospect.equipe.campagne.nom }}</small>
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Agent collecteur</label>
+                <p>
+                    {% if prospect.agent_collecteur %}
+                        <a href="{% url 'prospection:detail_agent' prospect.agent_collecteur.matricule %}" class="text-decoration-none">
+                            {{ prospect.agent_collecteur.nom_complet }}
+                        </a>
+                        <br>
+                        <small class="text-muted">{{ prospect.agent_collecteur.matricule }} - {{ prospect.agent_collecteur.get_type_agent_display }}</small>
+                    {% else %}
+                        <span class="text-muted">Non assigné</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Performance de l'équipe -->
+            <div class="alert alert-success">
+                <h6><i class="fas fa-chart-line me-2"></i>Performance de l'équipe</h6>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <strong>{{ prospect.equipe.prospects_collectes }}</strong>
+                        <br>
+                        <small>Collectés</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{{ prospect.equipe.objectif_prospects }}</strong>
+                        <br>
+                        <small>Objectif</small>
+                    </div>
+                    <div class="col-4">
+                        <strong>{{ prospect.equipe.taux_realisation|floatformat:1 }}%</strong>
+                        <br>
+                        <small>Réalisation</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notes et actions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-sticky-note me-2"></i>
+                Notes et actions
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Notes</label>
+                <div class="card-neumorphic p-3">
+                    {% if prospect.notes %}
+                        {{ prospect.notes|linebreaks }}
+                    {% else %}
+                        <span class="text-muted">Aucune note enregistrée</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions rapides -->
+            <div class="d-grid gap-2">
+                <a href="{% url 'prospection:modifier_prospect' prospect.pk %}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>
+                    Modifier les informations
+                </a>
+                <a href="tel:{{ prospect.telephone }}" class="btn btn-success">
+                    <i class="fas fa-phone me-2"></i>
+                    Appeler le prospect
+                </a>
+                {% if prospect.telephone_pere %}
+                <a href="tel:{{ prospect.telephone_pere }}" class="btn btn-info">
+                    <i class="fas fa-phone me-2"></i>
+                    Appeler le père
+                </a>
+                {% endif %}
+                {% if prospect.telephone_mere %}
+                <a href="tel:{{ prospect.telephone_mere }}" class="btn btn-info">
+                    <i class="fas fa-phone me-2"></i>
+                    Appeler la mère
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historique et métadonnées -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-history me-2"></i>
+                Historique et métadonnées
+            </h5>
+            
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">Date de création</td>
+                            <td>{{ prospect.created_at|date:"d/m/Y à H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Dernière modification</td>
+                            <td>{{ prospect.updated_at|date:"d/m/Y à H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Identifiant unique</td>
+                            <td><code>{{ prospect.pk }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Statut de validation</td>
+                            <td>
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check me-1"></i>
+                                    Validé
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

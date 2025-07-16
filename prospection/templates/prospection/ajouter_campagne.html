@@ -1,0 +1,149 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Ajouter une Campagne - YSEM{% endblock %}
+
+{% block page_title %}Ajouter une Campagne{% endblock %}
+
+{% block breadcrumb_title %}Ajouter Campagne{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:campagnes' %}" class="btn btn-neumorphic">
+    <i class="fas fa-arrow-left me-2"></i>
+    Retour à la liste
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-bullhorn me-2"></i>
+                Informations de la campagne
+            </h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations générales</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                                Nom de la campagne <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.nom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.annee_academique.id_for_label }}" class="form-label">
+                                Année académique <span class="text-danger">*</span>
+                            </label>
+                            {{ form.annee_academique }}
+                            {% if form.annee_academique.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.annee_academique.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Période et objectifs -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Période et objectifs</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_debut.id_for_label }}" class="form-label">
+                                Date de début <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_debut }}
+                            {% if form.date_debut.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_debut.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                                Date de fin <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_fin }}
+                            {% if form.date_fin.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_fin.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.statut.id_for_label }}" class="form-label">
+                                Statut <span class="text-danger">*</span>
+                            </label>
+                            {{ form.statut }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.statut.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.objectif_global.id_for_label }}" class="form-label">
+                                Objectif global <span class="text-danger">*</span>
+                            </label>
+                            {{ form.objectif_global }}
+                            <small class="form-text text-muted">Nombre total de prospects à collecter</small>
+                            {% if form.objectif_global.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.objectif_global.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <!-- Submit buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'prospection:campagnes' %}" class="btn btn-neumorphic">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

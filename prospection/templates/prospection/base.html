@@ -1,0 +1,103 @@
+{% extends 'main/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card-neumorphic">
+        <!-- Navigation Breadcrumb -->
+        <div class="mb-4 border-bottom pb-2">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 bg-primary">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'main:dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-home me-1"></i>
+                            Scolarité
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'prospection:dashboard' %}" class="text-decoration-none">
+                            <i class="fas fa-bullhorn me-1"></i>
+                            Prospection
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active text-dark" aria-current="page">
+                        {% block breadcrumb_title %}Dashboard{% endblock %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Quick Navigation -->
+        <div class=" mb-4">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:dashboard' %}"
+                        class="btn btn-neumorphic w-100 {% if request.resolver_match.url_name == 'dashboard' %}btn-primary{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:agents' %}"
+                        class="btn btn-neumorphic w-100 {% if 'agent' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-users-cog me-2"></i>
+                        Agents
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:campagnes' %}"
+                        class="btn btn-neumorphic w-100 {% if 'campagne' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-bullhorn me-2"></i>
+                        Campagnes
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:equipes' %}"
+                        class="btn btn-neumorphic w-100 {% if 'equipe' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-users me-2"></i>
+                        Équipes
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:prospects' %}"
+                        class="btn btn-neumorphic w-100 {% if 'prospect' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-address-book me-2"></i>
+                        Prospects
+                    </a>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'prospection:statistiques' %}"
+                        class="btn btn-neumorphic w-100 {% if request.resolver_match.url_name == 'statistiques' %}btn-primary{% endif %}">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Statistiques
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="card-neumorphic">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h1 class="h3 mb-0">{% block page_title %}Prospection{% endblock %}</h1>
+        <div>
+            {% block page_actions %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    {% block prospection_content %}{% endblock %}
+</div>
+</div>
+{% endblock %}

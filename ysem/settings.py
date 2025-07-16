@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "Teaching",
     "student_portal",
     "planification",
+    "prospection",
 ]
 
 MIDDLEWARE = [
@@ -96,6 +97,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "academic.context_processors.active_academic_year",
+                "prospection.context_processors.prospection_context",
             ],
         },
     },

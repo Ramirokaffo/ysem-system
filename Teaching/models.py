@@ -8,16 +8,18 @@ class Lecturer(models.Model):
     """
     Modèle pour les enseignants
     """
-    matricule = models.CharField(max_length=50, primary_key=True)
-    firstname = models.CharField(max_length=100)
-    lastname = models.CharField(max_length=100)
-    date_naiss = models.DateField()
-    grade = models.CharField(max_length=50)
-    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')])
-    lang = models.CharField(max_length=50, default='fr')
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    matricule = models.CharField(max_length=50, primary_key=True, verbose_name="Matricule")
+    firstname = models.CharField(max_length=100, verbose_name="Prénom")
+    lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
+    date_naiss = models.DateField(verbose_name="Date de naissance")
+    grade = models.CharField(max_length=50, verbose_name="Grade/Titre")
+    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
+    lang = models.CharField(max_length=50, default='fr', verbose_name="Langue de préférence")
+    phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
+    email = models.EmailField(blank=True, null=True, verbose_name="Adresse email")
 
+    def full_name(self):
+        return f"{self.firstname} {self.lastname}"
 
     def __str__(self):
         return f"{self.matricule} - {self.firstname} {self.lastname}"

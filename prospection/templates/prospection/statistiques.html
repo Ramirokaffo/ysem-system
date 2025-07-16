@@ -1,0 +1,313 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Statistiques de Prospection - YSEM{% endblock %}
+
+{% block page_title %}Statistiques de Prospection{% endblock %}
+
+{% block breadcrumb_title %}Statistiques{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <button class="btn btn-neumorphic" onclick="window.print()">
+        <i class="fas fa-print me-2"></i>
+        Imprimer
+    </button>
+    <a href="{% url 'prospection:dashboard' %}" class="btn btn-neumorphic">
+        <i class="fas fa-tachometer-alt me-2"></i>
+        Dashboard
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+<!-- Statistiques générales -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-pie me-2"></i>
+                Vue d'ensemble
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon danger mb-2">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3 class="mb-0">{{ stats_generales.total_agents }}</h3>
+                        <p class="text-muted mb-0">Agents total</p>
+                        <small class="text-success">{{ stats_generales.agents_actifs }} actifs</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <h3 class="mb-0">{{ stats_generales.total_campagnes }}</h3>
+                        <p class="text-muted mb-0">Campagnes total</p>
+                        <small class="text-success">{{ stats_generales.campagnes_actives }} actives</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon info mb-2">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="mb-0">{{ stats_generales.total_equipes }}</h3>
+                        <p class="text-muted mb-0">Équipes formées</p>
+                        <small class="text-muted">Toutes campagnes</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon success mb-2">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <h3 class="mb-0">{{ stats_generales.total_prospects }}</h3>
+                        <p class="text-muted mb-0">Prospects collectés</p>
+                        <small class="text-muted">Total général</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques par campagne -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-bar me-2"></i>
+                Performance par campagne
+            </h5>
+            
+            {% if stats_campagnes %}
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Campagne</th>
+                            <th>Année académique</th>
+                            <th>Statut</th>
+                            <th>Équipes</th>
+                            <th>Objectif</th>
+                            <th>Collectés</th>
+                            <th>Taux</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campagne in stats_campagnes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'prospection:detail_campagne' campagne.pk %}" class="text-decoration-none">
+                                    {{ campagne.nom }}
+                                </a>
+                            </td>
+                            <td>{{ campagne.annee_academique }}</td>
+                            <td>
+                                <span class="badge badge-{% if campagne.statut == 'en_cours' %}success{% elif campagne.statut == 'planifiee' %}warning{% elif campagne.statut == 'terminee' %}secondary{% else %}danger{% endif %}">
+                                    {{ campagne.get_statut_display }}
+                                </span>
+                            </td>
+                            <td>{{ campagne.equipes_count }}</td>
+                            <td>{{ campagne.objectif_global }}</td>
+                            <td>{{ campagne.prospects_count }}</td>
+                            <td>
+                                {% widthratio campagne.prospects_count campagne.objectif_global 100 as taux %}
+                                <span class="badge badge-{% if taux >= 100 %}success{% elif taux >= 75 %}warning{% else %}danger{% endif %}">
+                                    {{ taux|default:0 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar {% if taux >= 100 %}bg-success{% elif taux >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {% if taux > 100 %}100{% else %}{{ taux|default:0 }}{% endif %}%">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-chart-bar fa-2x text-muted mb-2"></i>
+                <p class="text-muted">Aucune campagne disponible pour les statistiques</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top agents collecteurs -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-trophy me-2"></i>
+                Top agents collecteurs
+            </h5>
+            
+            {% if top_agents %}
+            <div class="list-group list-group-flush">
+                {% for agent in top_agents %}
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3 mr-2">
+                            <div class="stat-icon {% if forloop.first %}success{% elif forloop.counter <= 3 %}warning{% else %}secondary{% endif %}">
+                                <i class="fas fa-{% if forloop.first %}crown{% elif forloop.counter <= 3 %}medal{% else %}user{% endif %}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <a href="{% url 'prospection:detail_agent' agent.matricule %}" class="text-decoration-none">
+                                    {{ agent.nom_complet }}
+                                </a>
+                                {% if forloop.first %}
+                                    <span class="badge badge-success ms-2">🥇</span>
+                                {% elif forloop.counter == 2 %}
+                                    <span class="badge badge-warning ms-2">🥈</span>
+                                {% elif forloop.counter == 3 %}
+                                    <span class="badge badge-info ms-2">🥉</span>
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0 text-muted">{{ agent.matricule }} - {{ agent.get_type_agent_display }}</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge badge-danger">{{ agent.prospects_count }} prospects</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                <p class="text-muted">Aucun agent n'a encore collecté de prospects</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Top équipes performantes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-users me-2"></i>
+                Top équipes performantes
+            </h5>
+            
+            {% if top_equipes %}
+            <div class="list-group list-group-flush">
+                {% for equipe in top_equipes %}
+                <div class="list-group-item border-0 bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3 mr-2">
+                            <div class="stat-icon {% if forloop.first %}success{% elif forloop.counter <= 3 %}warning{% else %}secondary{% endif %}">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <a href="{% url 'prospection:detail_equipe' equipe.pk %}" class="text-decoration-none">
+                                    {{ equipe.nom }}
+                                </a>
+                                {% if forloop.first %}
+                                    <span class="badge badge-success ms-2">🏆</span>
+                                {% endif %}
+                            </h6>
+                            <p class="mb-0 text-muted">{{ equipe.campagne.nom|truncatechars:30 }}</p>
+                            <small class="text-muted">{{ equipe.prospects_count }}/{{ equipe.objectif_prospects }} prospects</small>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="badge badge-{% if equipe.taux_realisation >= 100 %}success{% elif equipe.taux_realisation >= 75 %}warning{% else %}danger{% endif %}">
+                                {{ equipe.taux_realisation|floatformat:1 }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                <p class="text-muted">Aucune équipe n'a encore collecté de prospects</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques et tendances -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-line me-2"></i>
+                Résumé et recommandations
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Points forts</h6>
+                    <ul class="list-unstyled">
+                        {% if stats_generales.agents_actifs > 0 %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ stats_generales.agents_actifs }} agents actifs disponibles
+                        </li>
+                        {% endif %}
+                        {% if stats_generales.campagnes_actives > 0 %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ stats_generales.campagnes_actives }} campagne{{ stats_generales.campagnes_actives|pluralize }} en cours
+                        </li>
+                        {% endif %}
+                        {% if stats_generales.total_prospects > 0 %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ stats_generales.total_prospects }} prospects déjà collectés
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-muted">Recommandations</h6>
+                    <ul class="list-unstyled">
+                        {% if stats_generales.campagnes_actives == 0 %}
+                        <li class="mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            Aucune campagne active - <a href="{% url 'prospection:ajouter_campagne' %}">créer une campagne</a>
+                        </li>
+                        {% endif %}
+                        {% if stats_generales.total_equipes == 0 %}
+                        <li class="mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                            Aucune équipe formée - <a href="{% url 'prospection:ajouter_equipe' %}">former des équipes</a>
+                        </li>
+                        {% endif %}
+                        {% if stats_generales.agents_actifs < 4 %}
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle text-info me-2"></i>
+                            Recruter plus d'agents pour optimiser la prospection
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

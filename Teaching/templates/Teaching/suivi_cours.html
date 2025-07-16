@@ -12,21 +12,21 @@
         <div class="col-12">
             <div class="card shadow-soft border-light">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
+                    <div class="row align-items-center d-flex justify-content-between">
+                        <div class="">
                             <h4 class="h3 mb-0">
-                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                <i class="fas fa-chart-line text-dark me-2"></i>
                                 Suivi des Enseignements
                             </h4>
                             <p class="text-muted mb-0">Gestion et suivi des cours dispensés</p>
                         </div>
-                        <div class="col-md-6 text-end">
+                        <div class="text-end">
                             <div class="btn-group">
-                                <button class="btn btn-outline-primary btn-sm">
+                                <button class="btn btn-outline-dark btn-sm">
                                     <i class="fas fa-download me-2"></i>
                                     Exporter
                                 </button>
-                                <a href="{% url 'teaching:ajouter_suivi' %}" class="btn btn-primary btn-sm">
+                                <a href="{% url 'teaching:ajouter_suivi' %}" class="btn btn-success btn-sm">
                                     <i class="fas fa-plus me-2"></i>
                                     Nouveau suivi
                                 </a>
@@ -44,7 +44,7 @@
             <div class="card shadow-soft border-light">
                 <div class="card-header bg-white border-light">
                     <h6 class="mb-0">
-                        <i class="fas fa-filter text-primary me-2"></i>
+                        <i class="fas fa-filter text-dark me-2"></i>
                         Filtres de recherche
                     </h6>
                 </div>
@@ -56,7 +56,9 @@
                                 <select name="lecturer" class="form-control shadow-inset border-light bg-primary">
                                     <option value="">Tous les enseignants</option>
                                     {% for lecturer in lecturers %}
-                                        <option value="{{ lecturer.matricule }}">{{ lecturer.firstname }} {{ lecturer.lastname }}</option>
+                                        <option value="{{ lecturer.matricule }}" {% if current_filters.lecturer == lecturer.matricule %}selected{% endif %}>
+                                            {{ lecturer.firstname }} {{ lecturer.lastname }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -65,7 +67,9 @@
                                 <select name="course" class="form-control shadow-inset border-light bg-primary">
                                     <option value="">Tous les cours</option>
                                     {% for course in courses %}
-                                        <option value="{{ course.course_code }}">{{ course.label }}</option>
+                                        <option value="{{ course.course_code }}" {% if current_filters.course == course.course_code %}selected{% endif %}>
+                                            {{ course.label }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -74,7 +78,9 @@
                                 <select name="level" class="form-control shadow-inset border-light bg-primary">
                                     <option value="">Tous les niveaux</option>
                                     {% for level in levels %}
-                                        <option value="{{ level.id }}">{{ level.name }}</option>
+                                        <option value="{{ level.id }}" {% if current_filters.level == level.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ level.name }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -82,7 +88,10 @@
                                 <label class="form-label">Année académique</label>
                                 <select name="academic_year" class="form-control shadow-inset border-light bg-primary">
                                     {% for year in academic_years %}
-                                        <option value="{{ year.id }}" {% if year == active_year %}selected{% endif %}>
+                                        <option value="{{ year.id }}"
+                                            {% if current_filters.academic_year == year.id|stringformat:"s" %}selected
+                                            {% elif not current_filters.academic_year and year == active_year %}selected
+                                            {% endif %}>
                                             {{ year.name }}
                                         </option>
                                     {% endfor %}
@@ -113,7 +122,7 @@
             <div class="card shadow-soft border-light">
                 <div class="card-header bg-white border-light">
                     <h6 class="mb-0">
-                        <i class="fas fa-table text-primary me-2"></i>
+                        <i class="fas fa-table text-dark me-2"></i>
                         Liste des suivis de cours
                     </h6>
                 </div>
@@ -186,12 +195,15 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary btn-sm" title="Modifier">
+                                            <a href="{% url 'teaching:detail_suivi' suivi.pk %}" class="btn btn-outline-info btn-sm" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'teaching:modifier_suivi' suivi.pk %}" class="btn btn-outline-warning btn-sm" title="Modifier">
                                                 <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm" title="Supprimer">
+                                            </a>
+                                            <a href="{% url 'teaching:supprimer_suivi' suivi.pk %}" class="btn btn-outline-danger btn-sm" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

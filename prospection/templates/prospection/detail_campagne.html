@@ -1,0 +1,320 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Campagne {{ campagne.nom }} - YSEM{% endblock %}
+
+{% block page_title %}Campagne {{ campagne.nom }}{% endblock %}
+
+{% block breadcrumb_title %}{{ campagne.nom }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'prospection:campagnes' %}" class="btn btn-neumorphic">
+        <i class="fas fa-arrow-left me-2"></i>
+        Retour à la liste
+    </a>
+    <a href="{% url 'prospection:modifier_campagne' campagne.pk %}" class="btn btn-warning">
+        <i class="fas fa-edit me-2"></i>
+        Modifier
+    </a>
+    <a href="{% url 'prospection:ajouter_equipe' %}?campagne={{ campagne.pk }}" class="btn btn-success">
+        <i class="fas fa-users me-2"></i>
+        Former une équipe
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row">
+    <!-- Informations générales -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations générales
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Nom de la campagne</label>
+                <p class="fw-bold">{{ campagne.nom }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Description</label>
+                <div class="card-neumorphic p-3">
+                    {% if campagne.description %}
+                        {{ campagne.description|linebreaks }}
+                    {% else %}
+                        <span class="text-muted">Aucune description</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Année académique</label>
+                <p>{{ campagne.annee_academique }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Statut</label>
+                <p>
+                    <span class="badge badge-{% if campagne.statut == 'en_cours' %}success{% elif campagne.statut == 'planifiee' %}warning{% elif campagne.statut == 'terminee' %}secondary{% else %}danger{% endif %}">
+                        {{ campagne.get_statut_display }}
+                    </span>
+                    {% if campagne.is_active %}
+                        <span class="badge badge-success ms-2">Active</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Période et objectifs -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-calendar me-2"></i>
+                Période et objectifs
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Date de début</label>
+                <p>
+                    <i class="fas fa-play me-2"></i>
+                    {{ campagne.date_debut|date:"d/m/Y" }}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Date de fin</label>
+                <p>
+                    <i class="fas fa-stop me-2"></i>
+                    {{ campagne.date_fin|date:"d/m/Y" }}
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Durée</label>
+                <p>
+                    <span class="badge badge-info">{{ campagne.duree_jours }} jours</span>
+                </p>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label text-muted">Objectif global</label>
+                <p class="fw-bold">{{ campagne.objectif_global }} prospects</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance -->
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-chart-bar me-2"></i>
+                Performance
+            </h5>
+            
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon primary mb-2">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 class="mb-0">{{ stats.equipes_count }}</h4>
+                        <small class="text-muted">Équipes</small>
+                    </div>
+                </div>
+                
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h4 class="mb-0">{{ stats.agents_count }}</h4>
+                        <small class="text-muted">Agents</small>
+                    </div>
+                </div>
+                
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon success mb-2">
+                            <i class="fas fa-address-book"></i>
+                        </div>
+                        <h4 class="mb-0">{{ stats.prospects_collectes }}</h4>
+                        <small class="text-muted">Collectés</small>
+                    </div>
+                </div>
+                
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <div class="stat-icon {% if stats.taux_realisation >= 100 %}success{% elif stats.taux_realisation >= 75 %}warning{% else %}danger{% endif %} mb-2">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <h4 class="mb-0">{{ stats.taux_realisation|floatformat:1 }}%</h4>
+                        <small class="text-muted">Réalisation</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barre de progression -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Progression</span>
+                    <span class="text-muted">{{ stats.prospects_collectes }}/{{ campagne.objectif_global }}</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar {% if stats.taux_realisation >= 100 %}bg-success{% elif stats.taux_realisation >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                         role="progressbar" 
+                         style="width: {% if stats.taux_realisation > 100 %}100{% else %}{{ stats.taux_realisation }}{% endif %}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Équipes de la campagne -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Équipes de la campagne ({{ equipes|length }})
+                </h5>
+                <a href="{% url 'prospection:ajouter_equipe' %}?campagne={{ campagne.pk }}" class="btn btn-primary">
+                    <i class="fas fa-users me-2"></i>
+                    Former une équipe
+                </a>
+            </div>
+            
+            {% if equipes %}
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Chef d'équipe</th>
+                            <th>Agents</th>
+                            <th>Établissement</th>
+                            <th>Objectif</th>
+                            <th>Collectés</th>
+                            <th>Taux</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipe in equipes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'prospection:detail_equipe' equipe.pk %}" class="text-decoration-none">
+                                    <strong>{{ equipe.nom }}</strong>
+                                </a>
+                            </td>
+                            <td>
+                                {% if equipe.chef_equipe %}
+                                    <a href="{% url 'prospection:detail_agent' equipe.chef_equipe.matricule %}" class="text-decoration-none">
+                                        {{ equipe.chef_equipe.nom_complet }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non assigné</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-info">{{ equipe.nombre_agents }}</span>
+                            </td>
+                            <td>
+                                {% if equipe.etablissement_cible %}
+                                    {{ equipe.etablissement_cible.name|truncatechars:20 }}
+                                {% else %}
+                                    <span class="text-muted">Non assigné</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ equipe.objectif_prospects }}</td>
+                            <td>{{ equipe.prospects_count }}</td>
+                            <td>
+                                <span class="badge badge-{% if equipe.taux_realisation >= 100 %}success{% elif equipe.taux_realisation >= 75 %}warning{% else %}danger{% endif %}">
+                                    {{ equipe.taux_realisation|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'prospection:detail_equipe' equipe.pk %}" 
+                                       class="btn btn-neumorphic" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'prospection:modifier_equipe' equipe.pk %}" 
+                                       class="btn btn-neumorphic" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h6 class="text-muted">Aucune équipe formée</h6>
+                <p class="text-muted">Cette campagne n'a pas encore d'équipes assignées.</p>
+                <a href="{% url 'prospection:ajouter_equipe' %}?campagne={{ campagne.pk }}" class="btn btn-primary">
+                    <i class="fas fa-users me-2"></i>
+                    Former la première équipe
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Historique et métadonnées -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-history me-2"></i>
+                Historique et métadonnées
+            </h5>
+            
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">Date de création</td>
+                            <td>{{ campagne.created_at|date:"d/m/Y à H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Dernière modification</td>
+                            <td>{{ campagne.updated_at|date:"d/m/Y à H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Identifiant unique</td>
+                            <td><code>{{ campagne.pk }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">État d'avancement</td>
+                            <td>
+                                {% if campagne.is_active %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-play me-1"></i>
+                                        Campagne active
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-pause me-1"></i>
+                                        Campagne inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

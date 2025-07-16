@@ -1,0 +1,200 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Modifier {{ campagne.nom }} - YSEM{% endblock %}
+
+{% block page_title %}Modifier {{ campagne.nom }}{% endblock %}
+
+{% block breadcrumb_title %}Modifier Campagne{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'prospection:detail_campagne' campagne.pk %}" class="btn btn-neumorphic">
+        <i class="fas fa-arrow-left me-2"></i>
+        Retour aux détails
+    </a>
+    <a href="{% url 'prospection:campagnes' %}" class="btn btn-neumorphic">
+        <i class="fas fa-list me-2"></i>
+        Liste des campagnes
+    </a>
+</div>
+{% endblock %}
+
+{% block prospection_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-neumorphic">
+            <h5 class="mb-4">
+                <i class="fas fa-edit me-2"></i>
+                Modification de la campagne
+            </h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Informations générales</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">
+                                Nom de la campagne <span class="text-danger">*</span>
+                            </label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.nom.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.annee_academique.id_for_label }}" class="form-label">
+                                Année académique <span class="text-danger">*</span>
+                            </label>
+                            {{ form.annee_academique }}
+                            {% if form.annee_academique.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.annee_academique.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Période et objectifs -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Période et objectifs</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_debut.id_for_label }}" class="form-label">
+                                Date de début <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_debut }}
+                            {% if form.date_debut.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_debut.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                                Date de fin <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_fin }}
+                            {% if form.date_fin.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.date_fin.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.statut.id_for_label }}" class="form-label">
+                                Statut <span class="text-danger">*</span>
+                            </label>
+                            {{ form.statut }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.statut.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.objectif_global.id_for_label }}" class="form-label">
+                                Objectif global <span class="text-danger">*</span>
+                            </label>
+                            {{ form.objectif_global }}
+                            <small class="form-text text-muted">Nombre total de prospects à collecter</small>
+                            {% if form.objectif_global.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.objectif_global.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance actuelle -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Performance actuelle</h6>
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <strong>{{ campagne.equipes.count }}</strong>
+                            <br>
+                            <small>Équipes</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>{{ campagne.equipes.all|length }}</strong>
+                            <br>
+                            <small>Agents</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>
+                                {% for equipe in campagne.equipes.all %}
+                                    {{ equipe.prospects_collectes|add:0 }}
+                                {% empty %}
+                                    0
+                                {% endfor %}
+                            </strong>
+                            <br>
+                            <small>Prospects</small>
+                        </div>
+                        <div class="col-3">
+                            <strong>{{ campagne.duree_jours }}</strong>
+                            <br>
+                            <small>Jours</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Avertissements sur les modifications -->
+                {% if campagne.equipes.count > 0 %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Attention</h6>
+                    <p class="mb-0">
+                        Cette campagne a déjà {{ campagne.equipes.count }} équipe{{ campagne.equipes.count|pluralize }} formée{{ campagne.equipes.count|pluralize }}.
+                        <br>
+                        <strong>Modifier les dates ou le statut pourrait affecter les équipes en cours de prospection.</strong>
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- Form errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <!-- Submit buttons -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'prospection:detail_campagne' campagne.pk %}" class="btn btn-neumorphic">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

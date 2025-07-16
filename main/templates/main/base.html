@@ -113,6 +113,14 @@
                         Statistiques
                     </a>
                 </li>
+                {% if prospection_active %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'prospection' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'prospection:dashboard' %}">
+                        <i class="fas fa-bullhorn me-2"></i>
+                        Prospection
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'parametres' %}active{% endif %}" href="{% url 'main:parametres' %}">
                         <i class="fas fa-cog me-2"></i>

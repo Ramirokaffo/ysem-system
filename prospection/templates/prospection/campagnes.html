@@ -1,0 +1,157 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Gestion des Campagnes - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Campagnes{% endblock %}
+
+{% block breadcrumb_title %}Campagnes{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:ajouter_campagne' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-2"></i>
+    Nouvelle campagne
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<!-- Search and Filters -->
+<div class="mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            {{ search_form.search }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.statut }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.annee_academique }}
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>
+                Rechercher
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Campagnes List -->
+<div class="card-neumorphic shadow-inset">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h5 class="mb-0">
+            <i class="fas fa-bullhorn me-2"></i>
+            Liste des campagnes ({{ campagnes|length }})
+        </h5>
+    </div>
+    
+    {% if campagnes %}
+    <div class="table-responsive">
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Année académique</th>
+                    <th>Période</th>
+                    <th>Statut</th>
+                    <th>Objectif</th>
+                    <th>Équipes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campagne in campagnes %}
+                <tr>
+                    <td>
+                        <a href="{% url 'prospection:detail_campagne' campagne.pk %}" class="text-decoration-none">
+                            <strong>{{ campagne.nom }}</strong>
+                        </a>
+                    </td>
+                    <td>{{ campagne.annee_academique }}</td>
+                    <td>
+                        <small class="text-muted">
+                            {{ campagne.date_debut|date:"d/m/Y" }} - {{ campagne.date_fin|date:"d/m/Y" }}
+                            <br>
+                            <span class="badge badge-info">{{ campagne.duree_jours }} jours</span>
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if campagne.statut == 'en_cours' %}success{% elif campagne.statut == 'planifiee' %}warning{% elif campagne.statut == 'terminee' %}secondary{% else %}danger{% endif %}">
+                            {{ campagne.get_statut_display }}
+                        </span>
+                    </td>
+                    <td>{{ campagne.objectif_global }} prospects</td>
+                    <td>
+                        <span class="badge badge-danger">{{ campagne.equipes.count }} équipe{{ campagne.equipes.count|pluralize }}</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'prospection:detail_campagne' campagne.pk %}" 
+                               class="btn btn-neumorphic" title="Voir détails">
+                                <i class="fas fa-eye text-secondary"></i>
+                            </a>
+                            <a href="{% url 'prospection:modifier_campagne' campagne.pk %}" 
+                               class="btn btn-neumorphic" title="Modifier">
+                                <i class="fas fa-edit text-warning"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Navigation des pages" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}{% if request.GET.annee_academique %}&annee_academique={{ request.GET.annee_academique }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}{% if request.GET.annee_academique %}&annee_academique={{ request.GET.annee_academique }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link btn-neumorphic">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}{% if request.GET.annee_academique %}&annee_academique={{ request.GET.annee_academique }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link btn-neumorphic" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}{% if request.GET.annee_academique %}&annee_academique={{ request.GET.annee_academique }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Aucune campagne trouvée</h5>
+        <p class="text-muted">Commencez par créer une campagne de prospection.</p>
+        <a href="{% url 'prospection:ajouter_campagne' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Créer la première campagne
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

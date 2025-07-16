@@ -75,6 +75,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             student__status='approved'
         ).values('level__name').annotate(count=Count('student')).order_by('-count')[:5]
 
+        # Statistiques de prospection
+        prospection_stats = {}
+        try:
+            from prospection.models import Agent, Campagne, Equipe, Prospect
+            prospection_stats = {
+                'total_agents': Agent.objects.filter(statut='actif').count(),
+                'campagnes_actives': Campagne.objects.filter(statut='en_cours').count(),
+                'total_equipes': Equipe.objects.count(),
+                'prospects_ce_mois': Prospect.objects.filter(
+                    date_collecte__gte=datetime.now().replace(day=1)
+                ).count(),
+            }
+        except ImportError:
+            # Module prospection pas encore migré
+            pass
+
         context.update({
             'total_students': total_students,
             'pending_students': pending_students,
@@ -85,6 +101,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'recent_documents': recent_documents,
             'students_pending_approval': students_pending_approval,
             'level_stats': level_stats,
+            'prospection_stats': prospection_stats,
         })
 
         return context
@@ -371,6 +388,14 @@ class ParametresView(LoginRequiredMixin, TemplateView):
         context['notification_form'] = NotificationSettingsForm(instance=settings)
         context['data_management_form'] = DataManagementSettingsForm(instance=settings)
 
+        # Ajouter la configuration de prospection
+        try:
+            from prospection.models import ProspectionConfig
+            context['prospection_config'] = ProspectionConfig.get_or_create_config()
+        except:
+            # Module prospection pas encore migré
+            context['prospection_config'] = None
+
         # Ajouter les données pour les sélecteurs dynamiques
         context['programs'] = Program.objects.all().order_by('name')
         context['levels'] = Level.objects.all().order_by('name')
@@ -381,87 +406,41 @@ class ParametresView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        from .models import SystemSettings
-        from .forms import (
-            GeneralSettingsForm, AcademicSettingsForm, ProgramLevelSettingsForm,
-            UserSettingsForm, DocumentSettingsForm, NotificationSettingsForm,
-            DataManagementSettingsForm
-        )
-        from django.contrib import messages
-        from django.shortcuts import redirect
+        # Gestion des formulaires de paramètres existants
+        pass
 
-        settings = SystemSettings.get_settings()
-        form_type = request.POST.get('form_type')
 
-        if form_type == 'general':
-            form = GeneralSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres généraux mis à jour avec succès.')
-                return redirect('main:parametres')
+@login_required
+@scholar_admin_required
+def toggle_prospection(request):
+    """Vue pour activer/désactiver la prospection"""
+    if request.method == 'POST':
+        try:
+            from prospection.models import ProspectionConfig
+            config = ProspectionConfig.get_or_create_config()
+            config.is_active = not config.is_active
+            config.modified_by = request.user.username
+            config.save()
 
-        elif form_type == 'academic':
-            form = AcademicSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres académiques mis à jour avec succès.')
-                return redirect('main:parametres')
+            status = "activée" if config.is_active else "désactivée"
+            messages.success(request, f'Prospection {status} avec succès.')
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la modification: {e}')
 
-        elif form_type == 'program_level':
-            form = ProgramLevelSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres des programmes et niveaux mis à jour avec succès.')
-                return redirect('main:parametres')
-
-        elif form_type == 'user':
-            form = UserSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres utilisateurs mis à jour avec succès.')
-                return redirect('main:parametres')
-
-        elif form_type == 'document':
-            form = DocumentSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres des documents mis à jour avec succès.')
-                return redirect('main:parametres')
-
-        elif form_type == 'notification':
-            form = NotificationSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres de notification mis à jour avec succès.')
-                return redirect('main:parametres')
-
-        elif form_type == 'data_management':
-            form = DataManagementSettingsForm(request.POST, instance=settings)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Paramètres de gestion des données mis à jour avec succès.')
-                return redirect('main:parametres')
-
-        elif form_type == 'academic_year':
-            academic_year_id = request.POST.get('academic_year_id')
-            if academic_year_id:
-                try:
-                    academic_year = AcademicYear.objects.get(id=academic_year_id)
-                    # Mettre à jour la session avec la nouvelle année académique
-                    request.session['active_academic_year_id'] = academic_year.id
-                    messages.success(request, f'Année académique changée vers {academic_year.name} avec succès.')
-                    return redirect('main:parametres')
-                except AcademicYear.DoesNotExist:
-                    messages.error(request, 'Année académique sélectionnée introuvable.')
-            else:
-                messages.error(request, 'Aucune année académique sélectionnée.')
-
-        # Si on arrive ici, il y a eu une erreur
-        messages.error(request, 'Erreur lors de la mise à jour des paramètres.')
-        return self.get(request, *args, **kwargs)
+    return redirect('main:parametres')
 
 
 class ProfilView(LoginRequiredMixin, TemplateView):
+    """Vue pour le profil utilisateur"""
+    template_name = 'main/profil.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Mon Profil'
+        return context
+
+
+class InscriptionView(LoginRequiredMixin, TemplateView):
     """Vue pour le profil utilisateur"""
     template_name = 'main/profil.html'
 

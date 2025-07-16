@@ -19,6 +19,9 @@ urlpatterns = [
     path('evaluations/<int:pk>/modifier/', views.ModifierEvaluationView.as_view(), name='modifier_evaluation'),
     path('evaluations/<int:pk>/supprimer/', views.SupprimerEvaluationView.as_view(), name='supprimer_evaluation'),
     path('suivi_cours/ajouter/', views.ajouter_suiviView.as_view(), name='ajouter_suivi'),
+    path('suivi_cours/<int:pk>/', views.DetailSuiviView.as_view(), name='detail_suivi'),
+    path('suivi_cours/<int:pk>/modifier/', views.ModifierSuiviView.as_view(), name='modifier_suivi'),
+    path('suivi_cours/<int:pk>/supprimer/', views.SupprimerSuiviView.as_view(), name='supprimer_suivi'),
 
 
  ]

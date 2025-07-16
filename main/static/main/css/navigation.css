@@ -47,6 +47,11 @@
 .nav-link:hover {
     color: var(--text-color);
     background: rgba(0,0,0,0.02);
+    background: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    text-decoration: none;
+
 }
 
 .nav-link.active {

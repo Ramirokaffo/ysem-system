@@ -79,7 +79,7 @@
     <!-- Activités récentes -->
     <div class="col-lg-8 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-clock me-2"></i>
                 Activités récentes
             </h5>
@@ -120,7 +120,7 @@
     <!-- Actions rapides -->
     <div class="col-lg-4 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-bolt me-2"></i>
                 Actions rapides
             </h5>
@@ -129,15 +129,15 @@
                     <i class="fas fa-plus me-2"></i>
                     Ajouter suivi
                 </a>
-                <a href="{% url 'teaching:enseignants' %}" class="btn btn-success btn-lg">
+                <a href="{% url 'teaching:enseignants' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-users me-2"></i>
                     Voir enseignants
                 </a>
-                <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-info btn-lg">
+                <a href="{% url 'teaching:suivi_cours' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-tasks me-2"></i>
                     Suivi des cours
                 </a>
-                <a href="{% url 'teaching:statistiques' %}" class="btn btn-warning btn-lg">
+                <a href="{% url 'teaching:statistiques' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-chart-bar me-2"></i>
                     Statistiques
                 </a>
@@ -151,28 +151,28 @@
     <!-- Calendrier académique -->
     <div class="col-md-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-calendar-alt me-2"></i>
                 Calendrier académique
             </h5>
             <div class="row">
                 {% if current_year %}
                     <div class="col-md-6 mb-3">
-                        <div class="p-3 bg-light rounded">
-                            <h6 class="text-primary">Année académique</h6>
+                        <div class="p-3 bg-light rounded shadow-inset">
+                            <h6 class="text-secondary">Année académique</h6>
                             <p class="mb-1">{{ current_year.name }}</p>
                             <small class="text-muted">{{ academic_year_start|date:"d M Y" }} - {{ academic_year_end|date:"d M Y" }}</small>
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <div class="p-3 bg-light rounded">
+                        <div class="p-3 bg-light rounded shadow-inset">
                             <h6 class="text-success">Période de cours</h6>
                             <p class="mb-1">Enseignements</p>
                             <small class="text-muted">{{ course_period.start|date:"d M Y" }} - {{ course_period.end|date:"d M Y" }}</small>
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <div class="p-3 bg-light rounded">
+                        <div class="p-3 bg-light rounded shadow-inset">
                             <h6 class="text-warning">Examens</h6>
                             <p class="mb-1">Session d'examens</p>
                             <small class="text-muted">{{ exam_period.start|date:"d M Y" }} - {{ exam_period.end|date:"d M Y" }}</small>
@@ -192,7 +192,7 @@
     <!-- Séances du jour -->
     <div class="col-md-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-calendar-day me-2"></i>
                 Séances du jour
             </h5>
@@ -233,7 +233,7 @@
     <!-- Alertes -->
     <div class="col-md-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 Alertes de suivi
             </h5>
@@ -271,7 +271,7 @@
     <!-- Prochaines séances -->
     <div class="col-md-6 mb-4">
         <div class="card-neumorphic">
-            <h5 class="mb-4">
+            <h5 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-calendar-week me-2"></i>
                 Prochaines séances
             </h5>

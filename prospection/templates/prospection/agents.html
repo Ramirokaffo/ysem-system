@@ -1,0 +1,155 @@
+{% extends 'prospection/base.html' %}
+
+{% load static %}
+
+{% block title %}Gestion des Agents - YSEM{% endblock %}
+
+{% block page_title %}Gestion des Agents{% endblock %}
+
+{% block breadcrumb_title %}Agents{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'prospection:ajouter_agent' %}" class="btn btn-primary">
+    <i class="fas fa-user-plus me-2"></i>
+    Nouvel agent
+</a>
+{% endblock %}
+
+{% block prospection_content %}
+<!-- Search and Filters -->
+<div class="mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            {{ search_form.search }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.type_agent }}
+        </div>
+        <div class="col-md-3">
+            {{ search_form.statut }}
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search me-2"></i>
+                Rechercher
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Agents List -->
+<div class="card-neumorphic shadow-inset">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h5 class="mb-0">
+            <i class="fas fa-users-cog me-2"></i>
+            Liste des agents ({{ agents|length }})
+        </h5>
+    </div>
+    
+    {% if agents %}
+    <div class="table-responsive">
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th>Matricule</th>
+                    <th>Nom complet</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                    <th>Téléphone</th>
+                    <th>Date embauche</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agents %}
+                <tr>
+                    <td>
+                        <strong>{{ agent.matricule }}</strong>
+                    </td>
+                    <td>
+                        <a href="{% url 'prospection:detail_agent' agent.matricule %}" class="text-decoration-none">
+                            {{ agent.nom_complet }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if agent.type_agent == 'interne' %}danger{% else %}secondary{% endif %}">
+                            {{ agent.get_type_agent_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{% if agent.statut == 'actif' %}success{% elif agent.statut == 'inactif' %}secondary{% else %}warning{% endif %}">
+                            {{ agent.get_statut_display }}
+                        </span>
+                    </td>
+                    <td>{{ agent.telephone }}</td>
+                    <td>{{ agent.date_embauche|date:"d/m/Y" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'prospection:detail_agent' agent.matricule %}" 
+                               class="btn btn-outline-primary" title="Voir détails">
+                                <i class="fas fa-eye text-secondary"></i>
+                            </a>
+                            <a href="{% url 'prospection:modifier_agent' agent.matricule %}" 
+                               class="btn btn-outline-warning" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Navigation des pages">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type_agent %}&type_agent={{ request.GET.type_agent }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type_agent %}&type_agent={{ request.GET.type_agent }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type_agent %}&type_agent={{ request.GET.type_agent }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.type_agent %}&type_agent={{ request.GET.type_agent }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users-cog fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Aucun agent trouvé</h5>
+        <p class="text-muted">Commencez par ajouter des agents de prospection.</p>
+        <a href="{% url 'prospection:ajouter_agent' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>
+            Ajouter le premier agent
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
