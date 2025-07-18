@@ -1,0 +1,123 @@
+{% extends 'prospection/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block prospection_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ page_title }}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informations de la séance -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Informations de la séance</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Date :</strong></td>
+                                    <td>{{ seance.date_seance|date:"l d F Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nom :</strong></td>
+                                    <td>{{ seance.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Créée le :</strong></td>
+                                    <td>{{ seance.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Équipes :</strong></td>
+                                    <td>{{ seance.nombre_equipes }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Agents :</strong></td>
+                                    <td>{{ seance.nombre_agents_total }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Statut actuel</h5>
+                            <div class="alert 
+                                {% if seance.statut == 'planifiee' %}alert-info
+                                {% elif seance.statut == 'en_cours' %}alert-success
+                                {% elif seance.statut == 'terminee' %}alert-secondary
+                                {% else %}alert-danger{% endif %}">
+                                <h4>
+                                    {% if seance.statut == 'planifiee' %}
+                                        <i class="fas fa-clock"></i> Planifiée
+                                    {% elif seance.statut == 'en_cours' %}
+                                        <i class="fas fa-play"></i> En cours
+                                    {% elif seance.statut == 'terminee' %}
+                                        <i class="fas fa-check"></i> Terminée
+                                    {% else %}
+                                        <i class="fas fa-times"></i> Annulée
+                                    {% endif %}
+                                </h4>
+                                <p class="mb-0">
+                                    {% if seance.statut == 'planifiee' %}
+                                        La séance est planifiée et peut être démarrée.
+                                    {% elif seance.statut == 'en_cours' %}
+                                        La séance est actuellement en cours.
+                                    {% elif seance.statut == 'terminee' %}
+                                        La séance est terminée.
+                                    {% else %}
+                                        La séance a été annulée.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modification du statut -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Modifier le statut</h5>
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="form-group">
+                                    <label for="statut">Nouveau statut :</label>
+                                    <select name="statut" id="statut" class="form-control" required>
+                                        {% for value, label in statuts %}
+                                            <option value="{{ value }}" 
+                                                    {% if value == seance.statut %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Information :</strong> Le changement de statut sera immédiatement appliqué.
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" 
+                                        onclick="return confirm('Êtes-vous sûr de vouloir modifier le statut ?')">
+                                    <i class="fas fa-save"></i> Modifier le statut
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="{% url 'prospection:seances' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                    <a href="{% url 'prospection:detail_seance' seance.pk %}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Voir les détails
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

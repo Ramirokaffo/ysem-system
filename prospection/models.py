@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
 from academic.models import AcademicYear
 from schools.models import School
 
@@ -79,17 +80,23 @@ class Agent(models.Model):
         ('actif', 'Actif'),
         ('inactif', 'Inactif'),
         ('suspendu', 'Suspendu'),
+        ('pending', 'En attente d\'activation'),
     ]
-    
+
     matricule = models.CharField(max_length=50, unique=True, verbose_name="Matricule")
     nom = models.CharField(max_length=100, verbose_name="Nom")
     prenom = models.CharField(max_length=100, verbose_name="Prénom")
     telephone = models.CharField(max_length=20, verbose_name="Téléphone")
-    email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    email = models.EmailField(unique=True, verbose_name="Email")
     type_agent = models.CharField(max_length=10, choices=TYPE_CHOICES, verbose_name="Type d'agent")
-    statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='actif', verbose_name="Statut")
+    statut = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Statut")
     date_embauche = models.DateField(verbose_name="Date d'embauche")
     adresse = models.TextField(blank=True, null=True, verbose_name="Adresse")
+
+    # Champs d'authentification
+    password = models.CharField(max_length=128, verbose_name="Mot de passe")
+    last_login = models.DateTimeField(blank=True, null=True, verbose_name="Dernière connexion")
+    is_active = models.BooleanField(default=False, verbose_name="Compte activé")
     
     # Métadonnées
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
@@ -106,6 +113,33 @@ class Agent(models.Model):
     @property
     def nom_complet(self):
         return f"{self.nom} {self.prenom}"
+
+    def set_password(self, raw_password):
+        """Définit le mot de passe de l'agent"""
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        """Vérifie le mot de passe de l'agent"""
+        return check_password(raw_password, self.password)
+
+    def save(self, *args, **kwargs):
+        # Auto-générer le matricule si non fourni
+        if not self.matricule:
+            # Générer un matricule basé sur l'année et un compteur
+            year = timezone.now().year
+            count = Agent.objects.filter(matricule__startswith=f"AG{year}").count() + 1
+            self.matricule = f"AG{year}{count:04d}"
+        super().save(*args, **kwargs)
+
+    @property
+    def is_authenticated(self):
+        """Propriété pour la compatibilité avec le système d'auth Django"""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """Propriété pour la compatibilité avec le système d'auth Django"""
+        return False
 
 
 class Campagne(models.Model):
@@ -164,11 +198,11 @@ class Equipe(models.Model):
     Modèle pour les équipes de prospection
     """
     nom = models.CharField(max_length=100, blank=True, verbose_name="Nom de l'équipe")
-    campagne = models.ForeignKey(
-        Campagne, 
-        on_delete=models.CASCADE, 
+    seance = models.ForeignKey(
+        'SeanceProspection',
+        on_delete=models.CASCADE,
         related_name='equipes',
-        verbose_name="Campagne"
+        verbose_name="Séance"
     )
     agents = models.ManyToManyField(
         Agent, 
@@ -184,15 +218,27 @@ class Equipe(models.Model):
         verbose_name="Chef d'équipe"
     )
     etablissement_cible = models.ForeignKey(
-        School, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        School,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         verbose_name="Établissement cible"
     )
+    zone_assignee = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="Zone assignée"
+    )
     objectif_prospects = models.PositiveIntegerField(
         validators=[MinValueValidator(1)],
-        verbose_name="Objectif (nombre de prospects)"
+        verbose_name="Objectif (nombre de prospects)",
+        null=True,
+        blank=True
+    )
+    objectif_equipe = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Objectif de l'équipe"
     )
     date_assignation = models.DateField(default=timezone.now, verbose_name="Date d'assignation")
     
@@ -203,10 +249,10 @@ class Equipe(models.Model):
     class Meta:
         verbose_name = "Équipe de prospection"
         verbose_name_plural = "Équipes de prospection"
-        ordering = ['campagne', 'nom']
+        ordering = ['seance', 'nom']
     
     def __str__(self):
-        return f"{self.nom} - {self.campagne.nom}"
+        return f"{self.nom} - {self.seance.nom}"
 
     def save(self, *args, **kwargs):
         """Génère automatiquement le nom de l'équipe si non fourni"""
@@ -223,6 +269,26 @@ class Equipe(models.Model):
     def nombre_agents(self):
         """Retourne le nombre d'agents dans l'équipe"""
         return self.agents.count()
+
+    @property
+    def agents_actifs(self):
+        """Retourne les agents actifs de l'équipe"""
+        return self.agents.filter(is_active=True)
+
+    def peut_ajouter_agent(self, agent):
+        """Vérifie si un agent peut être ajouté à l'équipe"""
+        if not agent.is_active:
+            return False, "L'agent n'est pas actif"
+        if agent in self.agents.all():
+            return False, "L'agent fait déjà partie de cette équipe"
+        if self.seance and not self.seance.peut_etre_modifiee:
+            return False, "La séance ne peut plus être modifiée"
+        return True, "OK"
+
+    @property
+    def campagne(self):
+        """Accès à la campagne via la séance"""
+        return self.seance.campagne if self.seance else None
     
     @property
     def prospects_collectes(self):
@@ -232,7 +298,7 @@ class Equipe(models.Model):
     @property
     def taux_realisation(self):
         """Calcule le taux de réalisation de l'objectif"""
-        if self.objectif_prospects == 0:
+        if not self.objectif_prospects or self.objectif_prospects == 0:
             return 0
         return (self.prospects_collectes / self.objectif_prospects) * 100
 
@@ -289,3 +355,103 @@ class Prospect(models.Model):
     @property
     def nom_complet(self):
         return f"{self.nom} {self.prenom}"
+
+
+class SeanceProspection(models.Model):
+    """
+    Modèle pour gérer les séances/journées de prospection
+    Chaque séance est associée à une campagne
+    """
+    STATUS_CHOICES = [
+        ('planifiee', 'Planifiée'),
+        ('en_cours', 'En cours'),
+        ('terminee', 'Terminée'),
+        ('annulee', 'Annulée'),
+    ]
+
+    campagne = models.ForeignKey(
+        Campagne,
+        on_delete=models.CASCADE,
+        related_name='seances',
+        verbose_name="Campagne",
+        null=True,
+        blank=True
+    )
+    date_seance = models.DateField(
+        verbose_name="Date de la séance"
+    )
+    statut = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='planifiee',
+        verbose_name="Statut"
+    )
+
+    # Métadonnées
+    created_by = models.ForeignKey(
+        'accounts.BaseUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='seances_creees',
+        verbose_name="Créé par"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Modifié le")
+
+    def __str__(self):
+        return f"Séance du {self.date_seance.strftime('%d/%m/%Y')} - {self.campagne.nom}"
+
+    @property
+    def nom(self):
+        """Nom automatique basé sur la date et la campagne"""
+        return f"Séance du {self.date_seance.strftime('%d/%m/%Y')} - {self.campagne.nom}"
+
+    @property
+    def nombre_equipes(self):
+        return self.equipes.count()
+
+    @property
+    def nombre_agents_total(self):
+        return sum(equipe.agents.count() for equipe in self.equipes.all())
+
+    @property
+    def est_active(self):
+        return self.statut == 'en_cours'
+
+    @property
+    def peut_etre_modifiee(self):
+        return self.statut in ['planifiee']
+
+    @classmethod
+    def creer_seance_pour_campagne(cls, campagne, date_seance=None, created_by=None):
+        """Créer une séance pour une campagne donnée"""
+        from django.utils import timezone
+        if date_seance is None:
+            date_seance = timezone.now().date()
+
+        seance, created = cls.objects.get_or_create(
+            campagne=campagne,
+            date_seance=date_seance,
+            defaults={
+                'created_by': created_by,
+                'statut': 'planifiee'
+            }
+        )
+        return seance, created
+
+    @classmethod
+    def creer_seance_aujourd_hui(cls, campagne, created_by=None):
+        """Créer automatiquement la séance du jour pour une campagne"""
+        from django.utils import timezone
+        aujourd_hui = timezone.now().date()
+        return cls.creer_seance_pour_campagne(campagne, aujourd_hui, created_by)
+
+    class Meta:
+        verbose_name = "Séance de prospection"
+        verbose_name_plural = "Séances de prospection"
+        ordering = ['-date_seance']
+        unique_together = ['campagne', 'date_seance']  # Une seule séance par campagne par jour
+
+
+

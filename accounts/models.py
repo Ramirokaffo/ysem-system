@@ -19,7 +19,14 @@ class BaseUser(AbstractUser):
         null=True
     )
     role = models.CharField(max_length=100, blank=True, null=True, default="student",
-        choices=[('scholar', 'Scolarité'), ('planning', 'Planification'), ('teaching', 'Suivie des Enseignements'), ("student", "Étudiant"), ("super_admin", "Administrateur")],
+        choices=[
+            ('scholar', 'Scolarité'),
+            ('planning', 'Planification'),
+            ('teaching', 'Suivie des Enseignements'),
+            ("student", "Étudiant"),
+            ("super_admin", "Administrateur"),
+            # ("agent", "Agent de prospection")
+        ],
     )
 
     class Meta:

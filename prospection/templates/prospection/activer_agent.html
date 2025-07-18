@@ -1,0 +1,143 @@
+{% extends 'prospection/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block prospection_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ page_title }}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informations de l'agent -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Informations de l'agent</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Nom complet :</strong></td>
+                                    <td>{{ agent.nom_complet }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Matricule :</strong></td>
+                                    <td>{{ agent.matricule }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email :</strong></td>
+                                    <td>{{ agent.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Téléphone :</strong></td>
+                                    <td>{{ agent.telephone }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type :</strong></td>
+                                    <td>{{ agent.get_type_agent_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date d'embauche :</strong></td>
+                                    <td>{{ agent.date_embauche|date:"d/m/Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Statut actuel</h5>
+                            <div class="alert 
+                                {% if agent.statut == 'actif' %}alert-success
+                                {% elif agent.statut == 'pending' %}alert-warning
+                                {% elif agent.statut == 'inactif' %}alert-secondary
+                                {% else %}alert-danger{% endif %}">
+                                <h4>
+                                    {% if agent.statut == 'actif' %}
+                                        <i class="fas fa-check-circle"></i> Actif
+                                    {% elif agent.statut == 'pending' %}
+                                        <i class="fas fa-clock"></i> En attente
+                                    {% elif agent.statut == 'inactif' %}
+                                        <i class="fas fa-times-circle"></i> Inactif
+                                    {% else %}
+                                        <i class="fas fa-ban"></i> Suspendu
+                                    {% endif %}
+                                </h4>
+                                <p class="mb-0">
+                                    {% if agent.statut == 'actif' %}
+                                        L'agent peut se connecter et participer aux prospections.
+                                    {% elif agent.statut == 'pending' %}
+                                        L'agent attend l'activation de son compte.
+                                    {% elif agent.statut == 'inactif' %}
+                                        L'agent ne peut pas se connecter.
+                                    {% else %}
+                                        L'agent est temporairement suspendu.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            {% if agent.last_login %}
+                                <p><strong>Dernière connexion :</strong> {{ agent.last_login|date:"d/m/Y H:i" }}</p>
+                            {% else %}
+                                <p><strong>Dernière connexion :</strong> <span class="text-muted">Jamais</span></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Actions disponibles</h5>
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="form-group">
+                                    <label for="motif">Motif (optionnel) :</label>
+                                    <textarea name="motif" id="motif" class="form-control" rows="3" 
+                                              placeholder="Raison de la modification du statut..."></textarea>
+                                </div>
+                                
+                                <div class="btn-group" role="group">
+                                    {% if agent.statut != 'actif' %}
+                                        <button type="submit" name="action" value="activer" 
+                                                class="btn btn-success" 
+                                                onclick="return confirm('Êtes-vous sûr de vouloir activer cet agent ?')">
+                                            <i class="fas fa-check"></i> Activer l'agent
+                                        </button>
+                                    {% endif %}
+                                    
+                                    {% if agent.statut == 'actif' %}
+                                        <button type="submit" name="action" value="desactiver" 
+                                                class="btn btn-secondary" 
+                                                onclick="return confirm('Êtes-vous sûr de vouloir désactiver cet agent ?')">
+                                            <i class="fas fa-times"></i> Désactiver l'agent
+                                        </button>
+                                    {% endif %}
+                                    
+                                    {% if agent.statut != 'suspendu' %}
+                                        <button type="submit" name="action" value="suspendre" 
+                                                class="btn btn-warning" 
+                                                onclick="return confirm('Êtes-vous sûr de vouloir suspendre cet agent ?')">
+                                            <i class="fas fa-ban"></i> Suspendre l'agent
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="{% url 'prospection:gestion_agents' %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                    <a href="{% url 'prospection:detail_agent' agent.matricule %}" class="btn btn-info">
+                        <i class="fas fa-user"></i> Voir le profil complet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

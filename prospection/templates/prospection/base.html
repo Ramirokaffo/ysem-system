@@ -39,17 +39,17 @@
                     </a>
                 </div>
                 <div class="col-md-2">
-                    <a href="{% url 'prospection:agents' %}"
-                        class="btn btn-neumorphic w-100 {% if 'agent' in request.resolver_match.url_name %}btn-primary{% endif %}">
-                        <i class="fas fa-users-cog me-2"></i>
-                        Agents
+                    <a href="{% url 'prospection:seances' %}"
+                        class="btn btn-neumorphic w-100 {% if 'seance' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Séances
                     </a>
                 </div>
                 <div class="col-md-2">
-                    <a href="{% url 'prospection:campagnes' %}"
-                        class="btn btn-neumorphic w-100 {% if 'campagne' in request.resolver_match.url_name %}btn-primary{% endif %}">
-                        <i class="fas fa-bullhorn me-2"></i>
-                        Campagnes
+                    <a href="{% url 'prospection:gestion_agents' %}"
+                        class="btn btn-neumorphic w-100 {% if 'gestion' in request.resolver_match.url_name %}btn-primary{% endif %}">
+                        <i class="fas fa-user-cog me-2"></i>
+                        Agents
                     </a>
                 </div>
                 <div class="col-md-2">

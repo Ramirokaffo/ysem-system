@@ -33,4 +33,13 @@ urlpatterns = [
     
     # Statistiques
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
+
+    # Séances de prospection
+    path('seances/', views.SeancesView.as_view(), name='seances'),
+    path('seances/<int:pk>/', views.DetailSeanceView.as_view(), name='detail_seance'),
+    path('seances/<int:pk>/modifier-statut/', views.ModifierStatutSeanceView.as_view(), name='modifier_statut_seance'),
+
+    # Gestion des agents (activation)
+    path('gestion-agents/', views.GestionAgentsView.as_view(), name='gestion_agents'),
+    path('gestion-agents/<int:pk>/activer/', views.ActiverAgentView.as_view(), name='activer_agent'),
 ]

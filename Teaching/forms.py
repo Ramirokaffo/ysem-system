@@ -10,15 +10,41 @@ class EnseignantForm(forms.ModelForm):
         model = Lecturer
         fields = '__all__'
         widgets = {
-            'matricule': forms.TextInput(attrs={'class': 'form-control'}),
-            'firstname': forms.TextInput(attrs={'class': 'form-control'}),
-            'lastname': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_naiss': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'grade': forms.TextInput(attrs={'class': 'form-control'}),
-            'gender': forms.Select(attrs={'class': 'form-select'}),
-            'lang': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'matricule': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Ex: ENS001, PROF123...'
+            }),
+            'firstname': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Prénom de l\'enseignant'
+            }),
+            'lastname': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Nom de famille de l\'enseignant'
+            }),
+            'date_naiss': forms.DateInput(attrs={
+                'class': 'form-control shadow-inset',
+                'type': 'date'
+            }),
+            'grade': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Ex: Professeur, Maître de conférences, Docteur...'
+            }),
+            'gender': forms.Select(attrs={
+                'class': 'form-control shadow-inset'
+            }),
+            'lang': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Ex: Français, Anglais...'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'Ex: +237 6XX XXX XXX'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control shadow-inset',
+                'placeholder': 'exemple@email.com'
+            }),
         }
     
 class EvaluationForm(forms.ModelForm):
@@ -184,81 +210,6 @@ class Suivi_CoursForm(forms.ModelForm):
             )
 
         return cleaned_data
-        widgets = {
-            'date': forms.DateInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'type': 'date'
-            }),
-            'lecturer': forms.Select(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary'
-            }),
-            'course': forms.Select(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary'
-            }),
-            'level': forms.Select(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary'
-            }),
-            'academic_year': forms.Select(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary'
-            }),
-            'totalChapterCount': forms.NumberInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'min': '0'
-            }),
-            'chapitre_fait': forms.NumberInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'min': '0'
-            }),
-            'contenu_seance_prevu': forms.NumberInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'min': '0'
-            }),
-            'contenu_effectif_seance': forms.NumberInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'min': '0'
-            }),
-            'travaux_preparatoires': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'groupWork': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'classWork': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'homeWork': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'pedagogicActivities': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'TDandTP': forms.CheckboxInput(attrs={
-                'class': 'form-check-input shadow-inset border-light'
-            }),
-            'projet_fin_cours': forms.TextInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'placeholder': 'Décrivez le projet de fin de cours'
-            }),
-            'association_pratique_aux_enseigements': forms.TextInput(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'placeholder': 'Association pratique aux enseignements'
-            }),
-            'observation': forms.Textarea(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'rows': 3,
-                'placeholder': 'Observations générales'
-            }),
-            'solution': forms.Textarea(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'rows': 3,
-                'placeholder': 'Solutions proposées'
-            }),
-            'generalObservation': forms.Textarea(attrs={
-                'class': 'form-control shadow-inset border-light bg-primary',
-                'rows': 3,
-                'placeholder': 'Observation générale'
-            }),
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

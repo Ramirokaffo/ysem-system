@@ -43,14 +43,50 @@
                             </div>
                         </div>
                         
+
+
                         <div class="mb-3">
-                            <label for="{{ form.campagne.id_for_label }}" class="form-label">
-                                Campagne <span class="text-danger">*</span>
+                            <label for="{{ form.seance.id_for_label }}" class="form-label">
+                                Séance de prospection <span class="text-danger">*</span>
                             </label>
-                            {{ form.campagne }}
-                            {% if form.campagne.errors %}
+                            <div class="d-flex gap-2 align-items-start">
+                                <div class="flex-grow-1">
+                                    {{ form.seance }}
+                                </div>
+                                {% if not seance_aujourd_hui_existe and campagnes_actives %}
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Créer une séance du jour">
+                                        <i class="fas fa-plus"></i>
+                                        Créer séance du {{ date_aujourd_hui|date:"d/m/Y" }}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        {% for campagne in campagnes_actives %}
+                                        <li>
+                                            <button type="submit" name="creer_seance" value="1"
+                                                    onclick="document.getElementById('campagne_id_input').value='{{ campagne.id }}'"
+                                                    class="dropdown-item">
+                                                <i class="fas fa-calendar-plus me-2"></i>
+                                                {{ campagne.nom }}
+                                            </button>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <input type="hidden" id="campagne_id_input" name="campagne_id" value="">
+                                </div>
+                                {% endif %}
+                            </div>
+                            <small class="form-text text-muted">
+                                {% if seance_aujourd_hui_existe %}
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    Une séance du {{ date_aujourd_hui|date:"d/m/Y" }} est disponible
+                                {% else %}
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    Aucune séance pour aujourd'hui. Vous pouvez en créer une pour une campagne active ou sélectionner une séance existante
+                                {% endif %}
+                            </small>
+                            {% if form.seance.errors %}
                                 <div class="text-danger small mt-1">
-                                    {{ form.campagne.errors.0 }}
+                                    {{ form.seance.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
@@ -177,6 +213,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const chefEquipeSelect = document.getElementById('{{ form.chef_equipe.id_for_label }}');
     const etablissementSelect = document.getElementById('{{ form.etablissement_cible.id_for_label }}');
+    const seanceSelect = document.getElementById('{{ form.seance.id_for_label }}');
     const nomPreview = document.getElementById('nom-preview');
     const nomPreviewText = document.getElementById('nom-preview-text');
 
@@ -198,6 +235,40 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             nomPreview.style.display = 'none';
         }
+    }
+
+    // Gestion de la création de séance
+    const creerSeanceBtn = document.querySelector('button[name="creer_seance"]');
+    if (creerSeanceBtn) {
+        creerSeanceBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Confirmation avant création
+            if (confirm('Voulez-vous créer la séance de prospection pour aujourd\'hui ?')) {
+                // Créer un formulaire temporaire pour soumettre la demande de création
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.style.display = 'none';
+
+                // Ajouter le token CSRF
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                // Ajouter le champ pour identifier l'action
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'creer_seance';
+                actionInput.value = '1';
+                form.appendChild(actionInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
     }
 
     chefEquipeSelect.addEventListener('change', updateNomPreview);

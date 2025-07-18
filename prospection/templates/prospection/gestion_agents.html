@@ -1,0 +1,206 @@
+{% extends 'prospection/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block prospection_content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Statistiques -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h4>{{ stats.total_agents }}</h4>
+                            <p class="mb-0">Total Agents</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h4>{{ stats.agents_actifs }}</h4>
+                            <p class="mb-0">Actifs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h4>{{ stats.agents_pending }}</h4>
+                            <p class="mb-0">En attente</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body">
+                            <h4>{{ stats.agents_inactifs }}</h4>
+                            <p class="mb-0">Inactifs</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <h4>{{ stats.agents_suspendus }}</h4>
+                            <p class="mb-0">Suspendus</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des agents -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ page_title }}</h3>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtres -->
+                    <form method="get" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="search" class="form-control" 
+                                       placeholder="Rechercher par nom, email, matricule..." 
+                                       value="{{ request.GET.search }}">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="statut" class="form-control">
+                                    <option value="">Tous les statuts</option>
+                                    {% for value, label in statuts %}
+                                        <option value="{{ value }}" 
+                                                {% if request.GET.statut == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="type_agent" class="form-control">
+                                    <option value="">Tous les types</option>
+                                    {% for value, label in types %}
+                                        <option value="{{ value }}" 
+                                                {% if request.GET.type_agent == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="fas fa-search"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Tableau des agents -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                    <th>Dernière connexion</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agent in agents %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ agent.nom_complet }}</strong>
+                                        <br><small class="text-muted">{{ agent.matricule }}</small>
+                                    </td>
+                                    <td>{{ agent.email }}</td>
+                                    <td>{{ agent.telephone }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ agent.get_type_agent_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if agent.statut == 'actif' %}
+                                            <span class="badge badge-success">{{ agent.get_statut_display }}</span>
+                                        {% elif agent.statut == 'pending' %}
+                                            <span class="badge badge-warning">{{ agent.get_statut_display }}</span>
+                                        {% elif agent.statut == 'inactif' %}
+                                            <span class="badge badge-secondary">{{ agent.get_statut_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ agent.get_statut_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if agent.last_login %}
+                                            {{ agent.last_login|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">Jamais</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'prospection:detail_agent' agent.matricule %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'prospection:activer_agent' agent.pk %}" 
+                                               class="btn btn-sm btn-outline-warning" title="Gérer statut">
+                                                <i class="fas fa-user-cog"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        Aucun agent trouvé.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                    <nav aria-label="Navigation des pages">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">Première</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédente</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivante</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Dernière</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

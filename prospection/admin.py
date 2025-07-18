@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.utils.html import format_html
-from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import ProspectionConfig, Agent, Campagne, Equipe, Prospect
+from .models import ProspectionConfig, Agent, Campagne, Equipe, Prospect, SeanceProspection
 
 
 @admin.register(ProspectionConfig)
@@ -28,10 +26,11 @@ class ProspectionConfigAdmin(admin.ModelAdmin):
 @admin.register(Agent)
 class AgentAdmin(admin.ModelAdmin):
     """Administration des agents de prospection"""
-    list_display = ['matricule', 'nom_complet', 'type_agent', 'statut', 'telephone', 'date_embauche']
-    list_filter = ['type_agent', 'statut', 'date_embauche']
+    list_display = ['matricule', 'nom_complet', 'type_agent', 'statut', 'telephone', 'date_embauche', 'is_active']
+    list_filter = ['type_agent', 'statut', 'date_embauche', 'is_active']
     search_fields = ['matricule', 'nom', 'prenom', 'telephone', 'email']
     ordering = ['nom', 'prenom']
+    readonly_fields = ['last_login']
     
     fieldsets = (
         ('Informations personnelles', {
@@ -43,6 +42,9 @@ class AgentAdmin(admin.ModelAdmin):
         ('Adresse', {
             'fields': ('adresse',),
             'classes': ('collapse',)
+        }),
+        ('Authentification', {
+            'fields': ('password', 'last_login', 'is_active')
         }),
     )
     
@@ -88,16 +90,16 @@ class ProspectInline(admin.TabularInline):
 @admin.register(Equipe)
 class EquipeAdmin(admin.ModelAdmin):
     """Administration des équipes de prospection"""
-    list_display = ['nom', 'campagne', 'chef_equipe', 'etablissement_cible', 'nombre_agents', 'objectif_prospects', 'prospects_collectes', 'taux_realisation_display']
-    list_filter = ['campagne', 'date_assignation']
-    search_fields = ['nom', 'campagne__nom', 'chef_equipe__nom', 'etablissement_cible__name']
-    ordering = ['campagne', 'nom']
+    list_display = ['nom', 'seance', 'campagne_display', 'chef_equipe', 'etablissement_cible', 'nombre_agents', 'objectif_prospects', 'prospects_collectes', 'taux_realisation_display']
+    list_filter = ['seance__campagne', 'seance', 'date_assignation']
+    search_fields = ['nom', 'seance__campagne__nom', 'chef_equipe__nom', 'etablissement_cible__name']
+    ordering = ['seance', 'nom']
     filter_horizontal = ['agents']
     inlines = [ProspectInline]
-    
+
     fieldsets = (
         ('Informations générales', {
-            'fields': ('nom', 'campagne', 'chef_equipe')
+            'fields': ('nom', 'seance', 'chef_equipe')
         }),
         ('Assignation', {
             'fields': ('etablissement_cible', 'date_assignation')
@@ -109,6 +111,10 @@ class EquipeAdmin(admin.ModelAdmin):
             'fields': ('objectif_prospects',)
         }),
     )
+
+    def campagne_display(self, obj):
+        return obj.campagne.nom if obj.campagne else '-'
+    campagne_display.short_description = 'Campagne'
     
     def taux_realisation_display(self, obj):
         taux = obj.taux_realisation
@@ -118,11 +124,7 @@ class EquipeAdmin(admin.ModelAdmin):
             color = 'orange'
         else:
             color = 'red'
-        return format_html(
-            '<span style="color: {};">{:.1f}%</span>',
-            color,
-            taux
-        )
+        return mark_safe(f'<span style="color: {color};">{taux:.1f}%</span>')
     taux_realisation_display.short_description = 'Taux de réalisation'
 
 
@@ -130,7 +132,7 @@ class EquipeAdmin(admin.ModelAdmin):
 class ProspectAdmin(admin.ModelAdmin):
     """Administration des prospects"""
     list_display = ['nom_complet', 'telephone', 'equipe', 'agent_collecteur', 'etablissement_origine', 'date_collecte']
-    list_filter = ['equipe__campagne', 'equipe', 'agent_collecteur', 'etablissement_origine', 'date_collecte']
+    list_filter = ['equipe__seance__campagne', 'equipe', 'agent_collecteur', 'etablissement_origine', 'date_collecte']
     search_fields = ['nom', 'prenom', 'telephone', 'telephone_pere', 'telephone_mere']
     ordering = ['-date_collecte']
     date_hierarchy = 'date_collecte'
@@ -152,3 +154,55 @@ class ProspectAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ['date_collecte']
+
+
+class EquipeInline(admin.TabularInline):
+    """Inline pour afficher les équipes d'une séance"""
+    model = Equipe
+    extra = 0
+    fields = ['nom', 'chef_equipe', 'etablissement_cible', 'nombre_agents', 'objectif_prospects']
+    readonly_fields = ['nombre_agents']
+
+    def nombre_agents(self, obj):
+        return obj.nombre_agents
+    nombre_agents.short_description = 'Nb agents'
+
+
+@admin.register(SeanceProspection)
+class SeanceProspectionAdmin(admin.ModelAdmin):
+    """Administration des séances de prospection"""
+    list_display = ['nom', 'campagne', 'date_seance', 'statut', 'nombre_equipes', 'nombre_agents_total', 'created_by', 'created_at']
+    list_filter = ['statut', 'campagne', 'date_seance', 'created_by']
+    search_fields = ['campagne__nom', 'date_seance']
+    ordering = ['-date_seance']
+    date_hierarchy = 'date_seance'
+    readonly_fields = ['created_at', 'updated_at']
+    inlines = [EquipeInline]
+
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('campagne', 'date_seance', 'statut')
+        }),
+        ('Métadonnées', {
+            'fields': ('created_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        """Rendre certains champs en lecture seule selon le contexte"""
+        readonly = list(self.readonly_fields)
+
+        # Si c'est une modification et que la séance est terminée ou annulée
+        if obj and obj.statut in ['terminee', 'annulee']:
+            readonly.append('date_seance')
+
+        return readonly
+
+    def save_model(self, request, obj, form, change):
+        """Enregistrer qui a créé la séance"""
+        if not change:  # Nouvelle séance
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+

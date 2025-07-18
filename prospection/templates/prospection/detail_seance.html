@@ -1,0 +1,141 @@
+{% extends 'prospection/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block prospection_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">{{ page_title }}</h3>
+                    <div>
+                        <a href="{% url 'prospection:modifier_statut_seance' seance.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Modifier statut
+                        </a>
+                        <a href="{% url 'prospection:seances' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informations de la séance -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Informations générales</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Nom :</strong></td>
+                                    <td>{{ seance.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date :</strong></td>
+                                    <td>{{ seance.date_seance|date:"l d F Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Créée le :</strong></td>
+                                    <td>{{ seance.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Statut :</strong></td>
+                                    <td>
+                                        {% if seance.statut == 'planifiee' %}
+                                            <span class="badge badge-info">{{ seance.get_statut_display }}</span>
+                                        {% elif seance.statut == 'en_cours' %}
+                                            <span class="badge badge-success">{{ seance.get_statut_display }}</span>
+                                        {% elif seance.statut == 'terminee' %}
+                                            <span class="badge badge-secondary">{{ seance.get_statut_display }}</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ seance.get_statut_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Statistiques</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h3>{{ stats.nombre_equipes }}</h3>
+                                            <p class="mb-0">Équipes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h3>{{ stats.nombre_agents_total }}</h3>
+                                            <p class="mb-0">Agents</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- Équipes de la séance -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Équipes assignées</h5>
+                            {% if equipes %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nom de l'équipe</th>
+                                                <th>Chef d'équipe</th>
+                                                <th>Zone assignée</th>
+                                                <th>Objectif</th>
+                                                <th>Nombre d'agents</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for equipe in equipes %}
+                                            <tr>
+                                                <td><strong>{{ equipe.nom }}</strong></td>
+                                                <td>
+                                                    {% if equipe.chef_equipe %}
+                                                        {{ equipe.chef_equipe.nom_complet }}
+                                                    {% else %}
+                                                        <span class="text-muted">Non défini</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ equipe.zone_assignee|default:"Non définie" }}</td>
+                                                <td>{{ equipe.objectif_equipe }}</td>
+                                                <td>{{ equipe.nombre_agents }}</td>
+                                                <td>
+                                                    <a href="{% url 'prospection:detail_equipe' equipe.pk %}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i> Voir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Aucune équipe n'est encore assignée à cette séance.
+                                    <a href="{% url 'prospection:ajouter_equipe' %}" class="btn btn-sm btn-primary ml-2">
+                                        <i class="fas fa-plus"></i> Créer une équipe
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

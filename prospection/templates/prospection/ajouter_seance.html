@@ -1,0 +1,133 @@
+{% extends 'prospection/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block prospection_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ page_title }}</h3>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.nom.id_for_label }}">{{ form.nom.label }}</label>
+                                    {{ form.nom }}
+                                    {% if form.nom.errors %}
+                                        <div class="text-danger">{{ form.nom.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.statut.id_for_label }}">{{ form.statut.label }}</label>
+                                    {{ form.statut }}
+                                    {% if form.statut.errors %}
+                                        <div class="text-danger">{{ form.statut.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.date_seance.id_for_label }}">{{ form.date_seance.label }}</label>
+                                    {{ form.date_seance }}
+                                    {% if form.date_seance.errors %}
+                                        <div class="text-danger">{{ form.date_seance.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.heure_debut.id_for_label }}">{{ form.heure_debut.label }}</label>
+                                    {{ form.heure_debut }}
+                                    {% if form.heure_debut.errors %}
+                                        <div class="text-danger">{{ form.heure_debut.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.heure_fin.id_for_label }}">{{ form.heure_fin.label }}</label>
+                                    {{ form.heure_fin }}
+                                    {% if form.heure_fin.errors %}
+                                        <div class="text-danger">{{ form.heure_fin.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.lieu_rdv.id_for_label }}">{{ form.lieu_rdv.label }}</label>
+                                    {{ form.lieu_rdv }}
+                                    {% if form.lieu_rdv.errors %}
+                                        <div class="text-danger">{{ form.lieu_rdv.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ form.objectif_contacts.id_for_label }}">{{ form.objectif_contacts.label }}</label>
+                                    {{ form.objectif_contacts }}
+                                    {% if form.objectif_contacts.errors %}
+                                        <div class="text-danger">{{ form.objectif_contacts.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Créer la séance
+                        </button>
+                        <a href="{% url 'prospection:seances' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter les classes CSS aux champs du formulaire
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(function(input) {
+        if (input.type !== 'hidden') {
+            input.classList.add('form-control');
+        }
+    });
+    
+    // Définir la date minimale à aujourd'hui
+    const dateInput = document.querySelector('input[type="date"]');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+    }
+});
+</script>
+{% endblock %}

@@ -9,7 +9,7 @@ from django.utils import timezone
 from datetime import date, timedelta
 
 from student_portal.decorators import scholar_admin_required
-from .models import Agent, Campagne, Equipe, Prospect
+from .models import Agent, Campagne, Equipe, Prospect, SeanceProspection
 from .forms import (
     AgentForm, CampagneForm, EquipeForm, ProspectForm,
     AgentSearchForm, CampagneSearchForm, EquipeSearchForm, ProspectSearchForm
@@ -274,18 +274,18 @@ class EquipesView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        queryset = Equipe.objects.select_related('campagne', 'chef_equipe').prefetch_related('agents')
+        queryset = Equipe.objects.select_related('seance__campagne', 'chef_equipe').prefetch_related('agents')
         form = EquipeSearchForm(self.request.GET)
 
         if form.is_valid():
             search = form.cleaned_data.get('search')
-            campagne = form.cleaned_data.get('campagne')
+            seance = form.cleaned_data.get('seance')
 
             if search:
                 queryset = queryset.filter(nom__icontains=search)
 
-            if campagne:
-                queryset = queryset.filter(campagne=campagne)
+            if seance:
+                queryset = queryset.filter(seance=seance)
 
         return queryset.order_by('-created_at')
 
@@ -307,11 +307,53 @@ class AjouterEquipeView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Ajouter une Équipe'
+
+        # Vérifier si une séance d'aujourd'hui existe pour une campagne active
+        aujourd_hui = timezone.now().date()
+        context['seance_aujourd_hui_existe'] = SeanceProspection.objects.filter(
+            date_seance=aujourd_hui,
+            campagne__statut__in=['planifiee', 'en_cours']
+        ).exists()
+        context['date_aujourd_hui'] = aujourd_hui
+
+        # Récupérer les campagnes actives pour la création de séance
+        context['campagnes_actives'] = Campagne.objects.filter(
+            statut__in=['planifiee', 'en_cours']
+        ).order_by('-date_debut')
+
         return context
 
     def form_valid(self, form):
         messages.success(self.request, 'Équipe ajoutée avec succès.')
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        """Gérer la création de séance si demandée"""
+        if 'creer_seance' in request.POST:
+            campagne_id = request.POST.get('campagne_id')
+            if campagne_id:
+                try:
+                    campagne = Campagne.objects.get(id=campagne_id, statut__in=['planifiee', 'en_cours'])
+                    # Créer la séance du jour pour cette campagne
+                    seance, created = SeanceProspection.creer_seance_aujourd_hui(
+                        campagne=campagne,
+                        created_by=request.user
+                    )
+
+                    if created:
+                        messages.success(request, f'Séance du {seance.date_seance.strftime("%d/%m/%Y")} créée avec succès pour la campagne "{campagne.nom}".')
+                    else:
+                        messages.info(request, f'La séance du {seance.date_seance.strftime("%d/%m/%Y")} existe déjà pour la campagne "{campagne.nom}".')
+                except Campagne.DoesNotExist:
+                    messages.error(request, 'Campagne non trouvée ou inactive.')
+            else:
+                messages.error(request, 'Veuillez sélectionner une campagne.')
+
+            # Rediriger vers la même page pour rafraîchir le formulaire
+            return redirect('prospection:ajouter_equipe')
+
+        # Traitement normal du formulaire
+        return super().post(request, *args, **kwargs)
 
 
 @method_decorator(scholar_admin_required, name='dispatch')
@@ -480,3 +522,201 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
         )[:10]
 
         return context
+
+
+# ===== NOUVELLES VUES POUR LES SÉANCES DE PROSPECTION =====
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class SeancesView(LoginRequiredMixin, ListView):
+    """Vue pour la liste des séances de prospection"""
+    model = SeanceProspection
+    template_name = 'prospection/seances.html'
+    context_object_name = 'seances'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = SeanceProspection.objects.all()
+
+        # Filtres
+        statut = self.request.GET.get('statut')
+        if statut:
+            queryset = queryset.filter(statut=statut)
+
+        return queryset.order_by('-date_seance')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Gestion des Séances de Prospection'
+        context['statuts'] = SeanceProspection.STATUS_CHOICES
+
+        # Vérifier si la séance d'aujourd'hui existe
+        from django.utils import timezone
+        aujourd_hui = timezone.now().date()
+        context['seance_aujourd_hui_existe'] = SeanceProspection.objects.filter(
+            date_seance=aujourd_hui
+        ).exists()
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Créer automatiquement la séance du jour"""
+        seance, created = SeanceProspection.creer_seance_aujourd_hui(
+            created_by=request.user
+        )
+
+        if created:
+            messages.success(request, f'Séance du {seance.date_seance.strftime("%d/%m/%Y")} créée avec succès.')
+        else:
+            messages.info(request, f'La séance du {seance.date_seance.strftime("%d/%m/%Y")} existe déjà.')
+
+        return redirect('prospection:seances')
+
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class ModifierStatutSeanceView(LoginRequiredMixin, TemplateView):
+    """Vue pour modifier le statut d'une séance"""
+    template_name = 'prospection/modifier_statut_seance.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        seance = get_object_or_404(SeanceProspection, pk=kwargs['pk'])
+        context['seance'] = seance
+        context['page_title'] = f'Modifier le statut - {seance.nom}'
+        context['statuts'] = SeanceProspection.STATUS_CHOICES
+        return context
+
+    def post(self, request, *args, **kwargs):
+        seance = get_object_or_404(SeanceProspection, pk=kwargs['pk'])
+        nouveau_statut = request.POST.get('statut')
+
+        if nouveau_statut in dict(SeanceProspection.STATUS_CHOICES):
+            ancien_statut = seance.get_statut_display()
+            seance.statut = nouveau_statut
+            seance.save()
+
+            nouveau_statut_display = seance.get_statut_display()
+            messages.success(
+                request,
+                f'Statut modifié de "{ancien_statut}" vers "{nouveau_statut_display}"'
+            )
+        else:
+            messages.error(request, 'Statut invalide.')
+
+        return redirect('prospection:detail_seance', pk=seance.pk)
+
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class DetailSeanceView(LoginRequiredMixin, DetailView):
+    """Vue pour les détails d'une séance"""
+    model = SeanceProspection
+    template_name = 'prospection/detail_seance.html'
+    context_object_name = 'seance'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = f'Séance {self.object.nom}'
+
+        # Équipes de la séance
+        equipes = self.object.equipes.all()
+        context['equipes'] = equipes
+
+        # Statistiques
+        context['stats'] = {
+            'nombre_equipes': equipes.count(),
+            'nombre_agents_total': sum(equipe.nombre_agents for equipe in equipes),
+            'objectif_total': sum(equipe.objectif_equipe for equipe in equipes),
+        }
+
+        return context
+
+
+
+
+
+# ===== VUES POUR LA GESTION DES AGENTS (ACTIVATION) =====
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class GestionAgentsView(LoginRequiredMixin, ListView):
+    """Vue pour la gestion des agents (activation/désactivation)"""
+    model = Agent
+    template_name = 'prospection/gestion_agents.html'
+    context_object_name = 'agents'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Agent.objects.all()
+
+        # Filtres
+        statut = self.request.GET.get('statut')
+        if statut:
+            queryset = queryset.filter(statut=statut)
+
+        type_agent = self.request.GET.get('type_agent')
+        if type_agent:
+            queryset = queryset.filter(type_agent=type_agent)
+
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(nom__icontains=search) |
+                Q(prenom__icontains=search) |
+                Q(matricule__icontains=search) |
+                Q(email__icontains=search)
+            )
+
+        return queryset.order_by('statut', 'nom', 'prenom')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Gestion des Agents'
+
+        # Statistiques
+        context['stats'] = {
+            'total_agents': Agent.objects.count(),
+            'agents_actifs': Agent.objects.filter(statut='actif').count(),
+            'agents_pending': Agent.objects.filter(statut='pending').count(),
+            'agents_inactifs': Agent.objects.filter(statut='inactif').count(),
+            'agents_suspendus': Agent.objects.filter(statut='suspendu').count(),
+        }
+
+        context['statuts'] = Agent.STATUS_CHOICES
+        context['types'] = Agent.TYPE_CHOICES
+
+        return context
+
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class ActiverAgentView(LoginRequiredMixin, TemplateView):
+    """Vue pour activer/désactiver un agent"""
+    template_name = 'prospection/activer_agent.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        agent = get_object_or_404(Agent, pk=kwargs['pk'])
+        context['agent'] = agent
+        context['page_title'] = f'Gestion de {agent.nom_complet}'
+        return context
+
+    def post(self, request, *args, **kwargs):
+        agent = get_object_or_404(Agent, pk=kwargs['pk'])
+        action = request.POST.get('action')
+        motif = request.POST.get('motif', '')
+
+        if action == 'activer':
+            agent.statut = 'actif'
+            agent.is_active = True
+            messages.success(request, f'Agent {agent.nom_complet} activé avec succès.')
+        elif action == 'desactiver':
+            agent.statut = 'inactif'
+            agent.is_active = False
+            messages.success(request, f'Agent {agent.nom_complet} désactivé avec succès.')
+        elif action == 'suspendre':
+            agent.statut = 'suspendu'
+            agent.is_active = False
+            messages.warning(request, f'Agent {agent.nom_complet} suspendu.')
+
+        agent.save()
+
+        # TODO: Envoyer une notification par email à l'agent
+
+        return redirect('prospection:gestion_agents')
