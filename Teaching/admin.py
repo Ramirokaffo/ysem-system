@@ -20,7 +20,7 @@ class LecturerAdmin(admin.ModelAdmin):
             'fields': ('grade', 'lang')
         }),
         ('Contact', {
-            'fields': ('email', 'phone_number', 'address')
+            'fields': ('email', 'phone_number')
         }),
     )
 

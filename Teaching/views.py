@@ -42,7 +42,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             # 1. KPIs principaux
             # Nombre total d'enseignants
             total_lecturers = Lecturer.objects.count()
-
+            
             # Nombre total de cours pour l'année académique
             total_courses = Course.objects.filter(
                 teaching_monitorings__academic_year=current_year
