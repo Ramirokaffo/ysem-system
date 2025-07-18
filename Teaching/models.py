@@ -42,6 +42,7 @@ class TeachingMonitoring(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='teaching_monitorings', verbose_name="Cours")
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='teaching_monitorings', verbose_name="Niveau")
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='teaching_monitorings', verbose_name="Année académique")
+    cycle = models.CharField(max_length=200, blank=True, verbose_name="Projet fin de cours")
 
     # Champs de suivi
     totalChapterCount = models.IntegerField(verbose_name="Chapitres prévus")

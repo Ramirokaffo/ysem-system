@@ -3,11 +3,15 @@
 *.pot
 *.pyc
 __pycache__/
+migrations/
+/migrations/
+
 db.sqlite3
 media/
 .idea/
 .vscode/
 # Environments
+
 *.env
 *.conf
 .env
