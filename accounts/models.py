@@ -49,10 +49,10 @@ class Godfather(models.Model):
     Modèle pour les parrains/tuteurs
     """
     # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='godfather_profile')
-    full_name = models.CharField(max_length=200)
-    occupation = models.CharField(max_length=200, blank=True, null=True)
-    phone_number = models.CharField(max_length=20)
-    email = models.EmailField()
+    full_name = models.CharField(max_length=200, verbose_name="Nom complet")
+    occupation = models.CharField(max_length=200, blank=True, null=True, verbose_name="Profession")
+    phone_number = models.CharField(max_length=20, verbose_name="Numéro de téléphone")
+    email = models.EmailField(verbose_name="Adresse email")
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
