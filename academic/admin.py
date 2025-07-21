@@ -14,9 +14,7 @@ class SpecialityAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('name',),
-            'fields': ('program',),
-
+            'fields': ('name', 'program'),
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),
