@@ -21,7 +21,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('username', 'password')
         }),
         ('Informations personnelles', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'address', 'gender')
+            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender')
         }),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
@@ -42,7 +42,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2'),
         }),
         ('Informations personnelles', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'address', 'gender')
+            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender')
         }),
         ('Informations professionnelles', {
             'fields': ('role',)
@@ -79,7 +79,7 @@ class GodfatherAdmin(admin.ModelAdmin):
             'fields': ('full_name', 'occupation')
         }),
         ('Contact', {
-            'fields': ('email', 'phone_number', 'address')
+            'fields': ('email', 'phone_number')
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),

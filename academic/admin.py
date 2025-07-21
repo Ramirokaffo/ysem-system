@@ -6,7 +6,7 @@ from .models import Speciality, Department, Level, Course, Program, AcademicYear
 @admin.register(Speciality)
 class SpecialityAdmin(admin.ModelAdmin):
     """Administration des spécialités"""
-    list_display = ['name', 'departments_count', 'created_at']
+    list_display = ['name', 'created_at']
     search_fields = ['name']
     ordering = ['name']
     list_per_page = 25
@@ -24,12 +24,12 @@ class SpecialityAdmin(admin.ModelAdmin):
 
     readonly_fields = ['created_at', 'last_updated']
 
-    def departments_count(self, obj):
-        count = obj.departments.count()
-        if count > 0:
-            return format_html('<strong>{}</strong> département{}', count, 's' if count > 1 else '')
-        return '0 département'
-    departments_count.short_description = 'Départements'
+    # def departments_count(self, obj):
+    #     count = obj.departments.count()
+    #     if count > 0:
+    #         return format_html('<strong>{}</strong> département{}', count, 's' if count > 1 else '')
+    #     return '0 département'
+    # departments_count.short_description = 'Départements'
 
 
 @admin.register(Department)

@@ -22,7 +22,7 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ('email', 'phone_number')
         }),
         ('Informations académiques', {
-            'fields': ('school', 'program', 'status')
+            'fields': ('school', 'program', 'status', 'metadata'),
         }),
         ('Parrain', {
             'fields': ('godfather',),
@@ -85,15 +85,50 @@ class StudentLevelAdmin(admin.ModelAdmin):
 @admin.register(StudentMetaData)
 class StudentMetaDataAdmin(admin.ModelAdmin):
     """Administration des métadonnées d'étudiants"""
-    list_display = ['id', 'original_country', 'residence_city', 'original_region']
-    list_filter = ['original_country', 'original_region']
-    search_fields = ['original_country', 'residence_city', 'original_region']
-    ordering = ['original_country', 'original_region']
+    list_display = [
+        'id', 'mother_full_name', 'father_full_name', 'original_country',
+        'residence_city', 'original_region', 'is_complete'
+    ]
+    list_filter = [
+        'original_country', 'original_region', 'is_complete',
+        'mother_live_city', 'father_live_city', 'residence_city'
+    ]
+    search_fields = [
+        'mother_full_name', 'father_full_name', 'mother_email', 'father_email',
+        'original_country', 'residence_city', 'original_region', 'original_department',
+        'original_district', 'residence_quarter', 'mother_occupation', 'father_occupation'
+    ]
+    ordering = ['original_country', 'original_region', 'mother_full_name']
     list_per_page = 25
 
     fieldsets = (
+        ('Informations sur la mère', {
+            'fields': (
+                'mother_full_name', 'mother_live_city', 'mother_email',
+                'mother_occupation', 'mother_phone_number'
+            )
+        }),
+        ('Informations sur le père', {
+            'fields': (
+                'father_full_name', 'father_live_city', 'father_email',
+                'father_occupation', 'father_phone_number'
+            )
+        }),
         ('Informations géographiques', {
-            'fields': ('original_country', 'original_region', 'residence_city')
+            'fields': (
+                'original_country', 'original_region', 'original_department',
+                'original_district', 'residence_city', 'residence_quarter'
+            )
+        }),
+        ('Statut du dossier', {
+            'fields': ('is_complete',)
+        }),
+        ('Documents d\'inscription', {
+            'fields': (
+                'preuve_baccalaureat', 'acte_naissance',
+                'releve_notes_bac', 'bulletins_terminale'
+            ),
+            'classes': ('collapse',)
         }),
     )
 
