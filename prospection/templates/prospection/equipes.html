@@ -34,7 +34,14 @@
     </form>
 </div>
 
+<!-- ALTER TABLE Teaching_teachingmonitoring 
+ADD COLUMN cycle VARCHAR(200) DEFAULT '' NOT NULL; -->
 <!-- Équipes List -->
+ <!-- ALTER TABLE prospection_equipe 
+ ADD COLUMN  objectif_equipe INT DEFAULT 0 NOT NULL
+ADD COLUMN date_assignation DATE DEFAULT CURRENT_DATE; -->
+ <!-- ALTER TABLE prospection_equipe ADD COLUMN seance_id BIGINT NULL; -->
+ <!-- ALTER TABLE prospection_equipe ADD CONSTRAINT fk_equipe_seance FOREIGN KEY (seance_id) REFERENCES prospection_seanceprospection(id) ON DELETE CASCADE; -->
 <div class="card-neumorphic shadow-inset">
     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
         <h5 class="mb-0">

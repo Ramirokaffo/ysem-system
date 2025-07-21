@@ -97,7 +97,7 @@ class Agent(models.Model):
     password = models.CharField(max_length=128, verbose_name="Mot de passe")
     last_login = models.DateTimeField(blank=True, null=True, verbose_name="Dernière connexion")
     is_active = models.BooleanField(default=False, verbose_name="Compte activé")
-    
+#     ALTER TABLE prospection_agent ADD COLUMN password VARCHAR(128) DEFAULT '' NOT NULL;
     # Métadonnées
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
