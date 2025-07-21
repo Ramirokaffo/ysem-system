@@ -499,8 +499,8 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
 
         # Statistiques par campagne
         campagnes = Campagne.objects.annotate(
-            equipes_count=Count('equipes'),
-            prospects_count=Count('equipes__prospects')
+            equipes_count=Count('seances__equipes'),
+            prospects_count=Count('seances__equipes__prospects')
         )
         context['stats_campagnes'] = campagnes
 
@@ -520,6 +520,57 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
             key=lambda e: e.taux_realisation,
             reverse=True
         )[:10]
+
+        # Données pour les graphiques
+        import json
+        from datetime import datetime, timedelta
+        from django.db.models.functions import TruncMonth
+
+        # 1. Répartition des prospects par campagne
+        campagnes_prospects = []
+        for campagne in campagnes:
+            campagnes_prospects.append({
+                'nom': campagne.nom,
+                'prospects': campagne.prospects_count,
+                'objectif': campagne.objectif_global
+            })
+        context['campagnes_prospects_data'] = json.dumps(campagnes_prospects)
+
+        # 2. Évolution des prospects par mois (derniers 6 mois)
+        six_months_ago = datetime.now() - timedelta(days=180)
+        prospects_par_mois = Prospect.objects.filter(
+            date_collecte__gte=six_months_ago
+        ).annotate(
+            mois=TruncMonth('date_collecte')
+        ).values('mois').annotate(
+            count=Count('id')
+        ).order_by('mois')
+
+        # Convertir les dates en chaînes pour JSON
+        evolution_data = []
+        for item in prospects_par_mois:
+            evolution_data.append({
+                'mois': item['mois'].isoformat() if item['mois'] else '',
+                'count': item['count']
+            })
+        context['prospects_evolution_data'] = json.dumps(evolution_data)
+
+        # 3. Répartition des agents par type
+        agents_par_type = Agent.objects.values('type_agent').annotate(
+            count=Count('id')
+        ).order_by('type_agent')
+        context['agents_type_data'] = json.dumps(list(agents_par_type))
+
+        # 4. Performance des équipes (top 10)
+        equipes_performance = []
+        for equipe in context['top_equipes']:
+            equipes_performance.append({
+                'nom': equipe.nom,
+                'taux': float(equipe.taux_realisation),
+                'prospects': equipe.prospects_count,
+                'objectif': equipe.objectif_prospects or 0
+            })
+        context['equipes_performance_data'] = json.dumps(equipes_performance)
 
         return context
 

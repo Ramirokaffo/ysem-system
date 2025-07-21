@@ -33,7 +33,7 @@
             
             <div class="row">
                 <div class="col-md-3 mb-3">
-                    <div class="text-center">
+                    <div class="text-center shadow-inset card p-2">
                         <div class="stat-icon danger mb-2">
                             <i class="fas fa-users-cog"></i>
                         </div>
@@ -44,7 +44,7 @@
                 </div>
                 
                 <div class="col-md-3 mb-3">
-                    <div class="text-center">
+                    <div class="text-center shadow-inset card p-2">
                         <div class="stat-icon warning mb-2">
                             <i class="fas fa-bullhorn"></i>
                         </div>
@@ -55,7 +55,7 @@
                 </div>
                 
                 <div class="col-md-3 mb-3">
-                    <div class="text-center">
+                    <div class="text-center shadow-inset card p-2">
                         <div class="stat-icon info mb-2">
                             <i class="fas fa-users"></i>
                         </div>
@@ -66,7 +66,7 @@
                 </div>
                 
                 <div class="col-md-3 mb-3">
-                    <div class="text-center">
+                    <div class="text-center shadow-inset card p-2">
                         <div class="stat-icon success mb-2">
                             <i class="fas fa-address-book"></i>
                         </div>
@@ -249,15 +249,72 @@
     </div>
 </div>
 
-<!-- Graphiques et tendances -->
+<!-- Graphiques et analyses -->
+<div class="row mb-4">
+    <!-- Graphique prospects par campagne -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-bar me-2"></i>
+                Prospects par campagne
+            </h5>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="campaignChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique évolution des prospects -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-line me-2"></i>
+                Évolution des prospects (6 derniers mois)
+            </h5>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="evolutionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Graphique répartition des agents -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-pie me-2"></i>
+                Répartition des agents par type
+            </h5>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="agentsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique performance des équipes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic shadow-inset">
+            <h5 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-chart-radar me-2"></i>
+                Performance des meilleures équipes
+            </h5>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Résumé et recommandations -->
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic shadow-inset">
             <h5 class="mb-4 border-bottom pb-2">
-                <i class="fas fa-chart-line me-2"></i>
+                <i class="fas fa-lightbulb me-2"></i>
                 Résumé et recommandations
             </h5>
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <h6 class="text-muted">Points forts</h6>
@@ -282,7 +339,7 @@
                         {% endif %}
                     </ul>
                 </div>
-                
+
                 <div class="col-md-6">
                     <h6 class="text-muted">Recommandations</h6>
                     <ul class="list-unstyled">
@@ -310,4 +367,167 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration des couleurs
+    const colors = {
+        primary: '#6366f1',
+        success: '#10b981',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+        info: '#3b82f6',
+        secondary: '#6b7280'
+    };
+
+    // 1. Graphique prospects par campagne
+    const campaignCtx = document.getElementById('campaignChart').getContext('2d');
+    const campaignData = JSON.parse('{{ campagnes_prospects_data|escapejs }}');
+
+    new Chart(campaignCtx, {
+        type: 'bar',
+        data: {
+            labels: campaignData.map(item => item.nom),
+            datasets: [{
+                label: 'Prospects collectés',
+                data: campaignData.map(item => item.prospects),
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+                borderWidth: 1
+            }, {
+                label: 'Objectif',
+                data: campaignData.map(item => item.objectif),
+                backgroundColor: colors.warning,
+                borderColor: colors.warning,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 2. Graphique évolution des prospects
+    const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+    const evolutionData = JSON.parse('{{ prospects_evolution_data|escapejs }}');
+
+    new Chart(evolutionCtx, {
+        type: 'line',
+        data: {
+            labels: evolutionData.map(item => {
+                const date = new Date(item.mois);
+                return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+            }),
+            datasets: [{
+                label: 'Prospects collectés',
+                data: evolutionData.map(item => item.count),
+                borderColor: colors.success,
+                backgroundColor: colors.success + '20',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 3. Graphique répartition des agents
+    const agentsCtx = document.getElementById('agentsChart').getContext('2d');
+    const agentsData = JSON.parse('{{ agents_type_data|escapejs }}');
+
+    new Chart(agentsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: agentsData.map(item => {
+                const types = {
+                    'junior': 'Junior',
+                    'senior': 'Senior',
+                    'lead': 'Lead'
+                };
+                return types[item.type_agent] || item.type_agent;
+            }),
+            datasets: [{
+                data: agentsData.map(item => item.count),
+                backgroundColor: [colors.primary, colors.success, colors.warning, colors.danger, colors.info],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // 4. Graphique performance des équipes
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    const performanceData = JSON.parse('{{ equipes_performance_data|escapejs }}');
+
+    new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+            labels: performanceData.map(item => item.nom.length > 20 ? item.nom.substring(0, 20) + '...' : item.nom),
+            datasets: [{
+                label: 'Taux de réalisation (%)',
+                data: performanceData.map(item => item.taux),
+                backgroundColor: performanceData.map(item => {
+                    if (item.taux >= 100) return colors.success;
+                    if (item.taux >= 75) return colors.warning;
+                    return colors.danger;
+                }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 120
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

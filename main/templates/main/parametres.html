@@ -538,7 +538,7 @@
                                         </span>
                                     </div>
                                     <div>
-                                        <form method="post" action="{% url 'main:toggle_prospection' %}" class="d-inline">
+                                        <form method="post" action="{% url 'main:toggle_prospection' %}" class="d-inline mx-1">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-{% if prospection_config.is_active %}warning{% else %}success{% endif %} btn-sm">
                                                 <i class="fas fa-{% if prospection_config.is_active %}pause{% else %}play{% endif %} me-2"></i>
