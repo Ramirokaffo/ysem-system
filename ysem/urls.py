@@ -49,3 +49,11 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # URLs de test pour les pages d'erreur (seulement en mode DEBUG)
+    from main.views import test_404_view, test_500_view, test_403_view
+    urlpatterns += [
+        path('test-404/', test_404_view, name='test_404'),
+        path('test-500/', test_500_view, name='test_500'),
+        path('test-403/', test_403_view, name='test_403'),
+    ]

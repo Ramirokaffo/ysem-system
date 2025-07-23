@@ -408,8 +408,133 @@ class ParametresView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        # Gestion des formulaires de paramètres existants
-        pass
+        from django.contrib import messages
+        from django.shortcuts import redirect
+        from .models import SystemSettings
+        from .forms import (
+            GeneralSettingsForm, AcademicSettingsForm, ProgramLevelSettingsForm,
+            UserSettingsForm, DocumentSettingsForm, NotificationSettingsForm,
+            DataManagementSettingsForm
+        )
+
+        # Récupérer les paramètres système
+        settings = SystemSettings.get_settings()
+
+        # Déterminer quel formulaire a été soumis
+        form_type = request.POST.get('form_type')
+
+        if form_type == 'general':
+            form = GeneralSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres généraux mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres généraux.')
+
+        elif form_type == 'academic':
+            form = AcademicSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres académiques mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres académiques.')
+
+        elif form_type == 'program_level':
+            form = ProgramLevelSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres des programmes et niveaux mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres des programmes et niveaux.')
+
+        elif form_type == 'user':
+            form = UserSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres utilisateurs mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres utilisateurs.')
+
+        elif form_type == 'document':
+            form = DocumentSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres des documents mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres des documents.')
+
+        elif form_type == 'notification':
+            form = NotificationSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres de notification mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres de notification.')
+
+        elif form_type == 'data_management':
+            form = DataManagementSettingsForm(request.POST, instance=settings)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Paramètres de gestion des données mis à jour avec succès.')
+                return redirect('main:parametres')
+            else:
+                messages.error(request, 'Erreur lors de la mise à jour des paramètres de gestion des données.')
+
+        elif form_type == 'academic_year':
+            # Gestion du changement d'année académique active
+            academic_year_id = request.POST.get('active_academic_year')
+            if academic_year_id:
+                try:
+                    academic_year = AcademicYear.objects.get(id=academic_year_id)
+                    request.session['active_academic_year_id'] = academic_year.id
+                    messages.success(request, f'Année académique active changée vers {academic_year}.')
+                    return redirect('main:parametres')
+                except AcademicYear.DoesNotExist:
+                    messages.error(request, 'Année académique invalide.')
+            else:
+                messages.error(request, 'Aucune année académique sélectionnée.')
+
+        elif form_type == 'prospection':
+            # Gestion de la configuration de prospection
+            try:
+                from prospection.models import ProspectionConfig
+                config = ProspectionConfig.get_or_create_config()
+                is_active = request.POST.get('prospection_active') == 'on'
+                config.is_active = is_active
+                config.save()
+
+                status = "activée" if is_active else "désactivée"
+                messages.success(request, f'Prospection {status} avec succès.')
+                return redirect('main:parametres')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de la mise à jour de la prospection: {str(e)}')
+
+        # Si aucun form_type valide n'est trouvé, rediriger avec erreur
+        messages.error(request, 'Type de formulaire non reconnu.')
+        return redirect('main:parametres')
+
+
+def test_404_view(request):
+    """Vue de test pour la page 404"""
+    from django.http import Http404
+    raise Http404("Page de test 404")
+
+
+def test_500_view(request):
+    """Vue de test pour la page 500"""
+    raise Exception("Erreur de test 500")
+
+
+def test_403_view(request):
+    """Vue de test pour la page 403"""
+    from django.core.exceptions import PermissionDenied
+    raise PermissionDenied("Accès interdit de test")
 
 
 @login_required

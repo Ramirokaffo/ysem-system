@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Accès interdit - YSEM</title>
+
+    <!-- Font Awesome -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+
+    <!-- Neumorphism CSS -->
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <style>
+        .error-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-card {
+            background: #e6e7ee;
+            border-radius: 20px;
+            box-shadow: 
+                9px 9px 16px rgba(163, 177, 198, 0.6), 
+                -9px -9px 16px rgba(255, 255, 255, 0.5);
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .error-number {
+            font-size: 8rem;
+            font-weight: 900;
+            color: #525f7f;
+            text-shadow: 
+                4px 4px 8px rgba(163, 177, 198, 0.6),
+                -4px -4px 8px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #525f7f;
+            margin-bottom: 20px;
+        }
+        
+        .error-description {
+            font-size: 1.2rem;
+            color: #8492a6;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+        
+        .btn-neumorphic {
+            background: #e6e7ee;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 
+                6px 6px 12px rgba(163, 177, 198, 0.6),
+                -6px -6px 12px rgba(255, 255, 255, 0.5);
+            color: #525f7f;
+            font-weight: 600;
+            padding: 15px 30px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .btn-neumorphic:hover {
+            box-shadow: 
+                3px 3px 6px rgba(163, 177, 198, 0.6),
+                -3px -3px 6px rgba(255, 255, 255, 0.5);
+            transform: translateY(2px);
+            color: #525f7f;
+            text-decoration: none;
+        }
+        
+        .btn-neumorphic:active {
+            box-shadow: 
+                inset 3px 3px 6px rgba(163, 177, 198, 0.6),
+                inset -3px -3px 6px rgba(255, 255, 255, 0.5);
+            transform: translateY(4px);
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: #f6ad55;
+            margin-bottom: 30px;
+            text-shadow: 
+                2px 2px 4px rgba(163, 177, 198, 0.6),
+                -2px -2px 4px rgba(255, 255, 255, 0.5);
+        }
+        
+        .suggestions {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(163, 177, 198, 0.3);
+        }
+        
+        .suggestions h4 {
+            color: #525f7f;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+            color: #8492a6;
+        }
+        
+        .suggestions li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .suggestions li i {
+            color: #fcb69f;
+            width: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .error-card {
+                padding: 40px 20px;
+            }
+            
+            .error-number {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-description {
+                font-size: 1rem;
+            }
+            
+            .btn-neumorphic {
+                padding: 12px 20px;
+                margin: 5px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            
+            <div class="error-number">403</div>
+            
+            <h1 class="error-title">Accès interdit</h1>
+            
+            <p class="error-description">
+                Vous n'avez pas les permissions nécessaires pour accéder à cette page. 
+                Veuillez vous connecter avec un compte autorisé ou contacter l'administrateur.
+            </p>
+            
+            <div class="d-flex flex-wrap justify-content-center">
+                <a href="{% url 'accounts:login' %}" class="btn-neumorphic">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </a>
+                
+                <a href="javascript:history.back()" class="btn-neumorphic">
+                    <i class="fas fa-arrow-left"></i>
+                    Page précédente
+                </a>
+            </div>
+            
+            <div class="suggestions">
+                <h4>Solutions possibles :</h4>
+                <ul>
+                    <li>
+                        <i class="fas fa-user"></i>
+                        Connectez-vous avec un compte autorisé
+                    </li>
+                    <li>
+                        <i class="fas fa-key"></i>
+                        Vérifiez vos permissions d'accès
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        Contactez l'administrateur pour obtenir l'accès
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/popper.js/dist/umd/popper.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    
+    <!-- Neumorphism JS -->
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/js/neumorphism.js' %}"></script>
+</body>
+</html>
