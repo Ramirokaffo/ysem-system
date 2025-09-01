@@ -23,7 +23,7 @@ class Classroom(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Salle active")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
-
+    
     def __str__(self):
         return f"{self.code} - {self.name}"
 

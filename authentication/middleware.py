@@ -56,7 +56,7 @@ class RoleBasedAccessMiddleware:
             '/inscription-externe/',
             '/nouvelle_inscription/',
             '/ajax/',
-            '/',  # Page d'accueil
+            # '/',  # Page d'accueil
         ]
 
         # Vérifier si c'est une page publique
@@ -64,6 +64,9 @@ class RoleBasedAccessMiddleware:
             if request.path.startswith(public_path):
                 return self.get_response(request)
 
+        if request.path == "/":
+            return self.get_response(request)
+        
         # Ignorer si l'utilisateur n'est pas authentifié (sera géré par les décorateurs login_required)
         if not request.user.is_authenticated:
             return self.get_response(request)
