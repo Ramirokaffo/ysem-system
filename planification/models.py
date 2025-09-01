@@ -6,6 +6,37 @@ from datetime import datetime, timedelta
 from Teaching.models import Lecturer
 from academic.models import Course, Level, AcademicYear
 
+
+class Floor(models.Model):
+    """
+    Modèle pour les étage
+    """
+    number = models.IntegerField(max_length=20, primary_key=True, verbose_name="Numéro étage")
+    name = models.CharField(max_length=100, verbose_name="Nom d'étage")
+
+    def __str__(self):
+        return f"{self.number} - {self.name}"
+
+    class Meta:
+        verbose_name = "Etage"
+        verbose_name_plural = "Etages"
+        ordering = ['number']
+
+class Building(models.Model):
+    """
+    Modèle pour les batiments
+    """
+    code = models.CharField(max_length=20, primary_key=True, verbose_name="Code du batiment")
+    name = models.CharField(max_length=100, verbose_name="Nom du batiment")
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+    class Meta:
+        verbose_name = "Batiment"
+        verbose_name_plural = "Batiments"
+        ordering = ['code']
+
 class Equipment(models.Model):
     """
     Modèle pour les équipements

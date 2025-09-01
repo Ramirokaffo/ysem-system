@@ -9,7 +9,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
-from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession, Equipment
+from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession, Equipment, Building, Floor
 from .forms import (
     ClassroomForm, ClassroomSearchForm, LecturerForm, LecturerSearchForm,
     ScheduleForm, LecturerAvailabilityForm, ScheduleGenerationForm,
@@ -356,6 +356,42 @@ class TimeSlotDeleteView(LoginRequiredMixin, DeleteView):
             f'Le créneau "{time_slot.name}" a été supprimé avec succès.'
         )
         return super().delete(request, *args, **kwargs)
+
+
+@method_decorator(planning_admin_required, name='dispatch')
+class EquipmentView(LoginRequiredMixin, ListView):
+    """Vue pour la gestion des équipements"""
+    model = Equipment
+    #template_name = 'planification/time_slots.html'
+    #context_object_name = 'time_slots'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Equipment.objects.all().order_by('code', 'name')
+
+
+@method_decorator(planning_admin_required, name='dispatch')
+class BuildingView(LoginRequiredMixin, ListView):
+    """Vue pour la gestion des équipements"""
+    model = Building
+    #template_name = 'planification/time_slots.html'
+    #context_object_name = 'time_slots'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Building.objects.all().order_by('code', 'name')
+
+
+@method_decorator(planning_admin_required, name='dispatch')
+class FloorView(LoginRequiredMixin, ListView):
+    """Vue pour la gestion des etages"""
+    model = Floor
+    #template_name = 'planification/time_slots.html'
+    #context_object_name = 'time_slots'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Floor.objects.all().order_by('number', 'name')
 
 
 @method_decorator(planning_admin_required, name='dispatch')

@@ -14,7 +14,7 @@ class Lecturer(models.Model):
     date_naiss = models.DateField(verbose_name="Date de naissance")
     grade = models.CharField(max_length=50, verbose_name="Grade/Titre")
     gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
-    lang = models.CharField(max_length=50, default='fr', verbose_name="Langue de préférence")
+    lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr')   
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
     email = models.EmailField(blank=True, null=True, verbose_name="Adresse email")
 
