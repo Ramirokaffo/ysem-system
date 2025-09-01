@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from .models import (
     Classroom, TimeSlot, CourseSession, Schedule,
-    LecturerAvailability, ScheduleSession
+    LecturerAvailability, ScheduleSession, Equipment
 )
 
 
@@ -21,13 +21,13 @@ class ClassroomAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('code', 'name', 'capacity')
+            'fields': ('code', 'name', 'capacity', )
         }),
         ('Localisation', {
-            'fields': ('building', 'floor', 'location_details')
+            'fields': ('building', 'floor', )
         }),
         ('Équipements', {
-            'fields': ('equipment', 'accessibility_features'),
+            'fields': ('equipment', ),
             'classes': ('collapse',)
         }),
         ('Statut', {
@@ -37,6 +37,17 @@ class ClassroomAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related()
+
+
+@admin.register(Equipment)
+class EquipmentAdmin(admin.ModelAdmin):
+    """Administration des équipement
+    """
+    list_display = ['code', 'name']
+    search_fields = ['code', 'name']
+    ordering = ['code']
+    list_per_page = 25
+    
 
 
 @admin.register(TimeSlot)

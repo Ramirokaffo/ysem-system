@@ -9,7 +9,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
-from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession
+from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession, Equipment
 from .forms import (
     ClassroomForm, ClassroomSearchForm, LecturerForm, LecturerSearchForm,
     ScheduleForm, LecturerAvailabilityForm, ScheduleGenerationForm,

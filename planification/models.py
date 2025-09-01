@@ -6,6 +6,20 @@ from datetime import datetime, timedelta
 from Teaching.models import Lecturer
 from academic.models import Course, Level, AcademicYear
 
+class Equipment(models.Model):
+    """
+    Modèle pour les équipements
+    """
+    code = models.CharField(max_length=20, primary_key=True, verbose_name="Code de l'équipement")
+    name = models.CharField(max_length=100, verbose_name="Nom de l'équipement")
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+    class Meta:
+        verbose_name = "Equipement"
+        verbose_name_plural = "Equipements"
+        ordering = ['code']
 
 class Classroom(models.Model):
     """
@@ -19,11 +33,12 @@ class Classroom(models.Model):
     )
     building = models.CharField(max_length=100, blank=True, null=True, verbose_name="Bâtiment")
     floor = models.CharField(max_length=20, blank=True, null=True, verbose_name="Étage")
-    equipment = models.TextField(blank=True, null=True, verbose_name="Équipements disponibles")
+    equipment = models.ManyToManyField(Equipment, blank=True, null=True, verbose_name="Équipements disponibles")
     is_active = models.BooleanField(default=True, verbose_name="Salle active")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
-
+    deleted_at =  models.DateTimeField(auto_now=True, verbose_name="Date de suppression")
+    
     def __str__(self):
         return f"{self.code} - {self.name}"
 
@@ -31,6 +46,9 @@ class Classroom(models.Model):
         verbose_name = "Salle de classe"
         verbose_name_plural = "Salles de classe"
         ordering = ['code']
+
+
+
 
 
 class TimeSlot(models.Model):
