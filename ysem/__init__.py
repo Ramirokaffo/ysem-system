@@ -1,3 +1,6 @@
+from .settings import USE_SQLITE3
 import pymysql
 
-pymysql.install_as_MySQLdb()
+
+if not USE_SQLITE3:
+    pymysql.install_as_MySQLdb()

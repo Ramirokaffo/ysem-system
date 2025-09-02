@@ -18,18 +18,18 @@
                         {{ time_slot.name }}
                     </h5>
                     <div class="d-flex gap-3 flex-wrap">
-                        <span class="badge bg-primary">{{ time_slot.get_day_of_week_display }}</span>
-                        <span class="badge bg-info">{{ time_slot.start_time|time:"H:i" }} - {{ time_slot.end_time|time:"H:i" }}</span>
-                        <span class="badge bg-secondary">{{ time_slot.duration_hours }}h</span>
+                        <span class="badge bg-warning">{{ time_slot.get_day_of_week_display }}</span>
+                        <span class="badge bg-info text-primary">{{ time_slot.start_time|time:"H:i" }} - {{ time_slot.end_time|time:"H:i" }}</span>
+                        <span class="badge bg-secondary text-primary">{{ time_slot.duration_hours }}h</span>
                         {% if time_slot.is_active %}
-                            <span class="badge bg-success">Actif</span>
+                            <span class="badge bg-success text-primary">Actif</span>
                         {% else %}
-                            <span class="badge bg-warning">Inactif</span>
+                            <span class="badge bg-warning text-primary">Inactif</span>
                         {% endif %}
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{% url 'planification:time_slots' %}" class="btn btn-outline-secondary">
+                    <a href="{% url 'planification:time_slots' %}" class="btn btn-outline-secondary mx-2">
                         <i class="fas fa-arrow-left me-2"></i>
                         Retour à la liste
                     </a>
@@ -212,16 +212,16 @@
             <div class="row">
                 <div class="col-md-3 mb-2">
                     <a href="{% url 'planification:sessions' %}?time_slot={{ time_slot.id }}" 
-                       class="btn btn-outline-primary w-100">
+                       class="btn btn-outline-gray w-100">
                         <i class="fas fa-calendar-check me-2"></i>
                         Voir les séances
                     </a>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <a href="{% url 'planification:lecturer_availabilities' %}?time_slot={{ time_slot.id }}" 
-                       class="btn btn-outline-info w-100">
-                        <i class="fas fa-user-clock me-2"></i>
-                        Gérer les disponibilités
+                    <a href="{% url 'planification:time_slot_delete' time_slot.pk %}" 
+                       class="btn btn-outline-danger w-100">
+                        <i class="fas fa-trash me-2"></i>
+                        Supprimer le créneau
                     </a>
                 </div>
                 <div class="col-md-3 mb-2">
@@ -232,30 +232,25 @@
                     </a>
                 </div>
                 <div class="col-md-3 mb-2">
-                    {% if time_slot.is_active %}
-                        <button class="btn btn-outline-warning w-100" onclick="toggleTimeSlotStatus({{ time_slot.pk }}, false)">
-                            <i class="fas fa-pause me-2"></i>
-                            Désactiver
-                        </button>
-                    {% else %}
-                        <button class="btn btn-outline-success w-100" onclick="toggleTimeSlotStatus({{ time_slot.pk }}, true)">
-                            <i class="fas fa-play me-2"></i>
-                            Activer
-                        </button>
-                    {% endif %}
+                    <form method="post" action="{% url 'planification:time_slot_toggle_active' time_slot.pk %}">
+                        {% csrf_token %}
+                        {% if time_slot.is_active %}
+                            <button type="submit" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-pause me-2"></i>
+                                Désactiver
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-outline-success w-100">
+                                <i class="fas fa-play me-2"></i>
+                                Activer
+                            </button>
+                        {% endif %}
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-function toggleTimeSlotStatus(timeSlotId, isActive) {
-    const action = isActive ? 'activer' : 'désactiver';
-    if (confirm(`Êtes-vous sûr de vouloir ${action} ce créneau horaire ?`)) {
-        // TODO: Implémenter l'activation/désactivation via AJAX
-        alert(`Fonctionnalité d'${action} à implémenter`);
-    }
-}
-</script>
+
 {% endblock %}

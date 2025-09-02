@@ -717,7 +717,7 @@ class TimeSlotForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ex: Matin 1, Après-midi 2...',
+                'placeholder': 'Ex: Lundi Matin, Mardi Après-midi...',
                 'maxlength': 100
             }),
             'day_of_week': forms.Select(attrs={

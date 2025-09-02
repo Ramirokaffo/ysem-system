@@ -124,10 +124,18 @@ DB_USER = env("DB_USER")
 DB_PASSWORD = env("DB_PASSWORD")
 DB_HOST = env("DB_HOST")
 DB_PORT = env("DB_PORT")
+USE_SQLITE3 = env.bool("USE_SQLITE3")
 
-
-
-DATABASES = {
+DATABASES = {}
+if USE_SQLITE3:
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME' : BASE_DIR / 'db.sqlite3',
+    }
+    }
+else: 
+    DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': DB_NAME,
@@ -135,8 +143,9 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
         'PORT': DB_PORT,
+
     }
-}
+    }
 
 
 

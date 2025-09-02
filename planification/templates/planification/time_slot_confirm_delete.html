@@ -9,21 +9,21 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card-neumorphic">
+        <div class="card-neumorphic shadow-soft p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0 text-danger">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Confirmer la suppression
                 </h5>
-                <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary">
+                <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary shadow-soft">
                     <i class="fas fa-arrow-left me-2"></i>
                     Retour aux détails
                 </a>
             </div>
 
             <!-- Informations du créneau à supprimer -->
-            <div class="alert alert-warning">
-                <h6 class="alert-heading">
+            <div class="alert alert-info shadow-inset flex-column align-items-start">
+                <h6 class="alert-heading text-dark">
                     <i class="fas fa-clock me-2"></i>
                     Créneau à supprimer
                 </h6>
@@ -37,9 +37,9 @@
                         <strong>Durée :</strong> {{ object.duration_hours }}h<br>
                         <strong>Statut :</strong> 
                         {% if object.is_active %}
-                            <span class="badge bg-success">Actif</span>
+                            <span class="badge bg-success shadow-soft text-primary">Actif</span>
                         {% else %}
-                            <span class="badge bg-secondary">Inactif</span>
+                            <span class="badge bg-secondary shadow-soft text-primary">Inactif</span>
                         {% endif %}<br>
                         <strong>Créé le :</strong> {{ object.created_at|date:"d/m/Y" }}
                     </div>
@@ -48,8 +48,8 @@
 
             <!-- Vérification des dépendances -->
             {% if has_sessions or has_availabilities %}
-                <div class="alert alert-danger">
-                    <h6 class="alert-heading">
+                <div class="alert alert-danger shadow-inset flex-column align-items-start">
+                    <h6 class="alert-heading text-dark">
                         <i class="fas fa-ban me-2"></i>
                         Suppression impossible
                     </h6>
@@ -82,22 +82,22 @@
 
                 <!-- Actions alternatives -->
                 <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                    <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary">
+                    <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary shadow-soft mr-2">
                         <i class="fas fa-arrow-left me-2"></i>
                         Retour aux détails
                     </a>
                     
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'planification:sessions' %}?time_slot={{ object.id }}" class="btn btn-outline-primary">
+                    <div class="d-flex">
+                        <a href="{% url 'planification:sessions' %}?time_slot={{ object.id }}" class="btn btn-outline-dark mr-2 shadow-soft">
                             <i class="fas fa-calendar-check me-2"></i>
                             Voir les séances
                         </a>
-                        <a href="{% url 'planification:lecturer_availabilities' %}?time_slot={{ object.id }}" class="btn btn-outline-info">
+                        <a href="{% url 'planification:lecturer_availabilities' %}?time_slot={{ object.id }}" class="btn btn-outline-info mr-2 shadow-soft">
                             <i class="fas fa-user-clock me-2"></i>
                             Voir les disponibilités
                         </a>
                         {% if object.is_active %}
-                            <button class="btn btn-warning" onclick="deactivateTimeSlot()">
+                            <button class="btn btn-warning shadow-soft">
                                 <i class="fas fa-pause me-2"></i>
                                 Désactiver le créneau
                             </button>
@@ -106,19 +106,9 @@
                 </div>
             {% else %}
                 <!-- Confirmation de suppression -->
-                <div class="alert alert-info">
-                    <h6 class="alert-heading">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Suppression sécurisée
-                    </h6>
-                    <p class="mb-0">
-                        Ce créneau horaire n'est utilisé dans aucune séance de cours ni disponibilité d'enseignant. 
-                        Il peut être supprimé en toute sécurité.
-                    </p>
-                </div>
 
-                <div class="alert alert-warning">
-                    <h6 class="alert-heading">
+                <div class="alert alert-warning shadow-inset">
+                    <h6 class="alert-heading text-dark text-center mr-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         Attention
                     </h6>
@@ -140,12 +130,12 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'planification:time_slot_detail' object.pk %}" class="btn btn-outline-secondary mr-2 shadow-soft">
                             <i class="fas fa-times me-2"></i>
                             Annuler
                         </a>
                         
-                        <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                        <button type="submit" class="btn btn-danger shadow-soft" id="deleteButton" disabled>
                             <i class="fas fa-trash me-2"></i>
                             Supprimer définitivement
                         </button>
@@ -159,26 +149,26 @@
 <!-- Aide contextuelle -->
 <div class="row justify-content-center mt-4">
     <div class="col-lg-8">
-        <div class="card-neumorphic">
-            <h6 class="mb-3">
+        <div class="card-neumorphic shadow-soft p-4">
+            <h6 class="mb-3 text-primary">
                 <i class="fas fa-lightbulb me-2"></i>
                 Alternatives à la suppression
             </h6>
             <div class="row">
-                <div class="col-md-4">
-                    <h6 class="text-primary">Désactivation</h6>
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-dark">Désactivation</h6>
                     <p class="small text-muted">
                         Désactivez le créneau pour le retirer de la planification sans perdre l'historique.
                     </p>
                 </div>
-                <div class="col-md-4">
-                    <h6 class="text-primary">Modification</h6>
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-dark">Modification</h6>
                     <p class="small text-muted">
                         Modifiez les horaires ou le nom du créneau au lieu de le supprimer.
                     </p>
                 </div>
-                <div class="col-md-4">
-                    <h6 class="text-primary">Archivage</h6>
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-dark">Archivage</h6>
                     <p class="small text-muted">
                         Gardez le créneau inactif pour conserver l'historique des séances passées.
                     </p>

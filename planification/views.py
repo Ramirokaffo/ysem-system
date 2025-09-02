@@ -1,3 +1,5 @@
+from django.views import View
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, DetailView, FormView
@@ -9,7 +11,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
-from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession
+from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession, Equipment
 from .forms import (
     ClassroomForm, ClassroomSearchForm, LecturerForm, LecturerSearchForm,
     ScheduleForm, LecturerAvailabilityForm, ScheduleGenerationForm,
@@ -358,6 +360,22 @@ class TimeSlotDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
+# ==================== ACTIVATION/DESACTIVATION CRENEAU ====================
+
+@method_decorator(planning_admin_required, name='dispatch')
+class TimeSlotToggleActiveView(LoginRequiredMixin, View):
+    """Active ou désactive un créneau horaire"""
+    def post(self, request, pk):
+        time_slot = get_object_or_404(TimeSlot, pk=pk)
+        time_slot.is_active = not time_slot.is_active
+        time_slot.save()
+        if time_slot.is_active:
+            messages.success(request, f'Le créneau "{time_slot.name}" a été activé.')
+        else:
+            messages.warning(request, f'Le créneau "{time_slot.name}" a été désactivé.')
+        return redirect('planification:time_slot_detail', pk=pk)
+    
+    
 @method_decorator(planning_admin_required, name='dispatch')
 class SessionsView(LoginRequiredMixin, ListView):
     """Vue pour la gestion des séances de cours"""
