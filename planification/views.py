@@ -79,10 +79,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
 @method_decorator(planning_admin_required, name='dispatch')
+class CoursView(LoginRequiredMixin, ListView):
+    """Vue pour la gestion des cours"""
+    model = Course
+    template_name = 'planification/Cours/cours.html'
+    context_object_name = 'cours'
+    paginate_by = 20
+
+@method_decorator(planning_admin_required, name='dispatch')
 class ClassroomsView(LoginRequiredMixin, ListView):
     """Vue pour la gestion des salles de classe"""
     model = Classroom
-    template_name = 'planification/classrooms.html'
+    template_name = 'planification/Classroom/classrooms.html'
     context_object_name = 'classrooms'
     paginate_by = 20
 
@@ -118,7 +126,7 @@ class ClassroomsView(LoginRequiredMixin, ListView):
 class LecturersView(LoginRequiredMixin, ListView):
     """Vue pour la visualisation des enseignants"""
     model = Lecturer
-    template_name = 'planification/lecturers.html'
+    template_name = 'planification/Lecturer/lecturers.html'
     context_object_name = 'lecturers'
     paginate_by = 20
 
@@ -170,7 +178,7 @@ class LecturersView(LoginRequiredMixin, ListView):
 class TimeSlotsView(LoginRequiredMixin, ListView):
     """Vue pour la gestion des créneaux horaires"""
     model = TimeSlot
-    template_name = 'planification/time_slots.html'
+    template_name = 'planification/Time/time_slots.html'
     context_object_name = 'time_slots'
     paginate_by = 20
 
@@ -224,7 +232,7 @@ class TimeSlotsView(LoginRequiredMixin, ListView):
 class TimeSlotDetailView(LoginRequiredMixin, DetailView):
     """Vue détaillée d'un créneau horaire"""
     model = TimeSlot
-    template_name = 'planification/time_slot_detail.html'
+    template_name = 'planification/Time/time_slot_detail.html'
     context_object_name = 'time_slot'
 
     def get_context_data(self, **kwargs):
@@ -265,7 +273,7 @@ class TimeSlotCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer un nouveau créneau horaire"""
     model = TimeSlot
     form_class = TimeSlotForm
-    template_name = 'planification/time_slot_form.html'
+    template_name = 'planification/Time/time_slot_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -290,7 +298,7 @@ class TimeSlotUpdateView(LoginRequiredMixin, UpdateView):
     """Vue pour modifier un créneau horaire"""
     model = TimeSlot
     form_class = TimeSlotForm
-    template_name = 'planification/time_slot_form.html'
+    template_name = 'planification/Time/time_slot_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -315,7 +323,7 @@ class TimeSlotUpdateView(LoginRequiredMixin, UpdateView):
 class TimeSlotDeleteView(LoginRequiredMixin, DeleteView):
     """Vue pour supprimer un créneau horaire"""
     model = TimeSlot
-    template_name = 'planification/time_slot_confirm_delete.html'
+    template_name = 'planification/Time/time_slot_confirm_delete.html'
     success_url = reverse_lazy('planification:time_slots')
 
     def get_context_data(self, **kwargs):
@@ -398,7 +406,7 @@ class FloorView(LoginRequiredMixin, ListView):
 class SessionsView(LoginRequiredMixin, ListView):
     """Vue pour la gestion des séances de cours"""
     model = CourseSession
-    template_name = 'planification/sessions.html'
+    template_name = 'planification/Session/sessions.html'
     context_object_name = 'sessions'
     paginate_by = 20
 
@@ -459,7 +467,7 @@ class SessionsView(LoginRequiredMixin, ListView):
 class CourseSessionDetailView(LoginRequiredMixin, DetailView):
     """Vue détaillée d'une séance de cours"""
     model = CourseSession
-    template_name = 'planification/session_detail.html'
+    template_name = 'planification/Session/session_detail.html'
     context_object_name = 'session'
 
     def get_context_data(self, **kwargs):
@@ -473,7 +481,7 @@ class CourseSessionCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer une nouvelle séance de cours"""
     model = CourseSession
     form_class = CourseSessionForm
-    template_name = 'planification/session_form.html'
+    template_name = 'planification/Session/session_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -499,7 +507,7 @@ class CourseSessionUpdateView(LoginRequiredMixin, UpdateView):
     """Vue pour modifier une séance de cours"""
     model = CourseSession
     form_class = CourseSessionForm
-    template_name = 'planification/session_form.html'
+    template_name = 'planification/Session/session_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -524,7 +532,7 @@ class CourseSessionUpdateView(LoginRequiredMixin, UpdateView):
 class CourseSessionDeleteView(LoginRequiredMixin, DeleteView):
     """Vue pour supprimer une séance de cours"""
     model = CourseSession
-    template_name = 'planification/session_confirm_delete.html'
+    template_name = 'planification/Session/session_confirm_delete.html'
     success_url = reverse_lazy('planification:sessions')
 
     def get_context_data(self, **kwargs):
@@ -566,7 +574,7 @@ class CourseSessionDeleteView(LoginRequiredMixin, DeleteView):
 class ClassroomDetailView(LoginRequiredMixin, DetailView):
     """Vue détaillée d'une salle de classe"""
     model = Classroom
-    template_name = 'planification/classroom_detail.html'
+    template_name = 'planification/Classroom/classroom_detail.html'
     context_object_name = 'classroom'
     pk_url_kwarg = 'code'
 
@@ -605,7 +613,7 @@ class ClassroomCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer une nouvelle salle de classe"""
     model = Classroom
     form_class = ClassroomForm
-    template_name = 'planification/classroom_form.html'
+    template_name = 'planification/Classroom/classroom_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -630,7 +638,7 @@ class ClassroomUpdateView(LoginRequiredMixin, UpdateView):
     """Vue pour modifier une salle de classe"""
     model = Classroom
     form_class = ClassroomForm
-    template_name = 'planification/classroom_form.html'
+    template_name = 'planification/Classroom/classroom_form.html'
     pk_url_kwarg = 'code'
 
     def get_object(self):
@@ -659,7 +667,7 @@ class ClassroomUpdateView(LoginRequiredMixin, UpdateView):
 class ClassroomDeleteView(LoginRequiredMixin, DeleteView):
     """Vue pour supprimer une salle de classe"""
     model = Classroom
-    template_name = 'planification/classroom_confirm_delete.html'
+    template_name = 'planification/Classroom/classroom_confirm_delete.html'
     success_url = reverse_lazy('planification:classrooms')
     pk_url_kwarg = 'code'
 
@@ -704,7 +712,7 @@ class ClassroomDeleteView(LoginRequiredMixin, DeleteView):
 class LecturerDetailView(LoginRequiredMixin, DetailView):
     """Vue détaillée d'un enseignant"""
     model = Lecturer
-    template_name = 'planification/lecturer_detail.html'
+    template_name = 'planification/Lecturer/lecturer_detail.html'
     context_object_name = 'lecturer'
     pk_url_kwarg = 'matricule'
 
@@ -748,7 +756,7 @@ class LecturerCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer un nouvel enseignant"""
     model = Lecturer
     form_class = LecturerForm
-    template_name = 'planification/lecturer_form.html'
+    template_name = 'planification/Lecturer/lecturer_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -773,7 +781,7 @@ class LecturerUpdateView(LoginRequiredMixin, UpdateView):
     """Vue pour modifier un enseignant"""
     model = Lecturer
     form_class = LecturerForm
-    template_name = 'planification/lecturer_form.html'
+    template_name = 'planification/Lecturer/lecturer_form.html'
     pk_url_kwarg = 'matricule'
 
     def get_object(self):
@@ -802,7 +810,7 @@ class LecturerUpdateView(LoginRequiredMixin, UpdateView):
 class LecturerDeleteView(LoginRequiredMixin, DeleteView):
     """Vue pour supprimer un enseignant"""
     model = Lecturer
-    template_name = 'planification/lecturer_confirm_delete.html'
+    template_name = 'planification/Lecturer/lecturer_confirm_delete.html'
     success_url = reverse_lazy('planification:lecturers')
     pk_url_kwarg = 'matricule'
 
@@ -853,7 +861,7 @@ class LecturerDeleteView(LoginRequiredMixin, DeleteView):
 class SchedulesView(LoginRequiredMixin, ListView):
     """Vue pour la liste des emplois du temps"""
     model = Schedule
-    template_name = 'planification/schedules.html'
+    template_name = 'planification/Schedule/schedules.html'
     context_object_name = 'schedules'
     paginate_by = 20
 
@@ -909,7 +917,7 @@ class SchedulesView(LoginRequiredMixin, ListView):
 class ScheduleDetailView(LoginRequiredMixin, DetailView):
     """Vue détaillée d'un emploi du temps"""
     model = Schedule
-    template_name = 'planification/schedule_detail.html'
+    template_name = 'planification/Schedule/schedule_detail.html'
     context_object_name = 'schedule'
 
     def get_context_data(self, **kwargs):
@@ -946,7 +954,7 @@ class ScheduleCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer un nouvel emploi du temps"""
     model = Schedule
     form_class = ScheduleForm
-    template_name = 'planification/schedule_form.html'
+    template_name = 'planification/Schedule/schedule_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -971,7 +979,7 @@ class ScheduleUpdateView(LoginRequiredMixin, UpdateView):
     """Vue pour modifier un emploi du temps"""
     model = Schedule
     form_class = ScheduleForm
-    template_name = 'planification/schedule_form.html'
+    template_name = 'planification/Schedule/schedule_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -996,7 +1004,7 @@ class ScheduleUpdateView(LoginRequiredMixin, UpdateView):
 class ScheduleGenerateView(LoginRequiredMixin, FormView):
     """Vue pour la génération automatique d'emploi du temps"""
     form_class = ScheduleGenerationForm
-    template_name = 'planification/schedule_generate.html'
+    template_name = 'planification/Schedule/schedule_generate.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -1053,7 +1061,7 @@ class ScheduleGenerateView(LoginRequiredMixin, FormView):
 class LecturerAvailabilitiesView(LoginRequiredMixin, ListView):
     """Vue pour la liste des disponibilités des enseignants"""
     model = LecturerAvailability
-    template_name = 'planification/lecturer_availabilities.html'
+    template_name = 'planification/Lecturer/lecturer_availabilities.html'
     context_object_name = 'availabilities'
     paginate_by = 20
 
@@ -1110,7 +1118,7 @@ class LecturerAvailabilityCreateView(LoginRequiredMixin, CreateView):
     """Vue pour créer une nouvelle disponibilité d'enseignant"""
     model = LecturerAvailability
     form_class = LecturerAvailabilityForm
-    template_name = 'planification/lecturer_availability_form.html'
+    template_name = 'planification/Lecturer/lecturer_availability_form.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

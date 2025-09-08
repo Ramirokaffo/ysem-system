@@ -45,7 +45,7 @@ class EquipmentAdmin(admin.ModelAdmin):
     """
     list_display = ['code', 'name']
     search_fields = ['code', 'name']
-    ordering = ['code']
+    ordering = ['code', 'name']
     list_per_page = 25
 
 @admin.register(Building)

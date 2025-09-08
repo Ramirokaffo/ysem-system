@@ -7,6 +7,9 @@ from Teaching.models import Lecturer
 from academic.models import Course, Level, AcademicYear
 
 
+
+
+
 class Floor(models.Model):
     """
     Modèle pour les étage
@@ -26,7 +29,7 @@ class Building(models.Model):
     """
     Modèle pour les batiments
     """
-    code = models.CharField(max_length=20, primary_key=True, verbose_name="Code du batiment")
+    code = models.CharField(max_length=20, primary_key=True, default="TEMP", verbose_name="Code du batiment")
     name = models.CharField(max_length=100, verbose_name="Nom du batiment")
 
     def __str__(self):
@@ -41,7 +44,7 @@ class Equipment(models.Model):
     """
     Modèle pour les équipements
     """
-    code = models.CharField(max_length=20, primary_key=True, verbose_name="Code de l'équipement")
+    code = models.CharField(max_length=20, primary_key=True, verbose_name="Code équipement")
     name = models.CharField(max_length=100, verbose_name="Nom de l'équipement")
 
     def __str__(self):
@@ -50,7 +53,7 @@ class Equipment(models.Model):
     class Meta:
         verbose_name = "Equipement"
         verbose_name_plural = "Equipements"
-        ordering = ['code']
+        ordering = ['code', 'name']
 
 class Classroom(models.Model):
     """
@@ -64,7 +67,7 @@ class Classroom(models.Model):
     )
     building = models.CharField(max_length=100, blank=True, null=True, verbose_name="Bâtiment")
     floor = models.CharField(max_length=20, blank=True, null=True, verbose_name="Étage")
-    equipment = models.ManyToManyField(Equipment, blank=True, null=True, verbose_name="Équipements disponibles")
+    equipment = models.ManyToManyField(Equipment, blank=True, verbose_name="Équipements disponibles")
     is_active = models.BooleanField(default=True, verbose_name="Salle active")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
