@@ -96,6 +96,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'cours' %}active{% endif %}" href="{% url 'planification:cours' %}">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Cours
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'time_slots' %}active{% endif %}" href="{% url 'planification:time_slots' %}">
                         <i class="fas fa-clock me-2"></i>
                         Créneaux horaires

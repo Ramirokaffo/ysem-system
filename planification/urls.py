@@ -46,4 +46,9 @@ urlpatterns = [
     path('seances/<int:pk>/', views.CourseSessionDetailView.as_view(), name='session_detail'),
     path('seances/<int:pk>/modifier/', views.CourseSessionUpdateView.as_view(), name='session_update'),
     path('seances/<int:pk>/supprimer/', views.CourseSessionDeleteView.as_view(), name='session_delete'),
+
+    #cours 
+    path('cours/', views.CoursView.as_view(), name='cours'),
+
+
 ]

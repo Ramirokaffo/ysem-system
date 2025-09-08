@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from .models import (
     Classroom, TimeSlot, CourseSession, Schedule,
-    LecturerAvailability, ScheduleSession, Equipment
+    LecturerAvailability, ScheduleSession, Equipment, Building, Floor
 )
 
 
@@ -45,7 +45,25 @@ class EquipmentAdmin(admin.ModelAdmin):
     """
     list_display = ['code', 'name']
     search_fields = ['code', 'name']
+    ordering = ['code', 'name']
+    list_per_page = 25
+
+@admin.register(Building)
+class BuildingAdmin(admin.ModelAdmin):
+    """Administration des batiments
+    """
+    list_display = ['code', 'name']
+    search_fields = ['code', 'name']
     ordering = ['code']
+    list_per_page = 25
+
+@admin.register(Floor)
+class FloorAdmin(admin.ModelAdmin):
+    """Administration des etages
+    """
+    list_display = ['number', 'name']
+    search_fields = ['number', 'name']
+    ordering = ['number']
     list_per_page = 25
     
 
