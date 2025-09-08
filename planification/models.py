@@ -48,9 +48,6 @@ class Classroom(models.Model):
         ordering = ['code']
 
 
-
-
-
 class TimeSlot(models.Model):
     """
     Modèle pour les créneaux horaires
@@ -65,7 +62,7 @@ class TimeSlot(models.Model):
         ('sunday', 'Dimanche'),
     ]
 
-    name = models.CharField(max_length=100, verbose_name="Nom du créneau")
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Nom du créneau")
     day_of_week = models.CharField(max_length=10, choices=DAYS_OF_WEEK, verbose_name="Jour de la semaine")
     start_time = models.TimeField(verbose_name="Heure de début")
     end_time = models.TimeField(verbose_name="Heure de fin")

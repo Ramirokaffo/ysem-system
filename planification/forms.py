@@ -736,7 +736,7 @@ class TimeSlotForm(forms.ModelForm):
             })
         }
         labels = {
-            'name': 'Nom du créneau *',
+            'name': 'Nom du créneau (Optionnel)',
             'day_of_week': 'Jour de la semaine *',
             'start_time': 'Heure de début *',
             'end_time': 'Heure de fin *',
@@ -754,7 +754,7 @@ class TimeSlotForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Marquer les champs obligatoires
-        required_fields = ['name', 'day_of_week', 'start_time', 'end_time']
+        required_fields = ['day_of_week', 'start_time', 'end_time']
         for field_name in required_fields:
             self.fields[field_name].required = True
 
