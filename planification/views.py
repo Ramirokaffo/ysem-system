@@ -176,58 +176,58 @@ class LecturersView(LoginRequiredMixin, ListView):
         return context
 
 
-@method_decorator(planning_admin_required, name='dispatch')
-class TimeSlotsView(LoginRequiredMixin, ListView):
-    """Vue pour la gestion des créneaux horaires"""
-    model = TimeSlot
-    template_name = 'planification/Time/time_slots.html'
-    context_object_name = 'time_slots'
-    paginate_by = 20
+# @method_decorator(planning_admin_required, name='dispatch')
+# class TimeSlotsView(LoginRequiredMixin, ListView):
+#     """Vue pour la gestion des créneaux horaires"""
+#     model = TimeSlot
+#     template_name = 'planification/Time/time_slots.html'
+#     context_object_name = 'time_slots'
+#     paginate_by = 20
 
-    def get_queryset(self):
-        queryset = TimeSlot.objects.all().order_by('day_of_week', 'start_time')
+#     def get_queryset(self):
+#         queryset = TimeSlot.objects.all().order_by('day_of_week', 'start_time')
 
-        # Filtres
-        search = self.request.GET.get('search')
-        if search:
-            queryset = queryset.filter(name__icontains=search)
+#         # Filtres
+#         search = self.request.GET.get('search')
+#         if search:
+#             queryset = queryset.filter(name__icontains=search)
 
-        day_of_week = self.request.GET.get('day_of_week')
-        if day_of_week:
-            queryset = queryset.filter(day_of_week=day_of_week)
+#         day_of_week = self.request.GET.get('day_of_week')
+#         if day_of_week:
+#             queryset = queryset.filter(day_of_week=day_of_week)
 
-        status = self.request.GET.get('status')
-        if status == 'active':
-            queryset = queryset.filter(is_active=True)
-        elif status == 'inactive':
-            queryset = queryset.filter(is_active=False)
+#         status = self.request.GET.get('status')
+#         if status == 'active':
+#             queryset = queryset.filter(is_active=True)
+#         elif status == 'inactive':
+#             queryset = queryset.filter(is_active=False)
 
-        time_period = self.request.GET.get('time_period')
-        if time_period == 'morning':
-            queryset = queryset.filter(start_time__gte='06:00', start_time__lt='12:00')
-        elif time_period == 'afternoon':
-            queryset = queryset.filter(start_time__gte='12:00', start_time__lt='18:00')
-        elif time_period == 'evening':
-            queryset = queryset.filter(start_time__gte='18:00', start_time__lt='22:00')
+#         time_period = self.request.GET.get('time_period')
+#         if time_period == 'morning':
+#             queryset = queryset.filter(start_time__gte='06:00', start_time__lt='12:00')
+#         elif time_period == 'afternoon':
+#             queryset = queryset.filter(start_time__gte='12:00', start_time__lt='18:00')
+#         elif time_period == 'evening':
+#             queryset = queryset.filter(start_time__gte='18:00', start_time__lt='22:00')
 
-        return queryset
+#         return queryset
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Créneaux Horaires'
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['page_title'] = 'Créneaux Horaires'
 
-        # Formulaire de recherche
-        context['search_form'] = TimeSlotSearchForm(self.request.GET)
+#         # Formulaire de recherche
+#         context['search_form'] = TimeSlotSearchForm(self.request.GET)
 
-        # Conserver les filtres dans le contexte
-        context['current_filters'] = {
-            'search': self.request.GET.get('search', ''),
-            'day_of_week': self.request.GET.get('day_of_week', ''),
-            'status': self.request.GET.get('status', ''),
-            'time_period': self.request.GET.get('time_period', ''),
-        }
+#         # Conserver les filtres dans le contexte
+#         context['current_filters'] = {
+#             'search': self.request.GET.get('search', ''),
+#             'day_of_week': self.request.GET.get('day_of_week', ''),
+#             'status': self.request.GET.get('status', ''),
+#             'time_period': self.request.GET.get('time_period', ''),
+#         }
 
-        return context
+#         return context
 
 
 @method_decorator(planning_admin_required, name='dispatch')

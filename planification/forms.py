@@ -713,16 +713,18 @@ class TimeSlotForm(forms.ModelForm):
 
     class Meta:
         model = TimeSlot
-        fields = ['name', 'day_of_week', 'start_time', 'end_time', 'is_active']
+        fields = [
+            # 'name', 'day_of_week', 
+            'start_time', 'end_time', 'is_active']
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ex: Lundi Matin, Mardi Après-midi...',
-                'maxlength': 100
-            }),
-            'day_of_week': forms.Select(attrs={
-                'class': 'form-control'
-            }),
+            # 'name': forms.TextInput(attrs={
+            #     'class': 'form-control',
+            #     'placeholder': 'Ex: Lundi Matin, Mardi Après-midi...',
+            #     'maxlength': 100
+            # }),
+            # 'day_of_week': forms.Select(attrs={
+            #     'class': 'form-control'
+            # }),
             'start_time': forms.TimeInput(attrs={
                 'class': 'form-control',
                 'type': 'time'

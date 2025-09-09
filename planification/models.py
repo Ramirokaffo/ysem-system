@@ -14,7 +14,7 @@ class Floor(models.Model):
     """
     Modèle pour les étage
     """
-    number = models.IntegerField(max_length=20, primary_key=True, verbose_name="Numéro étage")
+    number = models.IntegerField(primary_key=True, verbose_name="Numéro étage")
     name = models.CharField(max_length=100, verbose_name="Nom d'étage")
 
     def __str__(self):
@@ -96,8 +96,8 @@ class TimeSlot(models.Model):
         ('sunday', 'Dimanche'),
     ]
 
-    name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Nom du créneau")
-    day_of_week = models.CharField(max_length=10, choices=DAYS_OF_WEEK, verbose_name="Jour de la semaine")
+    # name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Nom du créneau")
+    # day_of_week = models.CharF00ield(max_length=10, choices=DAYS_OF_WEEK, verbose_name="Jour de la semaine")
     start_time = models.TimeField(verbose_name="Heure de début")
     end_time = models.TimeField(verbose_name="Heure de fin")
     is_active = models.BooleanField(default=True, verbose_name="Créneau actif")
@@ -115,13 +115,13 @@ class TimeSlot(models.Model):
         return 0
 
     def __str__(self):
-        return f"{self.get_day_of_week_display()} {self.start_time}-{self.end_time}"
+        return f"{self.start_time}-{self.end_time}"
 
     class Meta:
         verbose_name = "Créneau horaire"
         verbose_name_plural = "Créneaux horaires"
-        ordering = ['day_of_week', 'start_time']
-        unique_together = ['day_of_week', 'start_time', 'end_time']
+        ordering = ['start_time']
+        unique_together = ['start_time', 'end_time']
 
 
 class CourseSession(models.Model):
@@ -378,7 +378,7 @@ class LecturerAvailability(models.Model):
     class Meta:
         verbose_name = "Disponibilité enseignant"
         verbose_name_plural = "Disponibilités enseignants"
-        ordering = ['lecturer__lastname', 'time_slot__day_of_week', 'time_slot__start_time']
+        ordering = ['lecturer__lastname', 'time_slot__start_time']
         unique_together = ['lecturer', 'time_slot', 'academic_year', 'start_date', 'end_date']
 
 
@@ -414,5 +414,5 @@ class ScheduleSession(models.Model):
     class Meta:
         verbose_name = "Séance d'emploi du temps"
         verbose_name_plural = "Séances d'emploi du temps"
-        ordering = ['week_number', 'course_session__time_slot__day_of_week', 'course_session__time_slot__start_time']
+        ordering = ['week_number', 'course_session__time_slot__start_time']
         unique_together = ['schedule', 'course_session']

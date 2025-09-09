@@ -71,17 +71,17 @@ class FloorAdmin(admin.ModelAdmin):
 @admin.register(TimeSlot)
 class TimeSlotAdmin(admin.ModelAdmin):
     """Administration des créneaux horaires"""
-    list_display = ['name', 'day_of_week_display', 'time_range', 'duration_display', 'is_active', 'usage_count']
-    list_filter = ['day_of_week', 'is_active', 'created_at']
-    search_fields = ['name']
-    ordering = ['day_of_week', 'start_time']
+    list_display = ['time_range', 'duration_display', 'is_active', 'usage_count']
+    list_filter = ['is_active', 'created_at']
+    # search_fields = ['name']
+    ordering = ['start_time']
     list_editable = ['is_active']
     list_per_page = 25
 
     fieldsets = (
-        ('Informations générales', {
-            'fields': ('name', 'day_of_week')
-        }),
+        # ('Informations générales', {
+        #     'fields': ('name', 'day_of_week')
+        # }),
         ('Horaires', {
             'fields': ('start_time', 'end_time')
         }),
@@ -90,9 +90,9 @@ class TimeSlotAdmin(admin.ModelAdmin):
         }),
     )
 
-    def day_of_week_display(self, obj):
-        return obj.get_day_of_week_display()
-    day_of_week_display.short_description = 'Jour'
+    # def day_of_week_display(self, obj):
+    #     return obj.get_day_of_week_display()
+    # day_of_week_display.short_description = 'Jour'
 
     def time_range(self, obj):
         return f"{obj.start_time.strftime('%H:%M')} - {obj.end_time.strftime('%H:%M')}"
@@ -194,9 +194,9 @@ class ScheduleAdmin(admin.ModelAdmin):
 class LecturerAvailabilityAdmin(admin.ModelAdmin):
     """Administration des disponibilités des enseignants"""
     list_display = ['lecturer', 'time_slot_display', 'academic_year', 'status', 'period_display']
-    list_filter = ['status', 'academic_year', 'time_slot__day_of_week']
+    list_filter = ['status', 'academic_year']
     search_fields = ['lecturer__firstname', 'lecturer__lastname', 'lecturer__matricule']
-    ordering = ['lecturer__lastname', 'time_slot__day_of_week', 'time_slot__start_time']
+    ordering = ['lecturer__lastname', 'time_slot__start_time']
     list_per_page = 25
 
     fieldsets = (

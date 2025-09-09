@@ -33,12 +33,12 @@ urlpatterns = [
     path('disponibilites/ajouter/', views.LecturerAvailabilityCreateView.as_view(), name='lecturer_availability_create'),
 
     # Créneaux horaires
-    path('creneaux/', views.TimeSlotsView.as_view(), name='time_slots'),
-    path('creneaux/ajouter/', views.TimeSlotCreateView.as_view(), name='time_slot_create'),
-    path('creneaux/<int:pk>/', views.TimeSlotDetailView.as_view(), name='time_slot_detail'),
-    path('creneaux/<int:pk>/modifier/', views.TimeSlotUpdateView.as_view(), name='time_slot_update'),
-    path('creneaux/<int:pk>/supprimer/', views.TimeSlotDeleteView.as_view(), name='time_slot_delete'),
-    path('creneaux/<int:pk>/toggle-active/', views.TimeSlotToggleActiveView.as_view(), name='time_slot_toggle_active'),
+    # path('creneaux/', views.TimeSlotsView.as_view(), name='time_slots'),
+    # path('creneaux/ajouter/', views.TimeSlotCreateView.as_view(), name='time_slot_create'),
+    # path('creneaux/<int:pk>/', views.TimeSlotDetailView.as_view(), name='time_slot_detail'),
+    # path('creneaux/<int:pk>/modifier/', views.TimeSlotUpdateView.as_view(), name='time_slot_update'),
+    # path('creneaux/<int:pk>/supprimer/', views.TimeSlotDeleteView.as_view(), name='time_slot_delete'),
+    # path('creneaux/<int:pk>/toggle-active/', views.TimeSlotToggleActiveView.as_view(), name='time_slot_toggle_active'),
 
     # Séances de cours
     path('seances/', views.SessionsView.as_view(), name='sessions'),
