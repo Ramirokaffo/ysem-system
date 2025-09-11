@@ -183,10 +183,13 @@
                     <i class="fas fa-calendar-plus me-2"></i>
                     Programmer séance
                 </a>
-                <a href="{% url 'planification:time_slots' %}" class="btn btn-primary">
+                {% comment %}
+
+                <!-- <a href="{% url 'planification:time_slots' %}" class="btn btn-primary">
                     <i class="fas fa-clock me-2"></i>
                     Créneaux horaires
-                </a>
+                </a> -->
+                {% endcomment %}
                 <a href="{% url 'planification:lecturers' %}" class="btn btn-primary">
                     <i class="fas fa-chalkboard-teacher me-2"></i>
                     Voir enseignants
