@@ -5,12 +5,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.db import models
 
 from academic.models import AcademicYear, Level, Program, Speciality
-from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
+from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, StudentLevelForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
+from .pdf_exports import build_pre_inscription_pdf, build_pre_inscriptions_pdf
 from accounts.models import BaseUser, Godfather
 from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument, PaymentStatus
 import json
@@ -41,7 +42,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['current_year'] = current_year
 
         # Statistiques générales
-        total_students = Student.objects.filter(status='approved').count()
+        total_students = Student.objects.filter(status='registered').count()
         pending_students = Student.objects.filter(status='pending').count()
         total_programs = Program.objects.count()
 
@@ -52,12 +53,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         thirty_days_ago = datetime.now() - timedelta(days=30)
         new_enrollments = Student.objects.filter(
             created_at__gte=thirty_days_ago,
-            status='approved'
+            status='registered'
         ).count()
 
         # Activités récentes (derniers étudiants inscrits)
         recent_students = Student.objects.filter(
-            status='approved'
+            status='registered'
         ).order_by('-created_at')[:5]
 
         # Documents récemment créés
@@ -74,7 +75,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Statistiques par niveau
         level_stats = StudentLevel.objects.filter(
             is_active=True,
-            student__status='approved'
+            student__status='registered'
         ).values('level__name').annotate(count=Count('student')).order_by('-count')[:5]
 
         # Statistiques de prospection
@@ -109,40 +110,53 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 
+PRE_INSCRIPTION_STATUSES = ['pending', 'abandoned', 'approved', 'rejected']
+
+
+def _get_filtered_pre_inscriptions_queryset(params, queryset=None):
+    """Construit le queryset de pré-inscriptions à partir des filtres GET."""
+    students = queryset if queryset is not None else Student.objects.all()
+
+    status = params.get('status')
+    gender = params.get('gender')
+    school_id = params.get('school')
+    program_id = params.get('program')
+    godfather_id = params.get('godfather')
+    language = params.get('language')
+
+    if status:
+        students = students.filter(status=status)
+    else:
+        students = students.filter(status__in=PRE_INSCRIPTION_STATUSES)
+
+    if gender:
+        students = students.filter(gender=gender)
+    if school_id:
+        students = students.filter(school_id=school_id)
+    if program_id:
+        students = students.filter(program_id=program_id)
+    if godfather_id:
+        students = students.filter(godfather_id=godfather_id)
+    if language:
+        students = students.filter(lang=language)
+
+    return students.order_by('-created_at', 'matricule')
+
+
 
 class InscriptionsView(LoginRequiredMixin, TemplateView):
-    """Vue pour la gestion des inscriptions"""
+    """Vue pour la gestion des pré-inscriptions"""
     template_name = 'main/inscriptions.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = 'Gestion des inscriptions'
+        context['page_title'] = 'Gestion des Pré-inscriptions'
 
-        # Récupération des paramètres de filtrage
-        status = self.request.GET.get('status')
-        gender = self.request.GET.get('gender')
-        school_id = self.request.GET.get('school')
-        program_id = self.request.GET.get('program')
-        godfather_id = self.request.GET.get('godfather')
-        language = self.request.GET.get('language')
-
-        # Filtrage de base par statut
-        if status:
-            students = Student.objects.filter(status=status)
-        else:
-            students = Student.objects.filter(status__in=['pending', 'abandoned', 'rejected'])
-
-        # Application des filtres additionnels
-        if gender:
-            students = students.filter(gender=gender)
-        if school_id:
-            students = students.filter(school_id=school_id)
-        if program_id:
-            students = students.filter(program_id=program_id)
-        if godfather_id:
-            students = students.filter(godfather_id=godfather_id)
-        if language:
-            students = students.filter(lang=language)
+        students = _get_filtered_pre_inscriptions_queryset(
+            self.request.GET,
+            queryset=Student.objects.select_related('school', 'program', 'godfather')
+        )
+        filtered_students_count = students.count()
 
         # Import des modèles pour les options de filtrage
         from schools.models import School
@@ -160,11 +174,12 @@ class InscriptionsView(LoginRequiredMixin, TemplateView):
         page_obj = paginator.get_page(page)
 
         context['students'] = page_obj.object_list
+        context['filtered_students_count'] = filtered_students_count
         context['page_obj'] = page_obj
         context['per_page'] = int(per_page)
         per_page_choices = [5, 10, 25, 50, 100]
         context['per_page_choices'] = per_page_choices
-        context['status'] = status
+        context['status'] = self.request.GET.get('status')
         context['schools'] = schools
         context['programs'] = programs
         context['godfathers'] = godfathers
@@ -178,7 +193,7 @@ class EtudiantsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Gestion des étudiants'
-        students = Student.objects.filter(status='approved')
+        students = Student.objects.filter(status='registered')
 
         gender = self.request.GET.get('gender')
         school_id = self.request.GET.get('school')
@@ -306,7 +321,7 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
         context['selected_program'] = selected_program
 
         # Filtrage des étudiants
-        students_query = Student.objects.filter(status='approved')
+        students_query = Student.objects.filter(status='registered')
         if selected_program:
             students_query = students_query.filter(program_id=selected_program)
 
@@ -328,7 +343,7 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
         # Étudiants par niveau (basé sur StudentLevel actif)
         level_stats = StudentLevel.objects.filter(
             is_active=True,
-            student__status='approved'
+            student__status='registered'
         ).values('level__name').annotate(count=Count('student')).order_by('level__name')
 
         if selected_program:
@@ -567,7 +582,7 @@ class ProfilView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class InscriptionView(LoginRequiredMixin, TemplateView):
+class PreInscriptionView(LoginRequiredMixin, TemplateView):
     """Vue pour le profil utilisateur"""
     template_name = 'main/profil.html'
 
@@ -586,7 +601,7 @@ class InscriptionView(LoginRequiredMixin, TemplateView):
             thirty_days_ago = datetime.now() - timedelta(days=30)
 
             recent_approvals = Student.objects.filter(
-                status='approved',
+                status='registered',
                 last_updated__gte=thirty_days_ago
             ).count()
 
@@ -601,7 +616,7 @@ class InscriptionView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class InscriptionExterneView(TemplateView):
+class PreInscriptionExterneView(TemplateView):
     """Vue d'accueil pour l'inscription externe"""
     template_name = 'main/inscription_externe/accueil.html'
 
@@ -611,7 +626,7 @@ class InscriptionExterneView(TemplateView):
         return context
 
 
-class InscriptionExterneStepView(TemplateView):
+class PreInscriptionExterneStepView(TemplateView):
     """Vue pour gérer les étapes du formulaire d'inscription"""
     template_name = 'main/inscription_externe/formulaire.html'
 
@@ -778,7 +793,8 @@ class InscriptionExterneStepView(TemplateView):
                     # Ajout des fichiers d'inscription
                     preuve_baccalaureat=files_data.get('preuve_baccalaureat'),
                     acte_naissance=files_data.get('acte_naissance'),
-                    releve_notes_bac=files_data.get('releve_notes_bac'),
+                    releve_notes_last_class=files_data.get('releve_notes_last_class'),
+                    justificatif_dernier_diplome=files_data.get('justificatif_dernier_diplome'),
                     bulletins_terminale=files_data.get('bulletins_terminale'),
                 )
 
@@ -815,7 +831,7 @@ class InscriptionExterneStepView(TemplateView):
         return self.render_to_response(context)
 
 
-class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
+class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
     """Vue pour le formulaire d'inscription complet (sans étapes) - PUBLIQUE"""
     template_name = 'main/nouvelle_inscription.html'
 
@@ -824,7 +840,7 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
         form = InscriptionCompleteForm()
 
         context.update({
-            'page_title': 'Nouvelle Inscription',
+            'page_title': 'Nouvelle Pré-Inscription',
             'form': form,
         })
         return context
@@ -836,6 +852,7 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
             try:
                 # Création de l'étudiant avec les données du formulaire
                 cleaned_data = form.cleaned_data
+                save_action = request.POST.get('save_action', 'save')
 
                 # Conversion de la date de naissance si nécessaire
                 date_naissance = cleaned_data.get('date_naissance')
@@ -864,17 +881,22 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                     original_district=cleaned_data.get('arrondissement_origine', ''),
                     residence_city=cleaned_data.get('ville_residence', ''),
                     residence_quarter=cleaned_data.get('quartier_residence', ''),
+                    is_complete=cleaned_data.get('is_complete', False),
                     # Ajout des fichiers d'inscription
                     acte_naissance=request.FILES.get('acte_naissance'),
                     certificat_nationalite=request.FILES.get('certificat_nationalite'),
-                    diplome_bac=request.FILES.get('diplome_bac'),
-                    releve_notes_bac=request.FILES.get('releve_notes_bac'),
+                    preuve_baccalaureat=request.FILES.get('preuve_baccalaureat'),
+                    releve_notes_last_class=request.FILES.get('releve_notes_last_class'),
+                    justificatif_dernier_diplome=request.FILES.get('justificatif_dernier_diplome'),
                     bulletins_terminale=request.FILES.get('bulletins_terminale'),
                 )
 
-                # Création du parrain si les informations sont fournies
-                godfather = None
-                if cleaned_data.get('nom_tuteur') or cleaned_data.get('telephone_tuteur'):
+                # Réutilisation d'un parrain existant ou création manuelle si nécessaire
+                godfather = cleaned_data.get('parrain_existant')
+                if not godfather and any(
+                    cleaned_data.get(field_name)
+                    for field_name in ['nom_tuteur', 'profession_tuteur', 'telephone_tuteur', 'courriel_tuteur']
+                ):
                     godfather = Godfather.objects.create(
                         full_name=cleaned_data.get('nom_tuteur', ''),
                         occupation=cleaned_data.get('profession_tuteur', ''),
@@ -882,8 +904,13 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                         email=cleaned_data.get('courriel_tuteur', ''),
                     )
 
+                # Génération d'un matricule pour l'étudiant interne
+                import uuid
+                matricule = f"INT_{uuid.uuid4().hex[:8].upper()}"
+
                 # Création de l'étudiant
                 student = Student.objects.create(
+                    matricule=matricule,
                     firstname=cleaned_data.get('prenom'),
                     lastname=cleaned_data.get('nom'),
                     date_naiss=date_naissance,
@@ -891,7 +918,7 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
                     lang='fr' if cleaned_data.get('premiere_langue_officielle') == 'francais' else 'en',
                     phone_number=cleaned_data.get('telephone'),
                     email=cleaned_data.get('courriel'),
-                    status='approved',  # Statut approuvé pour les inscriptions internes
+                    status='pending',  # Statut en attente pour les inscriptions internes
                     program=cleaned_data.get('programme'),
                     metadata=student_metadata,
                     godfather=godfather,
@@ -908,20 +935,21 @@ class NouvelleInscriptionView(LoginRequiredMixin, TemplateView):
 
                 # Redirection vers la page de succès
                 messages.success(request, 'Inscription éffectuée avec succès!')
-                return redirect('main:etudiant_detail', pk=student.pk)
+                if save_action == 'save_and_new':
+                    return redirect('main:nouvelle_inscription')
+                return redirect('main:etudiant_detail', pk=student.matricule)
 
             except Exception as e:
                 messages.error(request, f'Erreur lors de la création de l\'inscription: {str(e)}')
 
         # Si le formulaire n'est pas valide, on le renvoie avec les erreurs
+        print(form.errors)  # Debug des erreurs de formulaire
         context = self.get_context_data()
         context['form'] = form
         return self.render_to_response(context)
 
 
-
-
-class InscriptionExterneConfirmationView(TemplateView):
+class PreInscriptionExterneConfirmationView(TemplateView):
     """Vue de confirmation et finalisation de l'inscription"""
     template_name = 'main/inscription_externe/confirmation.html'
 
@@ -940,63 +968,6 @@ class InscriptionExterneConfirmationView(TemplateView):
         if 'inscription_data' in self.request.session:
             del self.request.session['inscription_data']
         return context
-
-    # def post(self, request, *args, **kwargs):
-    #     """Finalisation de l'inscription"""
-    #     session_data = request.session.get('inscription_data', {})
-
-    #     if not session_data:
-    #         messages.error(request, 'Aucune donnée d\'inscription trouvée. Veuillez recommencer.')
-    #         return redirect('main:inscription_externe')
-
-    #     try:
-    #         # Création de l'étudiant avec les données collectées
-    #         etape2_data = session_data.get('etape_2', {})
-    #         etape3_data = session_data.get('etape_3', {})
-    #         etape4_data = session_data.get('etape_4', {})
-
-    #         # Conversion de la date de naissance si elle est en chaîne
-    #         date_naissance = etape2_data.get('date_naissance')
-    #         if isinstance(date_naissance, str):
-    #             from datetime import datetime
-    #             try:
-    #                 date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d').date()
-    #             except (ValueError, TypeError):
-    #                 date_naissance = None
-
-    #         # Génération d'un matricule temporaire
-    #         import uuid
-    #         matricule = f"EXT_{uuid.uuid4().hex[:8].upper()}"
-
-    #         # Création de l'étudiant
-    #         student = Student.objects.create(
-    #             matricule=matricule,
-    #             firstname=etape2_data.get('prenom', ''),
-    #             lastname=etape2_data.get('nom', ''),
-    #             date_naiss=date_naissance,
-    #             status='inscrit',  # Statut d'inscrit
-    #             gender=etape2_data.get('sexe', ''),
-    #             phone_number=etape2_data.get('telephone', ''),
-    #             email=etape2_data.get('courriel', ''),
-    #         )
-
-    #         # Nettoyage de la session
-    #         if 'inscription_data' in request.session:
-    #             del request.session['inscription_data']
-
-    #         messages.success(
-    #             request,
-    #             f'Votre inscription a été enregistrée avec succès! '
-    #             f'Votre numéro de matricule temporaire est: {matricule}. '
-    #             f'Vous recevrez un email de confirmation sous peu.'
-    #         )
-
-    #         # Redirection vers une page de succès
-    #         return redirect('main:inscription_externe')
-
-    #     except Exception as e:
-    #         messages.error(request, f'Une erreur est survenue lors de l\'enregistrement: {str(e)}')
-    #         return self.render_to_response(self.get_context_data(**kwargs))
 
 @login_required
 def etudiant_detail(request, pk):
@@ -1085,34 +1056,69 @@ def etudiant_edit(request, pk):
         pk=pk
     )
 
-    # Créer les métadonnées si elles n'existent pas
+    return _render_student_edit(
+        request=request,
+        student=student,
+        detail_route_name='main:etudiant_detail',
+        page_title="Modifier l'étudiant",
+        success_message="Les informations de l'étudiant ont été mises à jour avec succès.",
+        back_link_label='Retour aux détails',
+    )
+
+
+def _get_student_level_for_edit(student):
+    """Retourne le niveau actif de l'étudiant ou le plus récent à défaut."""
+    active_level = student.student_levels.select_related('level', 'academic_year').filter(is_active=True).order_by(
+        '-academic_year__start_at', 'level__name'
+    ).first()
+    if active_level:
+        return active_level
+
+    return student.student_levels.select_related('level', 'academic_year').order_by(
+        '-academic_year__start_at', 'level__name'
+    ).first()
+
+
+def _render_student_edit(request, student, detail_route_name, page_title, success_message, back_link_label):
+    """Rendu commun des formulaires d'édition étudiant / pré-inscription."""
     if not student.metadata:
         student.metadata = StudentMetaData.objects.create(original_country='Cameroun')
         student.save()
 
-    if request.method == 'POST':
-        # Traitement des formulaires
-        student_form = StudentEditForm(request.POST, instance=student)
-        metadata_form = StudentMetaDataEditForm(request.POST, instance=student.metadata)
+    student_level = _get_student_level_for_edit(student)
 
-        if student_form.is_valid() and metadata_form.is_valid():
-            # Sauvegarder les modifications
+    if request.method == 'POST':
+        student_form = StudentEditForm(request.POST, request.FILES, instance=student)
+        metadata_form = StudentMetaDataEditForm(request.POST, request.FILES, instance=student.metadata)
+        student_level_form = StudentLevelForm(request.POST, instance=student_level, student=student)
+
+        if student_form.is_valid() and metadata_form.is_valid() and student_level_form.is_valid():
             student_form.save()
             metadata_form.save()
 
-            messages.success(request, 'Les informations de l\'étudiant ont été mises à jour avec succès.')
-            return redirect('main:etudiant_detail', pk=student.matricule)
-        else:
-            messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
+            saved_student_level = student_level_form.save(commit=False)
+            saved_student_level.student = student
+            saved_student_level.is_active = True
+            saved_student_level.save()
+            student.student_levels.exclude(pk=saved_student_level.pk).update(is_active=False)
+
+            messages.success(request, success_message)
+            return redirect(detail_route_name, pk=student.matricule)
+
+        messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
     else:
-        # Affichage des formulaires pré-remplis
         student_form = StudentEditForm(instance=student)
         metadata_form = StudentMetaDataEditForm(instance=student.metadata)
+        student_level_form = StudentLevelForm(instance=student_level, student=student)
 
     context = {
         'student': student,
         'student_form': student_form,
         'metadata_form': metadata_form,
+        'student_level_form': student_level_form,
+        'page_title': page_title,
+        'back_url': reverse(detail_route_name, kwargs={'pk': student.matricule}),
+        'back_link_label': back_link_label,
     }
 
     return render(request, 'main/etudiant_edit.html', context)
@@ -1347,9 +1353,9 @@ def document_bulk_preview(request):
 
 
 @login_required
-def inscription_detail(request, pk):
+def pre_inscription_detail(request, pk):
     """
-    Vue pour afficher les détails d'une inscription
+    Vue pour afficher les détails d'une pré-inscription
     """
     student = get_object_or_404(
         Student.objects.select_related(
@@ -1366,14 +1372,76 @@ def inscription_detail(request, pk):
 
     context = {
         'student': student,
-        'page_title': f'Inscription - {student.firstname} {student.lastname}'
+        'page_title': f'Pré-Inscription - {student.firstname} {student.lastname}'
     }
 
     return render(request, 'main/inscription_detail.html', context)
 
 
 @login_required
-def inscription_approve(request, pk):
+def pre_inscription_print_pdf(request, pk):
+    """Génère un PDF administratif combiné pour une pré-inscription."""
+    student = get_object_or_404(
+        Student.objects.select_related(
+            'metadata',
+            'school',
+            'program',
+            'godfather'
+        ).prefetch_related(
+            'student_levels__level',
+            'student_levels__academic_year'
+        ),
+        pk=pk
+    )
+
+    pdf_content = build_pre_inscription_pdf(student)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="preinscription_{student.matricule}.pdf"'
+    return response
+
+
+@login_required
+def pre_inscriptions_print_pdf(request):
+    """Génère un PDF combiné pour toutes les pré-inscriptions filtrées."""
+    students = _get_filtered_pre_inscriptions_queryset(
+        request.GET,
+        queryset=Student.objects.select_related(
+            'metadata',
+            'school',
+            'program',
+            'godfather'
+        ).prefetch_related(
+            'student_levels__level',
+            'student_levels__academic_year'
+        )
+    )
+
+    pdf_content = build_pre_inscriptions_pdf(students)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="preinscriptions_filtrees.pdf"'
+    return response
+
+
+@login_required
+def pre_inscription_edit(request, pk):
+    """Vue pour modifier entièrement une pré-inscription."""
+    student = get_object_or_404(
+        Student.objects.select_related('metadata', 'school', 'program', 'godfather'),
+        pk=pk
+    )
+
+    return _render_student_edit(
+        request=request,
+        student=student,
+        detail_route_name='main:inscription_detail',
+        page_title='Modifier la pré-inscription',
+        success_message='La pré-inscription a été mise à jour avec succès.',
+        back_link_label='Retour à la pré-inscription',
+    )
+
+
+@login_required
+def pre_inscription_approve(request, pk):
     """
     Vue pour approuver une inscription
     """
@@ -1382,16 +1450,16 @@ def inscription_approve(request, pk):
         student.status = 'approved'
         student.save()
 
-        messages.success(request, f'Inscription de {student.firstname} {student.lastname} approuvée avec succès.')
+        messages.success(request, f'Pré-inscription de {student.firstname} {student.lastname} approuvée avec succès.')
         return redirect('main:inscription_detail', pk=pk)
 
     return redirect('main:inscriptions')
 
 
 @login_required
-def inscription_reject(request, pk):
+def pre_inscription_reject(request, pk):
     """
-    Vue pour rejeter une inscription
+    Vue pour rejeter une pré-inscription
     """
     if request.method == 'POST':
         student = get_object_or_404(Student, pk=pk)

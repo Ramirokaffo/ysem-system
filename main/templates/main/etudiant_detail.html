@@ -13,6 +13,19 @@
                 <h4 class="mb-3"><span class="fas fa-user mr-2"></span>Profil général</h4>
             </div>
             <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <label class="form-label text-muted font-weight-bold d-block">Photo de profil</label>
+                        {% if student.profile_photo %}
+                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="img-fluid img-thumbnail rounded" style="max-height: 220px; object-fit: cover;">
+                        {% else %}
+                            <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-primary text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 160px; height: 160px;">
+                                <span class="fas fa-user fa-3x"></span>
+                            </div>
+                            <div class="text-muted small mt-2">Aucune photo de profil enregistrée</div>
+                        {% endif %}
+                    </div>
+                </div>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="form-group mb-3">

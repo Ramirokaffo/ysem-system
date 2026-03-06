@@ -1,9 +1,9 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Gestion des inscriptions - YSEM{% endblock %}
+{% block title %}Gestion des pré-inscriptions - YSEM{% endblock %}
 
-{% block page_title %}Gestion des inscriptions{% endblock %}
+{% block page_title %}Gestion des pré-inscriptions{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -55,7 +55,7 @@
                             <option value="">Tous</option>
                             {% for godfather in godfathers %}
                             <option value="{{ godfather.pk }}"
-                            {% if request.GET.godfather == godfather.pk|stringformat:'s' %}selected{% endif %}>{{ godfather.firstname }} {{ godfather.lastname }}</option>
+                            {% if request.GET.godfather == godfather.pk|stringformat:'s' %}selected{% endif %}>{{ godfather }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -115,12 +115,25 @@
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h5 class="mb-0"><i class="fas fa-list me-2 mr-2"></i>Liste des inscriptions</h5>
-                <small class="text-muted">{{ students|length }} inscription(s) trouvée(s)</small>
-                <a href="{% url 'main:nouvelle_inscription' %}" class="btn btn-success">
-                    <i class="fas fa-plus me-2 mr-1"></i>Nouvelle inscription
-                </a>
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1"><i class="fas fa-list me-2 mr-2"></i>Liste des pré-inscriptions</h5>
+                    <small class="text-muted">{{ filtered_students_count }} pré-inscription(s) trouvée(s)</small>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        class="btn btn-outline-info mx-2"
+                        data-toggle="modal"
+                        data-target="#filteredPdfExportModal"
+                        {% if not filtered_students_count %}disabled{% endif %}
+                    >
+                        <i class="fas fa-file-pdf me-2 mr-1"></i>Exporter les dossiers filtrés en PDF
+                    </button>
+                    <a href="{% url 'main:nouvelle_inscription' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2 mr-1"></i>Nouvelle pré-inscription
+                    </a>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover">
@@ -130,7 +143,7 @@
                             <th>Nom complet</th>
                             <th>Genre</th>
                             <th>Programme</th>
-                            <th>Date d'inscription</th>
+                            <th>Date</th>
                             <th>Statut</th>
                             <th>Actions</th>
                         </tr>
@@ -140,7 +153,8 @@
                             <tr {% if student.created_at|timesince|slice:":1" == "0" %}class="table-warning"{% endif %}>
                                 <td><strong>{{ student.matricule }}</strong></td>
                                 <td>
-                                    <div class="d-flex align-items-center">
+                                    <a href="{% url 'main:inscription_detail' student.matricule %}">
+                                        <div class="d-flex align-items-center">
                                         <div class="avatar-sm bg-info text-white rounded-circle me-2 d-flex align-items-center justify-content-center mr-1">
                                             {{ student.firstname|slice:":1" }}{{ student.lastname|slice:":1" }}
                                         </div>
@@ -149,6 +163,7 @@
                                             <small class="text-muted">{{ student.email }}</small>
                                         </div>
                                     </div>
+                                    </a>
                                 </td>
                                 <td>
                                     <span class="badge text-primary {% if student.gender == 'M' %}bg-danger{% else %}bg-secondary{% endif %}">
@@ -169,7 +184,7 @@
                                     <small class="text-muted">{{ student.created_at|timesince }} ago</small>
                                 </td>
                                 <td>
-                                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% endif %}">{{ student.get_status_display }}</span>
+                                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'registered' %}bg-success text-white{% elif student.status == 'rejected' %}bg-danger{% endif %}">{{ student.get_status_display }}</span>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
@@ -179,13 +194,13 @@
                                         {% if student.status == 'pending' %}
                                             <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Approuver" onclick="return confirm('Approuver cette inscription ?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Approuver" onclick="return confirm('Approuver cette pré-inscription ?')">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </form>
                                             <form method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Rejeter" onclick="return confirm('Rejeter cette inscription ?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Rejeter" onclick="return confirm('Rejeter cette pré-inscription ?')">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </form>
@@ -207,7 +222,7 @@
                 <small class="text-muted">
                     <i class="fas fa-info-circle me-1"></i>
                     <strong>Légende :</strong>
-                    <span class="badge bg-warning text-dark ms-2">Inscription récente (moins de 24h)</span>
+                    <span class="badge bg-warning text-dark ms-2">Pré-inscription récente (moins de 24h)</span>
                     <span class="ms-3">
                         <i class="fas fa-eye text-primary me-1"></i> Voir détails
                         <i class="fas fa-check text-success ms-2 me-1"></i> Approuver
@@ -217,25 +232,7 @@
                 </small>
             </div>
             <!-- Pagination -->
-            <!-- <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Précédent</a>
-                    </li>
-                    <li class="page-item active">
-                        <a class="page-link" href="#">1</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">2</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">3</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Suivant</a>
-                    </li>
-                </ul>
-            </nav> -->
+
              <!-- Pagination Neumorphism avec icônes et choix par page -->
             <div class="pt-3 border-top mt-4">
                 <div class="row align-items-center">
@@ -292,6 +289,49 @@
                         </nav>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filteredPdfExportModal" tabindex="-1" role="dialog" aria-labelledby="filteredPdfExportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filteredPdfExportModalLabel">
+                    <i class="fas fa-file-pdf text-danger mr-2"></i>Confirmation de l’export PDF
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Vous allez générer un seul PDF combiné contenant
+                    <strong>{{ filtered_students_count }} dossier(s) de pré-inscription</strong>
+                    correspondant aux filtres actuellement appliqués.
+                </p>
+                <p class="mb-2">Chaque dossier exporté inclura :</p>
+                <ul>
+                    <li>la fiche administrative complète de pré-inscription ;</li>
+                    <li>les pièces annexes téléversées et compatibles.</li>
+                </ul>
+                <p class="mb-0 text-muted">
+                    Si le volume de documents est important, la génération peut prendre quelques instants.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                <form method="get" action="{% url 'main:inscriptions_print_pdf' %}" target="_blank" class="d-inline">
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'page' and key != 'per_page' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary" {% if not filtered_students_count %}disabled{% endif %}>
+                        Continuer l’export PDF
+                    </button>
+                </form>
             </div>
         </div>
     </div>

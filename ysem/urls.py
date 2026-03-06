@@ -21,7 +21,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Configuration du site d'administration
-from . import admin_config
 from main import views
 
 urlpatterns = [
@@ -38,10 +37,10 @@ urlpatterns = [
     path("api/v1/", include("prospection.api_urls")),
 
     # URLs publiques pour l'inscription externe
-    path('inscription-externe/', views.InscriptionExterneView.as_view(), name='inscription_externe'),
-    path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
-    path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
-    path('nouvelle_inscription/', views.NouvelleInscriptionView.as_view(), name='nouvelle_inscription'),
+    path('inscription-externe/', views.PreInscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', views.PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', views.PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/', views.NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
     path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
 ]
 

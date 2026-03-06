@@ -30,7 +30,7 @@ class StudentMetaData(models.Model):
     residence_city = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ville de résidence")
     residence_quarter = models.CharField(max_length=100, blank=True, null=True, verbose_name="Quartier de résidence")
     
-    is_complete = models.BooleanField(default=True, verbose_name="Dossier complet")
+    is_complete = models.BooleanField(default=False, verbose_name="Dossier complet")
 
     # Documents d'inscription obligatoires
     preuve_baccalaureat = models.FileField(
@@ -49,12 +49,21 @@ class StudentMetaData(models.Model):
         help_text="Photocopie certifiée conforme de l'acte de naissance (PNG/JPG/PDF, max 5Mo)"
     )
 
-    releve_notes_bac = models.FileField(
+    # anciennement relevé du baccalauréat ; aujourd'hui on accepte le relevé de la dernière classe fréquentée
+    releve_notes_last_class = models.FileField(
         upload_to='documents/inscription/releve_notes/',
         blank=True,
         null=True,
-        verbose_name="Relevé des notes du Baccalauréat",
-        help_text="Photocopie certifiée conforme du relevé des notes du baccalauréat (PNG/JPG/PDF, max 5Mo)"
+        verbose_name="Relevé de notes de la dernière classe fréquentée",
+        help_text="Photocopie du relevé de notes de la dernière classe fréquentée (PNG/JPG/PDF, max 5Mo)"
+    )
+
+    justificatif_dernier_diplome = models.FileField(
+        upload_to='documents/inscription/justificatif_diplome/',
+        blank=True,
+        null=True,
+        verbose_name="Justificatif du dernier diplôme obtenu",
+        help_text="Photocopie du justificatif du dernier diplôme obtenu (PNG/JPG/PDF, max 5Mo)"
     )
 
     bulletins_terminale = models.FileField(
@@ -63,6 +72,14 @@ class StudentMetaData(models.Model):
         null=True,
         verbose_name="Bulletins de la classe de terminale",
         help_text="Photocopie des bulletins de notes de la classe de terminale (PNG/JPG/PDF, max 5Mo)"
+    )
+
+    certificat_nationalite = models.FileField(
+        upload_to='documents/inscription/certificat_nationalite/',
+        blank=True,
+        null=True,
+        verbose_name="Certificat de nationalité",
+        help_text="Photocopie certifiée conforme du certificat de nationalité (PNG/JPG/PDF, max 5Mo)"
     )
 
     def __str__(self):
@@ -81,24 +98,30 @@ class Student(models.Model):
     firstname = models.CharField(max_length=100, verbose_name="Prénom")
     lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
-    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Approuvée'), ('abandoned', 'abandonné'), ('rejected', 'Rejetée')], verbose_name="Statut")
-    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')])
-    lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr')
+    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Examinée & Approuvée'), ('abandoned', 'abandonné'), ('rejected', 'Rejetée'), ("registered", "Inscrit")], verbose_name="Statut de pré-inscription", default='pending')
+    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
+    lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr', verbose_name="Langue")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True, verbose_name="Email")
 
     # Relations
     # user = models.OneToOneField(BaseUser, on_delete=models.CASCADE, related_name='student_profile', null=True, blank=True)
-    godfather = models.ForeignKey(Godfather, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student')
-    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
+    godfather = models.ForeignKey(Godfather, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="Parrain")
+    metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student', verbose_name="Métadonnées")
+    school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="École fréquentée")
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="Programme")
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add=True, verbose_name="Date d'inscription")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+
+    specialite_souhaitee_1 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 1")
+    specialite_souhaitee_2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 2")
+    specialite_souhaitee_3 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 3")
 
     # Champ pour l'authentification externe des étudiants
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe pour consultation externe")
     external_password_created_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de création du mot de passe")
+
+    profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, verbose_name="Photo de profil")
 
     def __str__(self):
         return f"{self.matricule} - {self.firstname} {self.lastname}"

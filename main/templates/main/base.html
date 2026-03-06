@@ -92,7 +92,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'inscriptions' %}active{% endif %}" href="{% url 'main:inscriptions' %}">
                         <i class="fas fa-user-plus me-2"></i>
-                        Inscriptions
+                        Pré-Inscriptions
                     </a>
                 </li>
                 <li class="nav-item">
@@ -164,12 +164,15 @@
         // Update current date
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
-            document.getElementById('current-date').textContent = now.toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+            const currentDateElement = document.getElementById('current-date');
+            if (currentDateElement) {
+                currentDateElement.textContent = now.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
         });
 
         // Mobile Sidebar Toggle

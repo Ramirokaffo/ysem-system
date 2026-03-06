@@ -126,7 +126,8 @@ class StudentMetaDataAdmin(admin.ModelAdmin):
         ('Documents d\'inscription', {
             'fields': (
                 'preuve_baccalaureat', 'acte_naissance',
-                'releve_notes_bac', 'bulletins_terminale'
+                'releve_notes_last_class', 'justificatif_dernier_diplome',
+                'bulletins_terminale'
             ),
             'classes': ('collapse',)
         }),

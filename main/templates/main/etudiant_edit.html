@@ -1,19 +1,19 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}Modifier l'étudiant - YSEM{% endblock %}
+{% block title %}{{ page_title|default:"Modifier l'étudiant" }} - YSEM{% endblock %}
 
-{% block page_title %}Modifier l'étudiant{% endblock %}
+{% block page_title %}{{ page_title|default:"Modifier l'étudiant" }}{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-3 mb-4">
             <div class="d-flex justify-content-between align-items-center">
-                <h4><span class="fas fa-edit mr-2"></span>Modification de {{ student.firstname }} {{ student.lastname }}</h4>
+                <h4><span class="fas fa-edit mr-2"></span>{{ page_title|default:"Modifier l'étudiant" }} de {{ student.firstname }} {{ student.lastname }}</h4>
                 <div>
-                    <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-outline-secondary shadow-soft">
-                        <span class="fas fa-arrow-left mr-2"></span>Retour aux détails
+                    <a href="{{ back_url }}" class="btn btn-outline-secondary shadow-soft">
+                        <span class="fas fa-arrow-left mr-2"></span>{{ back_link_label }}
                     </a>
                 </div>
             </div>
@@ -21,8 +21,20 @@
     </div>
 </div>
 
-<form method="post" novalidate>
+<form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
+
+    {% if student_form.non_field_errors or metadata_form.non_field_errors or student_level_form.non_field_errors %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger">
+                {% for error in student_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                {% for error in metadata_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                {% for error in student_level_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Informations principales -->
     <div class="row">
@@ -33,6 +45,48 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
+                        <div class="col-12">
+                            <div class="card bg-primary shadow-inset border-light p-3 mb-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3 text-center mb-3 mb-md-0">
+                                        {% if student.profile_photo %}
+                                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="img-fluid img-thumbnail rounded" style="max-height: 180px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="icon icon-shape shadow-soft border border-light rounded-circle bg-primary text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 140px; height: 140px;">
+                                                <span class="fas fa-user fa-3x"></span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label font-weight-bold">{{ student_form.profile_photo.label }}</label>
+                                            {% if student.profile_photo %}
+                                                <div class="small mb-2">
+                                                    <a href="{{ student.profile_photo.url }}" target="_blank" rel="noopener">Voir la photo actuelle</a>
+                                                </div>
+                                            {% endif %}
+                                            {{ student_form.profile_photo }}
+                                            <small class="text-muted d-block mt-2">Formats recommandés : JPG ou PNG.</small>
+                                            {% if student.profile_photo %}
+                                                <div class="form-check mt-3">
+                                                    {{ student_form.remove_profile_photo }}
+                                                    <label class="form-check-label" for="{{ student_form.remove_profile_photo.id_for_label }}">
+                                                        {{ student_form.remove_profile_photo.label }}
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted d-block mt-2">Cochez cette option pour retirer la photo sans la remplacer.</small>
+                                            {% endif %}
+                                            {% if student_form.profile_photo.errors %}
+                                                <div class="text-danger small mt-2">{{ student_form.profile_photo.errors.0 }}</div>
+                                            {% endif %}
+                                            {% if student_form.remove_profile_photo.errors %}
+                                                <div class="text-danger small mt-2">{{ student_form.remove_profile_photo.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">Matricule</label>
@@ -193,6 +247,47 @@
         </div>
     </div>
 
+    <!-- Niveau d'inscription -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-graduation-cap mr-2"></span>Niveau d'inscription</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_level_form.level.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_level_form.level.name }}" id="{{ student_level_form.level.id_for_label }}">
+                                    {% for value, label in student_level_form.level.field.choices %}
+                                        <option value="{{ value }}" {% if student_level_form.level.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if student_level_form.level.errors %}
+                                    <div class="text-danger small">{{ student_level_form.level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_level_form.academic_year.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_level_form.academic_year.name }}" id="{{ student_level_form.academic_year.id_for_label }}">
+                                    {% for value, label in student_level_form.academic_year.field.choices %}
+                                        <option value="{{ value }}" {% if student_level_form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if student_level_form.academic_year.errors %}
+                                    <div class="text-danger small">{{ student_level_form.academic_year.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Informations géographiques -->
     <div class="row">
         <div class="col-12">
@@ -319,6 +414,20 @@
                                 {% endif %}
                             </div>
                             <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.father_live_city.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.father_live_city.name }}" value="{{ metadata_form.father_live_city.value|default:'' }}" id="{{ metadata_form.father_live_city.id_for_label }}">
+                                {% if metadata_form.father_live_city.errors %}
+                                    <div class="text-danger small">{{ metadata_form.father_live_city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.father_email.label }}</label>
+                                <input type="email" class="form-control shadow-inset border-light" name="{{ metadata_form.father_email.name }}" value="{{ metadata_form.father_email.value|default:'' }}" id="{{ metadata_form.father_email.id_for_label }}">
+                                {% if metadata_form.father_email.errors %}
+                                    <div class="text-danger small">{{ metadata_form.father_email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.father_occupation.label }}</label>
                                 <input type="text" class="form-control shadow-inset border-light" name="{{ metadata_form.father_occupation.name }}" value="{{ metadata_form.father_occupation.value|default:'' }}" id="{{ metadata_form.father_occupation.id_for_label }}">
                                 {% if metadata_form.father_occupation.errors %}
@@ -350,12 +459,99 @@
         </div>
     </div>
 
+    <!-- Documents d'inscription -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-folder-open mr-2"></span>Documents d'inscription</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.acte_naissance.label }}</label>
+                                {% if metadata_form.instance.acte_naissance %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.acte_naissance.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.acte_naissance }}
+                                {% if metadata_form.acte_naissance.errors %}
+                                    <div class="text-danger small">{{ metadata_form.acte_naissance.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.preuve_baccalaureat.label }}</label>
+                                {% if metadata_form.instance.preuve_baccalaureat %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.preuve_baccalaureat.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.preuve_baccalaureat }}
+                                {% if metadata_form.preuve_baccalaureat.errors %}
+                                    <div class="text-danger small">{{ metadata_form.preuve_baccalaureat.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.certificat_nationalite.label }}</label>
+                                {% if metadata_form.instance.certificat_nationalite %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.certificat_nationalite.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.certificat_nationalite }}
+                                {% if metadata_form.certificat_nationalite.errors %}
+                                    <div class="text-danger small">{{ metadata_form.certificat_nationalite.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.releve_notes_last_class.label }}</label>
+                                {% if metadata_form.instance.releve_notes_last_class %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.releve_notes_last_class.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.releve_notes_last_class }}
+                                {% if metadata_form.releve_notes_last_class.errors %}
+                                    <div class="text-danger small">{{ metadata_form.releve_notes_last_class.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.justificatif_dernier_diplome.label }}</label>
+                                {% if metadata_form.instance.justificatif_dernier_diplome %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.justificatif_dernier_diplome.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.justificatif_dernier_diplome }}
+                                {% if metadata_form.justificatif_dernier_diplome.errors %}
+                                    <div class="text-danger small">{{ metadata_form.justificatif_dernier_diplome.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ metadata_form.bulletins_terminale.label }}</label>
+                                {% if metadata_form.instance.bulletins_terminale %}
+                                    <div class="small mb-2"><a href="{{ metadata_form.instance.bulletins_terminale.url }}" target="_blank">Document actuel</a></div>
+                                {% endif %}
+                                {{ metadata_form.bulletins_terminale }}
+                                {% if metadata_form.bulletins_terminale.errors %}
+                                    <div class="text-danger small">{{ metadata_form.bulletins_terminale.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Boutons d'action -->
     <div class="row">
         <div class="col-12">
             <div class="card bg-primary shadow-soft border-light p-3 mb-4">
                 <div class="d-flex flex-wrap gap-2 justify-content-end">
-                    <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="btn btn-outline-secondary shadow-soft mx-2">
+                    <a href="{{ back_url }}" class="btn btn-outline-secondary shadow-soft mx-2">
                         <span class="fas fa-times mr-2"></span>Annuler
                     </a>
                     <button type="submit" class="btn btn-primary shadow-soft">

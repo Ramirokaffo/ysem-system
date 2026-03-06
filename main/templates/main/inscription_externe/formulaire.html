@@ -565,15 +565,27 @@
                                                 {% endif %}
                                             </div>
                                             <div class="col-12 col-md-6 mb-3">
-                                                <label for="{{ form.releve_notes_bac.id_for_label }}" class="form-label">
-                                                    {{ form.releve_notes_bac.label }} <span class="text-danger">*</span>
+                                                <label for="{{ form.releve_notes_last_class.id_for_label }}" class="form-label">
+                                                    {{ form.releve_notes_last_class.label }} <span class="text-danger">*</span>
                                                 </label>
-                                                {{ form.releve_notes_bac }}
-                                                {% if form.releve_notes_bac.help_text %}
-                                                    <small class="form-text text-muted">{{ form.releve_notes_bac.help_text }}</small>
+                                                {{ form.releve_notes_last_class }}
+                                                {% if form.releve_notes_last_class.help_text %}
+                                                    <small class="form-text text-muted">{{ form.releve_notes_last_class.help_text }}</small>
                                                 {% endif %}
-                                                {% if form.releve_notes_bac.errors %}
-                                                    <div class="text-danger">{{ form.releve_notes_bac.errors }}</div>
+                                                {% if form.releve_notes_last_class.errors %}
+                                                    <div class="text-danger">{{ form.releve_notes_last_class.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label for="{{ form.justificatif_dernier_diplome.id_for_label }}" class="form-label">
+                                                    {{ form.justificatif_dernier_diplome.label }} <span class="text-danger">*</span>
+                                                </label>
+                                                {{ form.justificatif_dernier_diplome }}
+                                                {% if form.justificatif_dernier_diplome.help_text %}
+                                                    <small class="form-text text-muted">{{ form.justificatif_dernier_diplome.help_text }}</small>
+                                                {% endif %}
+                                                {% if form.justificatif_dernier_diplome.errors %}
+                                                    <div class="text-danger">{{ form.justificatif_dernier_diplome.errors }}</div>
                                                 {% endif %}
                                             </div>
                                             <div class="col-12 col-md-6 mb-3">

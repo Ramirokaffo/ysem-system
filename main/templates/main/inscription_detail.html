@@ -29,11 +29,11 @@
                 <div>
                     <a href="{% url 'main:inscriptions' %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i>
-                        Retour aux inscriptions
+                        Retour aux pré-inscriptions
                     </a>
                 </div>
                 <div>
-                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %} fs-6">
+                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success text-white{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary text-white{% endif %} fs-6">
                         {{ student.get_status_display }}
                     </span>
                 </div>
@@ -140,29 +140,39 @@
                 <i class="fas fa-cogs me-2"></i>
                 Actions
             </h5>
+
+            <a href="{% url 'main:inscription_edit' student.matricule %}" class="btn btn-warning w-100 mb-3">
+                <i class="fas fa-edit me-2"></i>
+                Modifier la pré-inscription
+            </a>
+
+	            <a href="{% url 'main:inscription_print_pdf' student.matricule %}" class="btn btn-info w-100 mb-3" target="_blank" rel="noopener">
+	                <i class="fas fa-print me-2"></i>
+	                Imprimer le dossier PDF complet
+	            </a>
             
             {% if student.status == 'pending' %}
                 <div class="d-grid gap-2">
                     <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success w-100 mb-2" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
+                        <button type="submit" class="btn btn-success w-100 mb-2" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette pré-inscription ?')">
                             <i class="fas fa-check me-2"></i>
-                            Approuver l'inscription
+                            Approuver la pré-inscription
                         </button>
                     </form>
                     
                     <form method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir rejeter cette inscription ?')">
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir rejeter cette pré-inscription ?')">
                             <i class="fas fa-times me-2"></i>
-                            Rejeter l'inscription
+                            Rejeter la pré-inscription
                         </button>
                     </form>
                 </div>
             {% elif student.status == 'approved' %}
                 <div class="alert alert-success">
-                    <i class="fas fa-check-circle me-2"></i>
-                    Inscription approuvée
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Pré-inscription approuvée
                 </div>
                 <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-primary w-100">
                     <i class="fas fa-user me-2"></i>
@@ -171,13 +181,13 @@
             {% elif student.status == 'rejected' %}
                 <div class="alert alert-danger">
                     <i class="fas fa-times-circle me-2"></i>
-                    Inscription rejetée
+                    Pré-inscription rejetée
                 </div>
                 <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette inscription ?')">
+                    <button type="submit" class="btn btn-success w-100" onclick="return confirm('Êtes-vous sûr de vouloir approuver cette pré-inscription ?')">
                         <i class="fas fa-redo me-2"></i>
-                        Réactiver l'inscription
+                        Réactiver la pré-inscription
                     </button>
                 </form>
             {% endif %}
@@ -193,7 +203,7 @@
             <div class="mb-3">
                 <label class="form-label fw-bold">Statut actuel</label>
                 <div class="p-2 bg-light rounded">
-                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
+                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'approved' %}bg-success text-white{% elif student.status == 'rejected' %}bg-danger{% else %}bg-secondary text-white{% endif %}">
                         {{ student.get_status_display }}
                     </span>
                 </div>
@@ -230,7 +240,7 @@
                     <label class="form-label fw-bold">Programme</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.program %}
-                            <i class="fas fa-book me-2"></i>{{ student.program.name }}
+                            <i class="fas fa-book mr-2"></i>{{ student.program.name }}
                         {% else %}
                             <span class="text-muted">Non spécifié</span>
                         {% endif %}
@@ -241,7 +251,7 @@
                     <label class="form-label fw-bold">École d'origine</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.school %}
-                            <i class="fas fa-school me-2"></i>{{ student.school.name }}
+                            <i class="fas fa-school mr-2"></i>{{ student.school.name }}
                         {% else %}
                             <span class="text-muted">Non spécifiée</span>
                         {% endif %}
@@ -301,22 +311,22 @@
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Niveau</label>
                     <div class="p-2 bg-light rounded">
-                        <i class="fas fa-graduation-cap me-2"></i>{{ student_level.level.name }}
+                        <i class="fas fa-graduation-cap mr-2"></i>{{ student_level.level.name }}
                         {% if student_level.is_active %}
-                            <span class="badge bg-success ms-2">Actuel</span>
+                            <span class="badge bg-success text-white ms-2">Actuel</span>
                         {% endif %}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Année académique</label>
                     <div class="p-2 bg-light rounded">
-                        <i class="fas fa-calendar me-2"></i>{{ student_level.academic_year.name }}
+                        <i class="fas fa-calendar mr-2"></i>{{ student_level.academic_year.name }}
                     </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Documents officiels</label>
                     <div class="p-2 bg-light rounded">
-                        <i class="fas fa-file-alt me-2"></i>{{ student_level.official_documents.count }} document(s)
+                        <i class="fas fa-file-alt mr-2"></i>{{ student_level.official_documents.count }} document(s)
                     </div>
                 </div>
             </div>
@@ -365,7 +375,7 @@
                             <label class="form-label fw-bold">Téléphone</label>
                             <div class="p-2 bg-light rounded">
                                 {% if student.metadata.mother_phone_number %}
-                                    <i class="fas fa-phone me-1"></i>{{ student.metadata.mother_phone_number }}
+                                    <i class="fas fa-phone me-1 mr-2"></i>{{ student.metadata.mother_phone_number }}
                                 {% else %}
                                     Non renseigné
                                 {% endif %}
@@ -375,7 +385,7 @@
                             <label class="form-label fw-bold">Email</label>
                             <div class="p-2 bg-light rounded">
                                 {% if student.metadata.mother_email %}
-                                    <i class="fas fa-envelope me-1"></i>{{ student.metadata.mother_email }}
+                                    <i class="fas fa-envelope me-1 mr-2"></i>{{ student.metadata.mother_email }}
                                 {% else %}
                                     Non renseigné
                                 {% endif %}
@@ -412,7 +422,7 @@
                             <label class="form-label fw-bold">Téléphone</label>
                             <div class="p-2 bg-light rounded">
                                 {% if student.metadata.father_phone_number %}
-                                    <i class="fas fa-phone me-1"></i>{{ student.metadata.father_phone_number }}
+                                    <i class="fas fa-phone me-1 mr-2"></i>{{ student.metadata.father_phone_number }}
                                 {% else %}
                                     Non renseigné
                                 {% endif %}
@@ -422,7 +432,7 @@
                             <label class="form-label fw-bold">Email</label>
                             <div class="p-2 bg-light rounded">
                                 {% if student.metadata.father_email %}
-                                    <i class="fas fa-envelope me-1"></i>{{ student.metadata.father_email }}
+                                    <i class="fas fa-envelope me-1 mr-2"></i>{{ student.metadata.father_email }}
                                 {% else %}
                                     Non renseigné
                                 {% endif %}
@@ -522,7 +532,7 @@
                             </span>
                         {% else %}
                             <span class="badge bg-warning">
-                                <i class="fas fa-exclamation-triangle me-1"></i>Incomplet
+                                <i class="fas fa-exclamation-triangle me-1 mr-1"></i>Incomplet
                             </span>
                         {% endif %}
                     </div>
@@ -557,10 +567,36 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Relevé de notes du bac</label>
+                    <label class="form-label fw-bold">Certificat de nationalité</label>
                     <div class="p-2 bg-light rounded">
-                        {% if student.metadata.releve_notes_bac %}
-                            <a href="{{ student.metadata.releve_notes_bac.url }}" target="_blank" class="text-secondary">
+                        {% if student.metadata.certificat_nationalite %}
+                            <a href="{{ student.metadata.certificat_nationalite.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Relevé de notes de la dernière classe</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.releve_notes_last_class %}
+                            <a href="{{ student.metadata.releve_notes_last_class.url }}" target="_blank" class="text-secondary">
+                                <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Justificatif du dernier diplôme</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if student.metadata.justificatif_dernier_diplome %}
+                            <a href="{{ student.metadata.justificatif_dernier_diplome.url }}" target="_blank" class="text-secondary">
                                 <i class="fas fa-file-pdf me-1 mr-1"></i>Voir le document
                             </a>
                         {% else %}

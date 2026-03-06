@@ -6,21 +6,24 @@ from .models import Lecturer, TeachingMonitoring, Evaluation
 @admin.register(Lecturer)
 class LecturerAdmin(admin.ModelAdmin):
     """Administration des enseignants"""
-    list_display = ['matricule', 'full_name', 'grade', 'gender', 'contact_info', 'lang']
-    list_filter = ['grade', 'gender', 'lang']
+    list_display = ['matricule', 'full_name', 'grade', 'gender', 'contact_info', 'lang', 'marital_status', 'has_health_problem']
+    list_filter = ['grade', 'gender', 'lang', 'marital_status', 'has_health_problem']
     search_fields = ['matricule', 'firstname', 'lastname', 'email', 'phone_number']
     ordering = ['lastname', 'firstname']
     list_per_page = 25
 
     fieldsets = (
         ('Informations personnelles', {
-            'fields': ('matricule', 'firstname', 'lastname', 'date_naiss', 'gender')
+            'fields': ('firstname', 'lastname', 'date_naiss', 'place_of_birth', 'gender', 'address', 'photo', 'signature'),
         }),
         ('Informations professionnelles', {
-            'fields': ('grade', 'lang')
+            'fields': ('grade', 'lang', 'marital_status', 'has_health_problem', 'health_problem_description')
         }),
         ('Contact', {
-            'fields': ('email', 'phone_number')
+            'fields': ('email', 'phone_number', 'phone_number_2')
+        }),
+        ('Informations complémentaires', {
+            'fields': ('nic', 'niu', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_email', 'emergency_contact_relationship'),
         }),
     )
 

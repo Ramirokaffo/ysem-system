@@ -92,6 +92,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Photo</th>
                             <th>Matricule</th>
                             <th>Nom complet</th>
                             <th>Genre</th>
@@ -103,6 +104,17 @@
                     <tbody>
                         {% for student in students %}
                         <tr>
+                            <td>
+                                <a href="{% url 'main:etudiant_detail' pk=student.matricule %}" class="d-inline-flex align-items-center justify-content-center">
+                                    {% if student.profile_photo %}
+                                        <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="rounded-circle border border-light shadow-soft" style="width: 48px; height: 48px; object-fit: cover;">
+                                    {% else %}
+                                        <span class="icon icon-xs shadow-soft border border-light rounded-circle bg-primary text-secondary d-inline-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                    {% endif %}
+                                </a>
+                            </td>
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}"><strong>{{ student.matricule }}</strong></a></td>
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}">{{ student.firstname }} {{ student.lastname }}</a></td>
                             <td><a href="{% url 'main:etudiant_detail' pk=student.matricule %}">{{ student.get_gender_display }}</a></td>

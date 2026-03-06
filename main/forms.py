@@ -32,11 +32,33 @@ def validate_document_file(value):
     return value
 
 
+class GodfatherChoiceField(forms.ModelChoiceField):
+    """Champ de sélection des parrains avec libellé enrichi."""
+
+    def label_from_instance(self, obj):
+        parts = [obj.full_name]
+        if obj.phone_number:
+            parts.append(obj.phone_number)
+        if obj.email:
+            parts.append(obj.email)
+        return " - ".join(parts)
+
+
+class SchoolChoiceField(forms.ModelChoiceField):
+    """Champ de sélection des établissements avec libellé enrichi."""
+
+    def label_from_instance(self, obj):
+        parts = [obj.name]
+        if obj.phone_number:
+            parts.append(obj.phone_number)
+        return " - ".join(parts)
+
+
 # Le formulaire InscriptionEtape1Form a été supprimé car il n'est plus nécessaire
 # Les informations administratives sont maintenant intégrées dans le formulaire complet
 
 class InscriptionCompleteForm(forms.Form):
-    """Formulaire complet d'inscription combinant toutes les étapes nécessaires"""
+    """Formulaire complet de pre-inscription combinant toutes les étapes nécessaires"""
 
     # === SECTION 1: INFORMATIONS PERSONNELLES (ex-étape 2) ===
     nom = forms.CharField(
@@ -113,14 +135,14 @@ class InscriptionCompleteForm(forms.Form):
     )
 
     # Informations complémentaires
-    nationalite = forms.CharField(
-        max_length=100,
-        label="Nationalité",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Nationalité'
-        })
-    )
+    # nationalite = forms.CharField(
+    #     max_length=100,
+    #     label="Nationalité",
+    #     widget=forms.TextInput(attrs={
+    #         'class': 'form-control',
+    #         'placeholder': 'Nationalité'
+    #     })
+    # )
 
     LANGUE_CHOICES = [
         ('', 'Sélectionner'),
@@ -139,7 +161,8 @@ class InscriptionCompleteForm(forms.Form):
         queryset=AcademicYear.objects.all(),
         label="Année académique",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Sélectionner une année académique"
+        empty_label="Sélectionner une année académique",
+        initial=None
     )
 
     niveau = forms.ModelChoiceField(
@@ -156,6 +179,69 @@ class InscriptionCompleteForm(forms.Form):
         empty_label="Sélectionner un programme",
         required=False
     )
+
+
+    # Localisation
+    region_origine = forms.CharField(
+        max_length=100,
+        label="Région d'origine",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Région'
+        }),
+        required=False
+    )
+
+    departement_origine = forms.CharField(
+        max_length=100,
+        label="Département d'origine",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Département'
+        }),
+        required=False
+    )
+
+    arrondissement_origine = forms.CharField(
+        max_length=100,
+        label="Arrondissement d'origine",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Arrondissement'
+        }),
+        required=False
+    )
+
+    ville_residence = forms.CharField(
+        max_length=100,
+        label="Ville de résidence",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Résidence actuelle'
+        }),
+        required=False
+    )
+
+    quartier_residence = forms.CharField(
+        max_length=100,
+        label="Quartier de résidence",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Quartier'
+        }),
+        required=False
+    )
+
+    pays_origine = forms.CharField(
+        max_length=100,
+        label="Pays d'origine",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Cameroun'
+        }),
+        initial='Cameroun'
+    )
+
 
     # === SECTION 2: INFORMATIONS FAMILIALES (ex-étape 3) ===
     # Informations du père
@@ -189,6 +275,25 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
+    ville_residence_pere = forms.CharField(
+        max_length=100,
+        label="Ville de résidence du père",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ville de résidence'
+        }),
+        required=False
+    )
+
+    courriel_pere = forms.EmailField(
+    label="Courriel du père",
+    widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'email@exemple.com'
+    }),
+    required=False
+    )
+
     # Informations de la mère
     nom_mere = forms.CharField(
         max_length=100,
@@ -220,35 +325,72 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
-    # Informations du tuteur/responsable
-    nom_tuteur = forms.CharField(
+    ville_residence_mere = forms.CharField(
         max_length=100,
-        label="Nom et prénom du tuteur/responsable",
+        label="Ville de résidence de la mère",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Nom et prénom du tuteur'
+            'placeholder': 'Ville de résidence'
+        }),
+        required=False
+    )
+
+    courriel_mere = forms.EmailField(
+    label="Courriel de la mère",
+    widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'email@exemple.com'
+    }),
+    required=False
+    )
+
+    # Informations du tuteur/parrain
+    parrain_existant = GodfatherChoiceField(
+        queryset=Godfather.objects.none(),
+        label="Parrain/tuteur existant",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Saisir manuellement un nouveau tuteur/parrain",
+        help_text="Choisissez un parrain déjà enregistré ou laissez vide pour une saisie manuelle.",
+        required=False
+    )
+
+    nom_tuteur = forms.CharField(
+        max_length=100,
+        label="Nom et prénom du tuteur/parrain",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nom et prénom du tuteur/parrain'
         }),
         required=False
     )
 
     profession_tuteur = forms.CharField(
         max_length=200,
-        label="Profession du tuteur/responsable",
+        label="Profession du tuteur/parrain",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Profession du tuteur'
+            'placeholder': 'Profession du tuteur/parrain'
         }),
         required=False
     )
 
     telephone_tuteur = forms.CharField(
         max_length=17,
-        label="Téléphone du tuteur/responsable",
+        label="Téléphone du tuteur/parrain",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '+237 6XX XXX XXX'
         }),
         required=False
+    )
+
+    courriel_tuteur = forms.EmailField(
+    label="Courriel du tuteur/parrain",
+    widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'email@exemple.com'
+    }),
+    required=False
     )
 
     # Personne à contacter en cas d'urgence
@@ -343,6 +485,15 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
+    bac_etablissement_existant = SchoolChoiceField(
+        queryset=School.objects.none(),
+        label="Établissement existant",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Saisir manuellement un établissement",
+        help_text="Choisissez un établissement déjà enregistré ou laissez vide pour une saisie manuelle.",
+        required=False
+    )
+
     bac_etablissement = forms.CharField(
         max_length=200,
         label="Établissement d'obtention du Baccalauréat",
@@ -390,6 +541,15 @@ class InscriptionCompleteForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Ordonner les choix
+        self.fields['annee_academique'].queryset = AcademicYear.objects.all().order_by('-start_at')
+        if self.fields['annee_academique'].initial is None:
+            self.fields['annee_academique'].initial = AcademicYear.get_active_year()
+        self.fields['niveau'].queryset = Level.objects.all().order_by('name')
+        self.fields['programme'].queryset = Program.objects.all().order_by('name')
+        self.fields['parrain_existant'].queryset = Godfather.objects.all().order_by('full_name', 'phone_number', 'email')
+        self.fields['bac_etablissement_existant'].queryset = School.objects.filter(level='secondary').order_by('name', 'phone_number')
+
         # Si un programme est fourni dans les données initiales ou POST
         program_id = None
         if self.data:
@@ -399,12 +559,30 @@ class InscriptionCompleteForm(forms.Form):
 
         if program_id:
             try:
-                # Filtrer les spécialités par programme
+                # Convertir en entier et filtrer les spécialités par programme
+                program_id = int(program_id)
                 self.fields['specialite_souhaitee'].queryset = Speciality.objects.filter(program_id=program_id)
-                self.fields['specialite_souhaitee'].widget.attrs['disabled'] = False
+                # Supprimer l'attribut 'disabled' (ne pas le mettre à False, car Django le rendrait quand même)
+                self.fields['specialite_souhaitee'].widget.attrs.pop('disabled', None)
                 self.fields['specialite_souhaitee'].empty_label = "Sélectionner une spécialité"
             except (ValueError, TypeError):
-                pass
+                # Si la conversion échoue, autoriser toutes les spécialités pour la validation
+                self.fields['specialite_souhaitee'].queryset = Speciality.objects.all()
+                self.fields['specialite_souhaitee'].widget.attrs.pop('disabled', None)
+        else:
+            # Pas de programme sélectionné - autoriser toutes les spécialités pour éviter l'erreur de validation
+            self.fields['specialite_souhaitee'].queryset = Speciality.objects.all()
+
+        # Ajouter une note d'information pour les documents
+        self.document_info = {
+            'title': 'IMPORTANT - Documents requis',
+            'requirements': [
+                'Tous les documents doivent être lisibles et de bonne qualité',
+                'Taille maximale par fichier : 5 Mo',
+                'Formats acceptés uniquement : PNG, JPG, PDF',
+                'Les originaux de ces documents seront demandés après l\'inscription'
+            ]
+        }
 
     # === SECTION 4: DOCUMENTS REQUIS ===
     # Documents obligatoires
@@ -416,7 +594,7 @@ class InscriptionCompleteForm(forms.Form):
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
         help_text="Acte de naissance légalisé. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
-        required=True
+        required=False
     )
 
     certificat_nationalite = forms.FileField(
@@ -427,29 +605,40 @@ class InscriptionCompleteForm(forms.Form):
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
         help_text="Certificat de nationalité. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
-        required=True
+        required=False
     )
 
-    diplome_bac = forms.FileField(
-        label="Diplôme du Baccalauréat",
+    preuve_baccalaureat = forms.FileField(
+        label="Preuve du baccalauréat",
         validators=[validate_document_file],
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
-        help_text="Photocopie légalisée du diplôme du Baccalauréat. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
-        required=True
+        help_text="Ex: Photocopie légalisée du diplôme du Baccalauréat. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        required=False
     )
 
-    releve_notes_bac = forms.FileField(
-        label="Relevé de notes du Baccalauréat",
+    releve_notes_last_class = forms.FileField(
+        label="Relevé de notes de la dernière classe fréquentée",
         validators=[validate_document_file],
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
-        help_text="Photocopie du relevé de notes du Baccalauréat. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
-        required=True
+        help_text="Photocopie du relevé de notes de la dernière classe fréquentée. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        required=False
+    )
+
+    justificatif_dernier_diplome = forms.FileField(
+        label="Justificatif du dernier diplôme obtenu",
+        validators=[validate_document_file],
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.png,.jpg,.jpeg,.pdf'
+        }),
+        help_text="Photocopie du justificatif du dernier diplôme obtenu. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        required=False
     )
 
     bulletins_terminale = forms.FileField(
@@ -460,7 +649,7 @@ class InscriptionCompleteForm(forms.Form):
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
         help_text="Photocopie des bulletins de notes de la classe de terminale. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
-        required=True
+        required=False
     )
 
     # Documents optionnels
@@ -476,30 +665,45 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
+    is_complete = forms.BooleanField(
+        label="Dossier complet",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        required=False,
+        initial=False
+    )
+
     # Attestation
     attestation_veracite = forms.BooleanField(
         label="J'atteste que les informations indiquées ci-dessus sont complètes, authentiques et exactes.",
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        required=True
+        required=False
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Ordonner les choix
-        self.fields['annee_academique'].queryset = AcademicYear.objects.all().order_by('-start_at')
-        self.fields['niveau'].queryset = Level.objects.all().order_by('name')
-        self.fields['programme'].queryset = Program.objects.all().order_by('name')
+    # profile_photo = forms.ImageField(
+    #     label="Photo de profil",
+    #     widget=forms.FileInput(attrs={'class': 'form-control'}),
+    #     required=False
+    # )
 
-        # Ajouter une note d'information pour les documents
-        self.document_info = {
-            'title': 'IMPORTANT - Documents requis',
-            'requirements': [
-                'Tous les documents doivent être lisibles et de bonne qualité',
-                'Taille maximale par fichier : 5 Mo',
-                'Formats acceptés uniquement : PNG, JPG, PDF',
-                'Les originaux de ces documents seront demandés après l\'inscription'
-            ]
-        }
+    def clean(self):
+        """Validation personnalisée du formulaire"""
+        cleaned_data = super().clean()
+        bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
+        if bac_etablissement_existant:
+            cleaned_data['bac_etablissement'] = bac_etablissement_existant.name
+        
+        # Vérifier que la spécialité sélectionnée correspond au programme
+        programme = cleaned_data.get('programme')
+        specialite = cleaned_data.get('specialite_souhaitee')
+        
+        if programme and specialite:
+            # Vérifier que la spécialité appartient au programme sélectionné
+            if specialite.program_id != programme.id:
+                raise ValidationError(
+                    "La spécialité sélectionnée doit appartenir au programme choisi."
+                )
+        
+        return cleaned_data
 
 
 class InscriptionEtape2Form(forms.Form):
@@ -635,6 +839,26 @@ class InscriptionEtape2Form(forms.Form):
             'class': 'form-control',
             'placeholder': 'Résidence actuelle'
         })
+    )
+
+    quartier_residence = forms.CharField(
+        max_length=100,
+        label="Quartier de résidence",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Quartier'
+        }),
+        required=False
+    )
+
+    pays_origine = forms.CharField(
+        max_length=100,
+        label="Pays d'origine",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Cameroun'
+        }),
+        initial='Cameroun'
     )
 
     # Situation personnelle
@@ -1073,14 +1297,25 @@ class InscriptionEtape4Form(forms.Form):
         required=True
     )
 
-    releve_notes_bac = forms.FileField(
-        label="Photocopie certifiée du relevé des notes du Baccalauréat",
+    releve_notes_last_class = forms.FileField(
+        label="Photocopie certifiée du relevé des notes de la dernière classe fréquentée",
         validators=[validate_document_file],
         widget=forms.FileInput(attrs={
             'class': 'form-control',
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
-        help_text="Photocopie certifiée conforme du relevé des notes du baccalauréat. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        help_text="Photocopie certifiée conforme du relevé des notes de la dernière classe fréquentée. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        required=True
+    )
+
+    justificatif_dernier_diplome = forms.FileField(
+        label="Photocopie certifiée du justificatif du dernier diplôme obtenu",
+        validators=[validate_document_file],
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.png,.jpg,.jpeg,.pdf'
+        }),
+        help_text="Photocopie certifiée conforme du justificatif du dernier diplôme obtenu. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
         required=True
     )
 
@@ -1128,14 +1363,23 @@ class InscriptionEtape4Form(forms.Form):
             try:
                 # Filtrer les spécialités par programme
                 self.fields['specialite_choisie_1'].queryset = Speciality.objects.filter(program_id=program_id)
-                self.fields['specialite_choisie_1'].widget.attrs['disabled'] = False
+                # Supprimer l'attribut 'disabled' (ne pas le mettre à False, car Django le rendrait quand même)
+                self.fields['specialite_choisie_1'].widget.attrs.pop('disabled', None)
                 self.fields['specialite_choisie_1'].empty_label = "Sélectionner une spécialité"
 
                 self.fields['specialite_choisie_2'].queryset = Speciality.objects.filter(program_id=program_id)
-                self.fields['specialite_choisie_2'].widget.attrs['disabled'] = False
+                self.fields['specialite_choisie_2'].widget.attrs.pop('disabled', None)
                 self.fields['specialite_choisie_2'].empty_label = "Sélectionner une spécialité (optionnel)"
             except (ValueError, TypeError):
-                pass
+                # Si la conversion échoue, autoriser toutes les spécialités pour la validation
+                self.fields['specialite_choisie_1'].queryset = Speciality.objects.all()
+                self.fields['specialite_choisie_1'].widget.attrs.pop('disabled', None)
+                self.fields['specialite_choisie_2'].queryset = Speciality.objects.all()
+                self.fields['specialite_choisie_2'].widget.attrs.pop('disabled', None)
+        else:
+            # Pas de programme sélectionné - autoriser toutes les spécialités pour éviter l'erreur de validation
+            self.fields['specialite_choisie_1'].queryset = Speciality.objects.all()
+            self.fields['specialite_choisie_2'].queryset = Speciality.objects.all()
 
         # Ajouter une note d'information pour les documents
         self.document_info = {
@@ -1152,11 +1396,19 @@ class InscriptionEtape4Form(forms.Form):
 class StudentEditForm(forms.ModelForm):
     """Formulaire de modification des informations principales de l'étudiant"""
 
+    remove_profile_photo = forms.BooleanField(
+        required=False,
+        label='Supprimer la photo actuelle',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+
     class Meta:
         model = Student
         fields = [
             'firstname', 'lastname', 'date_naiss', 'gender', 'lang',
-            'phone_number', 'email', 'status', 'school', 'program', 'godfather'
+            'phone_number', 'email', 'status', 'school', 'program', 'godfather', 'profile_photo'
         ]
         widgets = {
             'firstname': forms.TextInput(attrs={
@@ -1197,6 +1449,10 @@ class StudentEditForm(forms.ModelForm):
             'godfather': forms.Select(attrs={
                 'class': 'form-select'
             }),
+            'profile_photo': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/png,image/jpeg,image/jpg'
+            }),
         }
         labels = {
             'firstname': 'Prénom',
@@ -1210,6 +1466,7 @@ class StudentEditForm(forms.ModelForm):
             'school': 'École',
             'program': 'Programme',
             'godfather': 'Parrain',
+            'profile_photo': 'Photo de profil',
         }
 
     def __init__(self, *args, **kwargs):
@@ -1221,6 +1478,34 @@ class StudentEditForm(forms.ModelForm):
         self.fields['program'].required = False
         self.fields['godfather'].required = False
         self.fields['date_naiss'].required = False
+        self.fields['profile_photo'].required = False
+
+    def save(self, commit=True):
+        previous_photo = None
+        if self.instance.pk:
+            previous_photo = Student.objects.get(pk=self.instance.pk).profile_photo
+
+        uploaded_photo = self.files.get('profile_photo')
+        should_remove_photo = self.cleaned_data.get('remove_profile_photo') and not uploaded_photo
+
+        student = super().save(commit=False)
+
+        if should_remove_photo:
+            student.profile_photo = None
+
+        if commit:
+            student.save()
+            self.save_m2m()
+
+            previous_photo_name = getattr(previous_photo, 'name', '')
+            current_photo_name = getattr(student.profile_photo, 'name', '')
+
+            if should_remove_photo and previous_photo_name:
+                previous_photo.storage.delete(previous_photo_name)
+            elif uploaded_photo and previous_photo_name and previous_photo_name != current_photo_name:
+                previous_photo.storage.delete(previous_photo_name)
+
+        return student
 
 
 class StudentMetaDataEditForm(forms.ModelForm):
@@ -1231,10 +1516,12 @@ class StudentMetaDataEditForm(forms.ModelForm):
         fields = [
             'mother_full_name', 'mother_live_city', 'mother_email',
             'mother_occupation', 'mother_phone_number', 'father_full_name',
+            'father_live_city', 'father_email',
             'father_occupation', 'father_phone_number', 'original_country',
             'original_region', 'original_department', 'original_district',
             'residence_city', 'residence_quarter', 'is_complete',
-            'preuve_baccalaureat', 'acte_naissance', 'releve_notes_bac', 'bulletins_terminale'
+            'preuve_baccalaureat', 'acte_naissance', 'certificat_nationalite', 'releve_notes_last_class',
+            'justificatif_dernier_diplome', 'bulletins_terminale'
         ]
         widgets = {
             'mother_full_name': forms.TextInput(attrs={
@@ -1260,6 +1547,14 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'father_full_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nom complet du père'
+            }),
+            'father_live_city': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ville de résidence du père'
+            }),
+            'father_email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email du père'
             }),
             'father_occupation': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -1304,7 +1599,15 @@ class StudentMetaDataEditForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': '.png,.jpg,.jpeg,.pdf'
             }),
-            'releve_notes_bac': forms.FileInput(attrs={
+            'certificat_nationalite': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.png,.jpg,.jpeg,.pdf'
+            }),
+            'releve_notes_last_class': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.png,.jpg,.jpeg,.pdf'
+            }),
+            'justificatif_dernier_diplome': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.png,.jpg,.jpeg,.pdf'
             }),
@@ -1320,6 +1623,8 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'mother_occupation': 'Profession de la mère',
             'mother_phone_number': 'Téléphone de la mère',
             'father_full_name': 'Nom complet du père',
+            'father_live_city': 'Ville de résidence du père',
+            'father_email': 'Email du père',
             'father_occupation': 'Profession du père',
             'father_phone_number': 'Téléphone du père',
             'original_country': 'Pays d\'origine',
@@ -1331,7 +1636,9 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'is_complete': 'Dossier complet',
             'preuve_baccalaureat': 'Preuve d\'obtention du baccalauréat',
             'acte_naissance': 'Photocopie certifiée de l\'acte de naissance',
-            'releve_notes_bac': 'Relevé des notes du Baccalauréat',
+            'certificat_nationalite': 'Certificat de nationalité',
+            'releve_notes_last_class': 'Relevé de notes de la dernière classe fréquentée',
+            'justificatif_dernier_diplome': 'Justificatif du dernier diplôme obtenu',
             'bulletins_terminale': 'Bulletins de la classe de terminale',
         }
 

@@ -10,9 +10,12 @@ app_name = 'main'
 urlpatterns = [
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),
     path('inscriptions/', views.InscriptionsView.as_view(), name='inscriptions'),
-    path('inscription/<str:pk>/', views.inscription_detail, name='inscription_detail'),
-    path('inscription/<str:pk>/approuver/', views.inscription_approve, name='inscription_approve'),
-    path('inscription/<str:pk>/rejeter/', views.inscription_reject, name='inscription_reject'),
+    path('inscriptions/imprimer-pdf/', views.pre_inscriptions_print_pdf, name='inscriptions_print_pdf'),
+    path('inscription/<str:pk>/', views.pre_inscription_detail, name='inscription_detail'),
+    path('inscription/<str:pk>/imprimer-pdf/', views.pre_inscription_print_pdf, name='inscription_print_pdf'),
+    path('inscription/<str:pk>/modifier/', views.pre_inscription_edit, name='inscription_edit'),
+    path('inscription/<str:pk>/approuver/', views.pre_inscription_approve, name='inscription_approve'),
+    path('inscription/<str:pk>/rejeter/', views.pre_inscription_reject, name='inscription_reject'),
     path('etudiants/', views.EtudiantsView.as_view(), name='etudiants'),
     path('documents/', views.DocumentsView.as_view(), name='documents'),
     path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
@@ -32,10 +35,10 @@ urlpatterns = [
     path('document/preview-masse/', views.document_bulk_preview, name='document_bulk_preview'),
 
     # Formulaire d'inscription public
-    path('inscription-externe/', views.InscriptionExterneView.as_view(), name='inscription_externe'),
-    path('inscription-externe/etape/<int:step>/', views.InscriptionExterneStepView.as_view(), name='inscription_externe_step'),
-    path('inscription-externe/confirmation/', views.InscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
-    path('nouvelle_inscription/', views.NouvelleInscriptionView.as_view(), name='nouvelle_inscription'),
+    path('inscription-externe/', views.PreInscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', views.PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', views.PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/', views.NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
 
     # URLs pour la gestion des statuts de paiement
     path('statut-paiement/', views.PaymentStatusView.as_view(), name='payment_status'),

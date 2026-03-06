@@ -13,7 +13,17 @@
         <div class="card bg-primary shadow-soft border-light p-4">
             <div class="card-body">
                 <div class="row align-items-center">
-                    <div class="col-md-8">
+                    <div class="col-md-auto text-center mb-3 mb-md-0">
+                        {% if student.profile_photo %}
+                        <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="img-fluid rounded-circle border border-light shadow-soft" style="width: 96px; height: 96px; object-fit: cover;">
+                        {% else %}
+                        <div class="icon icon-shape shadow-soft border border-light rounded-circle bg-primary text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 96px; height: 96px;">
+                            <span class="fas fa-user fa-2x"></span>
+                        </div>
+                        {% endif %}
+                        <small class="text-muted d-block mt-2">Photo de profil</small>
+                    </div>
+                    <div class="col-md">
                         <h2 class="h4 mb-2">Bienvenue, {{ student.firstname }} {{ student.lastname }}</h2>
                         <p class="text-muted mb-0">
                             <i class="fas fa-id-card me-2 mr-1"></i>Matricule : {{ student.matricule }}
@@ -22,7 +32,7 @@
                             {% endif %}
                         </p>
                     </div>
-                    <div class="col-md-4 text-md-end">
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
                         <div class="text-muted">
                             <small>Dernière connexion</small><br>
                             <span class="fw-bold">{{ "now"|date:"d/m/Y H:i" }}</span>

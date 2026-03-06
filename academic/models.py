@@ -115,6 +115,10 @@ class AcademicYear(models.Model):
 
     def __str__(self):
         return f"{self.start_at.year}/{self.end_at.year}"
+    
+    @staticmethod
+    def get_active_year():
+        return AcademicYear.objects.filter(is_active=True).first()
 
     class Meta:
         verbose_name = "Année Académique"

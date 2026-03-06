@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from students.models import Student
 from academic.models import Course, Level, AcademicYear
@@ -8,18 +10,59 @@ class Lecturer(models.Model):
     """
     Modèle pour les enseignants
     """
-    matricule = models.CharField(max_length=50, primary_key=True, verbose_name="Matricule")
-    firstname = models.CharField(max_length=100, verbose_name="Prénom")
-    lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
-    date_naiss = models.DateField(verbose_name="Date de naissance")
-    grade = models.CharField(max_length=50, verbose_name="Grade/Titre")
-    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
-    lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr')   
-    phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
+    matricule = models.CharField(blank=True, unique=True, primary_key=True, max_length=50, verbose_name="Matricule")
+    firstname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Prénom")
+    lastname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Nom de famille")
+    date_naiss = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
+    place_of_birth = models.CharField(blank=True, null=True, max_length=100, verbose_name="Lieu de naissance")
+    grade = models.CharField(blank=True, null=True, max_length=50, verbose_name="Grade/Titre")
+    gender = models.CharField(blank=True, null=True, max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
+    lang = models.CharField(blank=True, null=True, max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr')   
+    phone_number = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro de téléphone")
+    phone_number_2 = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro de téléphone secondaire")
     email = models.EmailField(blank=True, null=True, verbose_name="Adresse email")
+    nationality = models.CharField(blank=True, null=True, max_length=50, verbose_name="Nationalité")
+    number_of_dependent_children = models.IntegerField(blank=True, null=True, verbose_name="Nombre d'enfants à charge")
+    marital_status = models.CharField(blank=True, null=True, max_length=20, choices=[('single', 'Célibataire'), ('married', 'Marié(e)'), ('divorced', 'Divorcé(e)'), ('widowed', 'Veuf/Veuve')], verbose_name="Statut marital")
+    has_health_problem = models.BooleanField(default=False, verbose_name="Avez-vous des problèmes de santé?")
+    health_problem_description = models.TextField(blank=True, null=True, verbose_name="Description des problèmes de santé")
+    address = models.TextField(blank=True, null=True, verbose_name="Adresse de résidence")
+
+    nic = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro de CNI")
+    niu = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro d'Identification Unique")
+    
+    emergency_contact_name = models.CharField(blank=True, null=True, max_length=100, verbose_name="Contact d'urgence - Nom")
+    emergency_contact_phone = models.CharField(blank=True, null=True, max_length=20, verbose_name="Contact d'urgence - Téléphone")
+    emergency_contact_email = models.EmailField(blank=True, null=True, verbose_name="Contact d'urgence - Email")
+    emergency_contact_relationship = models.CharField(blank=True, null=True, max_length=50, verbose_name="Contact d'urgence - Relation")
+    photo = models.ImageField(upload_to='lecturers/photos/', blank=True, null=True, verbose_name="Photo de profil")
+    signature = models.ImageField(upload_to='lecturers/signatures/', blank=True, null=True, verbose_name="Signature")
+
+    highest_diploma_obtained = models.CharField(blank=True, null=True, max_length=100, verbose_name="Dernier diplôme obtenu")
+    
+    def save(self, *args, **kwargs):
+        # Générer automatiquement le matricule si ce n'est pas déjà fait
+        if not self.matricule:
+            self.auto_generate_matricule()
+        super().save(*args, **kwargs)
 
     def full_name(self):
         return f"{self.firstname} {self.lastname}"
+
+    def auto_generate_matricule(self):
+        """Génère automatiquement un matricule unique pour l'enseignant"""
+        if not self.matricule:
+            prefix = "LEC"
+            last_lecturer = Lecturer.objects.order_by('-matricule').first()
+            if last_lecturer and last_lecturer.matricule.startswith(prefix):
+                # Ignorer le préfixe et l'année
+                last_number = int(last_lecturer.matricule[-3:])
+                new_number = last_number + 1
+            else:
+                new_number = 1
+            # Ajouter l'année en cours pour garantir l'unicité
+            today = datetime.today()
+            self.matricule = f"{prefix}{today.year}{new_number:04d}"
 
     def __str__(self):
         return f"{self.matricule} - {self.firstname} {self.lastname}"

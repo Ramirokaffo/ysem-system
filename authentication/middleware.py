@@ -84,6 +84,9 @@ class RoleBasedAccessMiddleware:
         
         role_config = self.role_access_map[user_role]
         
+        if request.user.is_superuser:
+            return self.get_response(request)
+        
         # Vérifier si l'utilisateur essaie d'accéder à un chemin interdit
         for forbidden_path in role_config['forbidden_paths']:
             if request.path.startswith(forbidden_path):
