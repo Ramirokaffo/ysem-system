@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 
+from audit.utils import log_audit_event
 from .models import Agent, SeanceProspection, Equipe
 from .authentication import AgentJWTAuthentication
 from .serializers import (
@@ -65,6 +66,14 @@ class AgentLoginView(APIView):
         
         if serializer.is_valid():
             agent = serializer.validated_data['agent']
+            log_audit_event(
+                category='auth',
+                action='login',
+                actor=agent,
+                instance=agent,
+                context={'channel': 'api', 'auth_backend': 'jwt'},
+                message='Connexion API agent réussie.',
+            )
             
             # Générer les tokens JWT
             refresh = RefreshToken()
@@ -91,6 +100,13 @@ class AgentLoginView(APIView):
                 }
             }, status=status.HTTP_200_OK)
         
+        log_audit_event(
+            category='auth',
+            action='login_failed',
+            context={'channel': 'api', 'reason': 'invalid_credentials'},
+            message='Échec de connexion API agent.',
+            actor_identifier=request.data.get('email', ''),
+        )
         return Response({
             'success': False,
             'message': serializer.errors.get('non_field_errors', ['Erreur de connexion'])[0],
@@ -204,6 +220,15 @@ class ChangePasswordView(APIView):
             # Changer le mot de passe
             agent.set_password(serializer.validated_data['new_password'])
             agent.save()
+            log_audit_event(
+                category='auth',
+                action='password_change',
+                actor=agent,
+                instance=agent,
+                changes={'password': {'from': '[REDACTED]', 'to': '[REDACTED]'}},
+                context={'channel': 'api'},
+                message='Changement de mot de passe agent.',
+            )
             
             return Response({
                 'success': True,
@@ -277,11 +302,21 @@ def logout_agent(request):
     """
     Vue pour déconnecter un agent (blacklister le token)
     """
+    actor = request.user if getattr(request.user, 'is_authenticated', False) else None
+    target_instance = getattr(actor, 'agent', actor) if actor is not None else None
     try:
         refresh_token = request.data.get('refresh_token')
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
+        log_audit_event(
+            category='auth',
+            action='logout',
+            actor=actor,
+            instance=target_instance,
+            context={'channel': 'api'},
+            message='Déconnexion API agent.',
+        )
         
         return Response({
             'success': True,
@@ -289,6 +324,14 @@ def logout_agent(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
+        log_audit_event(
+            category='auth',
+            action='logout',
+            actor=actor,
+            instance=target_instance,
+            context={'channel': 'api', 'logout_error': str(e)},
+            message='Déconnexion API agent.',
+        )
         return Response({
             'success': True,  # Même en cas d'erreur, on considère la déconnexion comme réussie
             'message': 'Déconnexion effectuée'

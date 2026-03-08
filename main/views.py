@@ -9,14 +9,19 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.conf import settings
 
 from academic.models import AcademicYear, Level, Program, Speciality
+from audit.utils import log_audit_event
 from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, StudentLevelForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
+from .models import SystemSettings
 from .pdf_exports import build_pre_inscription_pdf, build_pre_inscriptions_pdf
 from accounts.models import BaseUser, Godfather
 from schools.models import School
 from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument, PaymentStatus
 import json
+import logging
 import re
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
@@ -114,6 +119,103 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
 PRE_INSCRIPTION_STATUSES = ['pending', 'abandoned', 'approved', 'rejected']
+
+logger = logging.getLogger(__name__)
+
+
+def _get_student_display_name(student):
+    return f"{student.firstname} {student.lastname}".strip() or str(student)
+
+
+def _send_student_status_email(student, notification_type):
+    recipient = (student.email or '').strip()
+    if not recipient:
+        return False
+
+    try:
+        system_settings = SystemSettings.get_settings()
+        if not system_settings.email_enrollment:
+            return False
+
+        institution_name = system_settings.institution_name
+        contact_email = system_settings.email
+        website = system_settings.website
+    except Exception:
+        logger.exception("Impossible de récupérer les paramètres système pour l'email étudiant.")
+        institution_name = 'YSEM'
+        contact_email = ''
+        website = ''
+
+    from_email = getattr(settings, 'EMAIL_HOST_USER', '') or contact_email or 'noreply@ysem.education'
+    student_name = _get_student_display_name(student)
+
+    notifications = {
+        'pre_inscription': {
+            'subject': f"{institution_name} - Confirmation de votre pré-inscription",
+            'body': (
+                f"Bonjour {student_name},\n\n"
+                f"Nous confirmons la réception de votre pré-inscription à {institution_name}.\n"
+                "Votre dossier est désormais en attente de validation par l'administration.\n\n"
+                f"Référence de votre dossier : {student.matricule}\n"
+                f"Email de contact : {contact_email or 'Non renseigné'}\n"
+                f"Site web : {website or 'Non renseigné'}\n\n"
+                "Cordialement,\n"
+                f"L'équipe {institution_name}"
+            ),
+        },
+        'pre_inscription_approved': {
+            'subject': f"{institution_name} - Validation de votre pré-inscription",
+            'body': (
+                f"Bonjour {student_name},\n\n"
+                f"Votre pré-inscription à {institution_name} a été validée.\n"
+                "Vous pouvez désormais poursuivre les démarches administratives nécessaires à votre inscription définitive.\n\n"
+                f"Référence de votre dossier : {student.matricule}\n"
+                f"Email de contact : {contact_email or 'Non renseigné'}\n"
+                f"Site web : {website or 'Non renseigné'}\n\n"
+                "Cordialement,\n"
+                f"L'équipe {institution_name}"
+            ),
+        },
+        'registration': {
+            'subject': f"{institution_name} - Confirmation de votre inscription",
+            'body': (
+                f"Bonjour {student_name},\n\n"
+                f"Votre inscription à {institution_name} a été finalisée avec succès.\n"
+                f"Votre matricule définitif est : {student.matricule}\n"
+                f"Votre numéro de dossier est : {student.dossier_number or 'Non renseigné'}\n\n"
+                f"Email de contact : {contact_email or 'Non renseigné'}\n"
+                f"Site web : {website or 'Non renseigné'}\n\n"
+                "Cordialement,\n"
+                f"L'équipe {institution_name}"
+            ),
+        },
+    }
+
+    notification = notifications.get(notification_type)
+    if not notification:
+        return False
+
+    try:
+        send_mail(
+            subject=notification['subject'],
+            message=notification['body'],
+            from_email=from_email,
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "Échec de l'envoi de l'email '%s' à l'étudiant %s.",
+            notification_type,
+            student.pk,
+        )
+        return False
+
+    return True
+
+
+def _queue_student_status_email(student, notification_type):
+    transaction.on_commit(lambda: _send_student_status_email(student, notification_type))
 
 
 def _extract_dossier_sequence(dossier_number):
@@ -264,21 +366,43 @@ def _replace_student_primary_key(student, new_matricule, dossier_number):
         profile_photo=student.profile_photo.name if student.profile_photo else None,
     )
 
-    StudentLevel.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
-    PaymentStatus.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
-    Evaluation.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+    student_level_updates = StudentLevel.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+    payment_status_updates = PaymentStatus.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+    evaluation_updates = Evaluation.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
 
-    Student.objects.filter(pk=old_matricule).delete()
+    deleted_students, _ = Student.objects.filter(pk=old_matricule).delete()
 
     update_payload = {}
     if metadata_id:
         update_payload['metadata_id'] = metadata_id
     if created_at is not None:
         update_payload['created_at'] = created_at
+    restored_fields = []
     if update_payload:
         Student.objects.filter(pk=new_matricule).update(**update_payload)
+        restored_fields = sorted(update_payload.keys())
 
-    return Student.objects.get(pk=new_matricule)
+    registered_student = Student.objects.get(pk=new_matricule)
+    log_audit_event(
+        category='business',
+        action='bulk_update',
+        instance=registered_student,
+        changes={
+            'matricule': {'from': old_matricule, 'to': new_matricule},
+            'dossier_number': {'from': student.dossier_number, 'to': dossier_number},
+            'status': {'from': student.status, 'to': 'registered'},
+        },
+        context={
+            'operation': 'student_registration_rebinding',
+            'student_level_updates': student_level_updates,
+            'payment_status_updates': payment_status_updates,
+            'evaluation_updates': evaluation_updates,
+            'deleted_students': deleted_students,
+            'restored_fields': restored_fields,
+        },
+        message="Transformation d'une pré-inscription en inscription définitive.",
+    )
+    return registered_student
 
 
 def _get_filtered_pre_inscriptions_queryset(params, queryset=None):
@@ -675,7 +799,25 @@ class ParametresView(LoginRequiredMixin, TemplateView):
             if academic_year_id:
                 try:
                     academic_year = AcademicYear.objects.get(id=academic_year_id)
+                    previous_academic_year_id = request.session.get('active_academic_year_id')
                     request.session['active_academic_year_id'] = academic_year.id
+                    log_audit_event(
+                        category='business',
+                        action='update',
+                        actor=request.user,
+                        instance=academic_year,
+                        changes={
+                            'active_academic_year_id': {
+                                'from': previous_academic_year_id,
+                                'to': academic_year.id,
+                            }
+                        },
+                        context={
+                            'operation': 'switch_active_academic_year',
+                            'selected_academic_year': str(academic_year),
+                        },
+                        message="Changement de l'année académique active de la session.",
+                    )
                     messages.success(request, f'Année académique active changée vers {academic_year}.')
                     return redirect('main:parametres')
                 except AcademicYear.DoesNotExist:
@@ -981,6 +1123,8 @@ class PreInscriptionExterneStepView(TemplateView):
                     metadata=studentMetaData
                 )
 
+                _queue_student_status_email(student, 'pre_inscription')
+
                 # Nettoyage de la session (données et fichiers)
                 if 'inscription_data' in request.session:
                     del request.session['inscription_data']
@@ -1129,6 +1273,8 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                             academic_year=cleaned_data.get('annee_academique'),
                             is_active=True
                         )
+
+                    _queue_student_status_email(student, 'pre_inscription')
 
                 # Redirection vers la page de succès
                 messages.success(request, 'Inscription éffectuée avec succès!')
@@ -1298,7 +1444,22 @@ def _render_student_edit(request, student, detail_route_name, page_title, succes
                 saved_student_level.student = student
                 saved_student_level.is_active = True
                 saved_student_level.save()
-                student.student_levels.exclude(pk=saved_student_level.pk).update(is_active=False)
+                levels_to_deactivate = list(
+                    student.student_levels.exclude(pk=saved_student_level.pk).filter(is_active=True).values_list('pk', flat=True)
+                )
+                if levels_to_deactivate:
+                    student.student_levels.filter(pk__in=levels_to_deactivate).update(is_active=False)
+                    log_audit_event(
+                        category='business',
+                        action='bulk_update',
+                        instance=student,
+                        context={
+                            'operation': 'deactivate_previous_student_levels',
+                            'deactivated_student_level_ids': levels_to_deactivate,
+                            'active_student_level_id': saved_student_level.pk,
+                        },
+                        message="Désactivation des anciens niveaux actifs de l'étudiant.",
+                    )
 
             messages.success(request, success_message)
             return redirect(detail_route_name, pk=student.matricule)
@@ -1647,6 +1808,7 @@ def pre_inscription_approve(request, pk):
         student = get_object_or_404(Student, pk=pk)
         student.status = 'approved'
         student.save()
+        _queue_student_status_email(student, 'pre_inscription_approved')
 
         messages.success(request, f'Pré-inscription de {student.firstname} {student.lastname} approuvée avec succès.')
         return redirect('main:inscription_detail', pk=pk)
@@ -1691,7 +1853,8 @@ def pre_inscription_register(request, pk):
     try:
         with transaction.atomic():
             dossier_number, final_matricule = _generate_final_registration_identifiers(student)
-            _replace_student_primary_key(student, final_matricule, dossier_number)
+            registered_student = _replace_student_primary_key(student, final_matricule, dossier_number)
+            _queue_student_status_email(registered_student, 'registration')
     except ValidationError as exc:
         messages.error(request, exc.messages[0] if exc.messages else str(exc))
         return redirect('main:inscription_detail', pk=pk)

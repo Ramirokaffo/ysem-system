@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from academic.models import AcademicYear
+from audit.utils import log_audit_event
 
 
 @never_cache
@@ -26,6 +27,14 @@ def login_view(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+                    log_audit_event(
+                        category='auth',
+                        action='login',
+                        actor=user,
+                        instance=user,
+                        context={'channel': 'web'},
+                        message='Connexion web réussie.',
+                    )
 
                     # Déterminer la redirection basée sur le rôle
                     user_role = getattr(user, 'role', 'student')
@@ -56,8 +65,22 @@ def login_view(request):
                     default_url = role_default_urls.get(user_role, 'main:dashboard')
                     return redirect(default_url)
                 else:
+                    log_audit_event(
+                        category='auth',
+                        action='login_failed',
+                        context={'channel': 'web', 'reason': 'inactive_account'},
+                        message='Tentative de connexion sur un compte désactivé.',
+                        actor_identifier=username or '',
+                    )
                     messages.error(request, 'Votre compte est désactivé.')
             else:
+                log_audit_event(
+                    category='auth',
+                    action='login_failed',
+                    context={'channel': 'web', 'reason': 'invalid_credentials'},
+                    message='Échec de connexion web.',
+                    actor_identifier=username or '',
+                )
                 messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.')
         else:
             messages.error(request, 'Veuillez remplir tous les champs.')
@@ -70,6 +93,15 @@ def logout_view(request):
     """
     Vue de déconnexion
     """
+    user = request.user
+    log_audit_event(
+        category='auth',
+        action='logout',
+        actor=user,
+        instance=user,
+        context={'channel': 'web'},
+        message='Déconnexion web.',
+    )
     logout(request)
     messages.success(request, 'Vous avez été déconnecté avec succès.')
     return redirect('authentication:login')

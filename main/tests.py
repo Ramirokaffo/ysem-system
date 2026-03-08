@@ -3,6 +3,7 @@ from io import BytesIO
 from tempfile import TemporaryDirectory
 from datetime import date
 
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.test import override_settings
@@ -10,14 +11,19 @@ from django.urls import reverse
 from PIL import Image
 from pypdf import PdfReader
 from reportlab.pdfgen import canvas
+from rest_framework.test import APIClient
 
 from academic.models import AcademicYear, Level, Program, Speciality
 from accounts.models import BaseUser, Godfather
+from audit.models import AuditLog
 from main.forms import InscriptionCompleteForm
+from main.models import SystemSettings
+from prospection.models import Agent
 from schools.models import School
 from students.models import PaymentStatus, Student, StudentLevel, StudentMetaData
 
 
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class NouvelleInscriptionViewTests(TestCase):
     def setUp(self):
         self.temporary_media = TemporaryDirectory()
@@ -206,6 +212,19 @@ class NouvelleInscriptionViewTests(TestCase):
             reverse('main:etudiant_detail', kwargs={'pk': student.matricule}),
             fetch_redirect_response=False,
         )
+
+    def test_post_sends_pre_inscription_email_to_student(self):
+        payload = self._valid_payload()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(self.url, payload)
+
+        self.assertEqual(response.status_code, 302)
+        student = Student.objects.get()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['jane.doe@example.com'])
+        self.assertIn('pré-inscription', mail.outbox[0].subject.lower())
+        self.assertIn(student.matricule, mail.outbox[0].body)
 
 
 class InscriptionEditViewTests(TestCase):
@@ -589,6 +608,42 @@ class InscriptionEditDocumentFilesTests(TestCase):
         self.assertFalse(os.path.exists(old_certificat_path))
 
 
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class PreInscriptionApprovalNotificationTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_approve',
+            password='testpass123',
+            role='scholar'
+        )
+        self.client.force_login(self.user)
+        self.student = Student.objects.create(
+            matricule='INT_PENDING_001',
+            firstname='Merveille',
+            lastname='Biloa',
+            gender='F',
+            lang='fr',
+            email='merveille@example.com',
+            status='pending',
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.approve_url = reverse('main:inscription_approve', kwargs={'pk': self.student.matricule})
+        self.detail_url = reverse('main:inscription_detail', kwargs={'pk': self.student.matricule})
+
+    def test_approving_pre_inscription_sends_validation_email(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(self.approve_url)
+
+        self.assertRedirects(response, self.detail_url, fetch_redirect_response=False)
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.status, 'approved')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['merveille@example.com'])
+        self.assertIn('validation', mail.outbox[0].subject.lower())
+        self.assertIn('a été validée', mail.outbox[0].body)
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class PreInscriptionRegistrationTests(TestCase):
     def setUp(self):
         self.user = BaseUser.objects.create_user(
@@ -672,6 +727,173 @@ class PreInscriptionRegistrationTests(TestCase):
 
         self.payment_status.refresh_from_db()
         self.assertEqual(self.payment_status.student_id, self.expected_matricule)
+
+    def test_registering_approved_pre_inscription_sends_registration_email(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(self.register_url)
+
+        self.assertEqual(response.status_code, 302)
+        registered_student = Student.objects.get(pk=self.expected_matricule)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['cecilia@example.com'])
+        self.assertIn('confirmation de votre inscription', mail.outbox[0].subject.lower())
+        self.assertIn(registered_student.matricule, mail.outbox[0].body)
+        self.assertIn(registered_student.dossier_number, mail.outbox[0].body)
+
+
+class AuditLogIntegrationTests(TestCase):
+    def setUp(self):
+        AuditLog.objects.all().delete()
+        self.user = BaseUser.objects.create_user(
+            username='audit_user',
+            password='testpass123',
+            role='scholar'
+        )
+        self.login_url = reverse('authentication:login')
+        self.logout_url = reverse('authentication:logout')
+        self.settings_url = reverse('main:parametres')
+
+    def test_web_login_and_logout_create_audit_entries(self):
+        response = self.client.post(self.login_url, {
+            'username': self.user.username,
+            'password': 'testpass123',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        login_entry = AuditLog.objects.filter(category='auth', action='login').latest('id')
+        self.assertEqual(login_entry.actor_user, self.user)
+        self.assertEqual(login_entry.context['channel'], 'web')
+
+        response = self.client.get(self.logout_url)
+
+        self.assertEqual(response.status_code, 302)
+        logout_entry = AuditLog.objects.filter(category='auth', action='logout').latest('id')
+        self.assertEqual(logout_entry.actor_user, self.user)
+        self.assertEqual(logout_entry.context['channel'], 'web')
+
+    def test_settings_update_creates_model_audit_entry(self):
+        self.client.force_login(self.user)
+        settings = SystemSettings.get_settings()
+
+        response = self.client.post(self.settings_url, {
+            'form_type': 'data_management',
+            'backup_frequency': settings.backup_frequency,
+            'data_retention': 9,
+            'audit_log': 'on',
+            'data_encryption': 'on',
+        })
+
+        self.assertEqual(response.status_code, 302)
+        entry = AuditLog.objects.filter(
+            category='model',
+            action='update',
+            target_app_label='main',
+            target_model='SystemSettings',
+        ).latest('id')
+        self.assertEqual(entry.actor_user, self.user)
+        self.assertEqual(entry.changes['data_retention']['to'], 9)
+
+    def test_academic_year_switch_creates_business_audit_entry(self):
+        self.client.force_login(self.user)
+        academic_year = AcademicYear.objects.create(
+            start_at=date(2026, 9, 1),
+            end_at=date(2027, 6, 30),
+            is_active=True,
+        )
+
+        response = self.client.post(self.settings_url, {
+            'form_type': 'academic_year',
+            'active_academic_year': academic_year.pk,
+        })
+
+        self.assertEqual(response.status_code, 302)
+        entry = AuditLog.objects.filter(category='business', action='update').latest('id')
+        self.assertEqual(entry.actor_user, self.user)
+        self.assertEqual(entry.changes['active_academic_year_id']['to'], academic_year.id)
+        self.assertEqual(entry.context['operation'], 'switch_active_academic_year')
+
+    def test_api_agent_login_creates_auth_audit_entry(self):
+        agent = Agent.objects.create(
+            matricule='AG20260001',
+            nom='Agent',
+            prenom='Test',
+            telephone='+237600000000',
+            email='agent.audit@example.com',
+            type_agent='interne',
+            statut='actif',
+            date_embauche=date(2026, 1, 10),
+            is_active=True,
+        )
+        agent.set_password('secret123')
+        agent.save()
+
+        api_client = APIClient()
+        response = api_client.post('/api/v1/auth/login/', {
+            'email': agent.email,
+            'password': 'secret123',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        entry = AuditLog.objects.filter(category='auth', action='login', actor_agent_id=agent.id).latest('id')
+        self.assertEqual(entry.context['channel'], 'api')
+        self.assertEqual(entry.actor_identifier, agent.email)
+
+
+class PreInscriptionRegistrationAuditTests(TestCase):
+    def setUp(self):
+        AuditLog.objects.all().delete()
+        self.user = BaseUser.objects.create_user(
+            username='scholar_register_audit',
+            password='testpass123',
+            role='scholar'
+        )
+        self.client.force_login(self.user)
+
+        self.academic_year = AcademicYear.objects.create(
+            start_at=date(2025, 9, 1),
+            end_at=date(2026, 6, 30),
+            is_active=True,
+        )
+        self.level = Level.objects.create(name='Master 1')
+        self.program = Program.objects.create(name='Audit program')
+        Student.objects.create(
+            matricule='EXISTING_REGISTERED_AUDIT',
+            dossier_number='M0099',
+            firstname='Déjà',
+            lastname='Inscrit',
+            gender='M',
+            lang='fr',
+            status='registered',
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+            program=self.program,
+        )
+        self.student = Student.objects.create(
+            matricule='INT_APPROVED_AUDIT',
+            firstname='Nadia',
+            lastname='Ngono',
+            gender='F',
+            lang='fr',
+            status='approved',
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+            program=self.program,
+        )
+        StudentLevel.objects.create(
+            student=self.student,
+            level=self.level,
+            academic_year=self.academic_year,
+            is_active=True,
+        )
+        PaymentStatus.objects.create(student=self.student, academic_year=self.academic_year)
+        self.register_url = reverse('main:inscription_register', kwargs={'pk': self.student.matricule})
+
+    def test_registration_flow_creates_business_audit_entry(self):
+        response = self.client.post(self.register_url)
+
+        self.assertEqual(response.status_code, 302)
+        entry = AuditLog.objects.filter(category='business', action='bulk_update').latest('id')
+        self.assertEqual(entry.actor_user, self.user)
+        self.assertEqual(entry.context['operation'], 'student_registration_rebinding')
+        self.assertEqual(entry.changes['status']['to'], 'registered')
 
 
 class PreInscriptionPdfExportTests(TestCase):
