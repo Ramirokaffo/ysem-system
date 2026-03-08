@@ -156,6 +156,16 @@ class InscriptionCompleteForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
 
+    profile_photo = forms.ImageField(
+        label="Photo de profil",
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/png,image/jpeg,image/jpg'
+        }),
+        help_text="Formats acceptés : PNG, JPG, JPEG.",
+        required=False
+    )
+
     # Informations sur l'année académique et le niveau
     annee_academique = forms.ModelChoiceField(
         queryset=AcademicYear.objects.all(),
@@ -516,25 +526,37 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
-    # Choix de spécialité (dynamique basé sur le programme sélectionné)
-    specialite_souhaitee = forms.ModelChoiceField(
-        queryset=Speciality.objects.none(),  # Vide par défaut
-        label="Spécialité souhaitée",
+    # Choix des spécialités (dynamique basé sur le programme sélectionné)
+    specialite_souhaitee_1 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 1",
         widget=forms.Select(attrs={
             'class': 'form-control',
-            'disabled': True  # Désactivé par défaut jusqu'à ce qu'un programme soit sélectionné
+            'disabled': True
         }),
         empty_label="Sélectionner d'abord un programme",
         required=False
     )
 
-    autre_specialite = forms.CharField(
-        max_length=100,
-        label="Autre spécialité (précisez)",
-        widget=forms.TextInput(attrs={
+    specialite_souhaitee_2 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 2",
+        widget=forms.Select(attrs={
             'class': 'form-control',
-            'placeholder': 'Précisez la spécialité'
+            'disabled': True
         }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False
+    )
+
+    specialite_souhaitee_3 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 3",
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'disabled': True
+        }),
+        empty_label="Sélectionner d'abord un programme",
         required=False
     )
 
@@ -561,17 +583,35 @@ class InscriptionCompleteForm(forms.Form):
             try:
                 # Convertir en entier et filtrer les spécialités par programme
                 program_id = int(program_id)
-                self.fields['specialite_souhaitee'].queryset = Speciality.objects.filter(program_id=program_id)
-                # Supprimer l'attribut 'disabled' (ne pas le mettre à False, car Django le rendrait quand même)
-                self.fields['specialite_souhaitee'].widget.attrs.pop('disabled', None)
-                self.fields['specialite_souhaitee'].empty_label = "Sélectionner une spécialité"
+                specialities = Speciality.objects.filter(program_id=program_id).order_by('name')
+                for index, field_name in enumerate([
+                    'specialite_souhaitee_1',
+                    'specialite_souhaitee_2',
+                    'specialite_souhaitee_3',
+                ], start=1):
+                    self.fields[field_name].queryset = specialities
+                    self.fields[field_name].widget.attrs.pop('disabled', None)
+                    self.fields[field_name].empty_label = (
+                        f"Sélectionner la spécialité #{index}" if index == 1
+                        else f"Sélectionner la spécialité #{index} (optionnel)"
+                    )
             except (ValueError, TypeError):
                 # Si la conversion échoue, autoriser toutes les spécialités pour la validation
-                self.fields['specialite_souhaitee'].queryset = Speciality.objects.all()
-                self.fields['specialite_souhaitee'].widget.attrs.pop('disabled', None)
+                for field_name in [
+                    'specialite_souhaitee_1',
+                    'specialite_souhaitee_2',
+                    'specialite_souhaitee_3',
+                ]:
+                    self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
+                    self.fields[field_name].widget.attrs.pop('disabled', None)
         else:
             # Pas de programme sélectionné - autoriser toutes les spécialités pour éviter l'erreur de validation
-            self.fields['specialite_souhaitee'].queryset = Speciality.objects.all()
+            for field_name in [
+                'specialite_souhaitee_1',
+                'specialite_souhaitee_2',
+                'specialite_souhaitee_3',
+            ]:
+                self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
 
         # Ajouter une note d'information pour les documents
         self.document_info = {
@@ -679,29 +719,40 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
-    # profile_photo = forms.ImageField(
-    #     label="Photo de profil",
-    #     widget=forms.FileInput(attrs={'class': 'form-control'}),
-    #     required=False
-    # )
-
     def clean(self):
         """Validation personnalisée du formulaire"""
         cleaned_data = super().clean()
         bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
         if bac_etablissement_existant:
             cleaned_data['bac_etablissement'] = bac_etablissement_existant.name
+        else:
+            cleaned_data['bac_etablissement'] = (cleaned_data.get('bac_etablissement') or '').strip()
         
-        # Vérifier que la spécialité sélectionnée correspond au programme
         programme = cleaned_data.get('programme')
-        specialite = cleaned_data.get('specialite_souhaitee')
-        
-        if programme and specialite:
-            # Vérifier que la spécialité appartient au programme sélectionné
-            if specialite.program_id != programme.id:
-                raise ValidationError(
+        selected_specialities = []
+
+        for field_name in [
+            'specialite_souhaitee_1',
+            'specialite_souhaitee_2',
+            'specialite_souhaitee_3',
+        ]:
+            specialite = cleaned_data.get(field_name)
+
+            if programme and specialite and specialite.program_id != programme.id:
+                self.add_error(
+                    field_name,
                     "La spécialité sélectionnée doit appartenir au programme choisi."
                 )
+                continue
+
+            if not specialite:
+                continue
+
+            if specialite.pk in selected_specialities:
+                self.add_error(field_name, "Veuillez choisir une spécialité différente pour chaque choix.")
+                continue
+
+            selected_specialities.append(specialite.pk)
         
         return cleaned_data
 
@@ -1404,6 +1455,59 @@ class StudentEditForm(forms.ModelForm):
         })
     )
 
+    bac_etablissement_existant = SchoolChoiceField(
+        queryset=School.objects.none(),
+        label="Établissement d'obtention du Baccalauréat (existant)",
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        }),
+        empty_label="Sélectionner un établissement existant",
+        required=False,
+    )
+
+    bac_etablissement = forms.CharField(
+        max_length=255,
+        label="Ou saisir un autre établissement",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': "Nom de l'établissement d'obtention du Baccalauréat",
+        }),
+        required=False,
+    )
+
+    specialite_souhaitee_1 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 1",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'disabled': True,
+        }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False,
+    )
+
+    specialite_souhaitee_2 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 2",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'disabled': True,
+        }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False,
+    )
+
+    specialite_souhaitee_3 = forms.ModelChoiceField(
+        queryset=Speciality.objects.none(),
+        label="Spécialité souhaitée 3",
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+            'disabled': True,
+        }),
+        empty_label="Sélectionner d'abord un programme",
+        required=False,
+    )
+
     class Meta:
         model = Student
         fields = [
@@ -1480,6 +1584,104 @@ class StudentEditForm(forms.ModelForm):
         self.fields['date_naiss'].required = False
         self.fields['profile_photo'].required = False
 
+        self.fields['school'].queryset = School.objects.all().order_by('name', 'phone_number')
+        self.fields['program'].queryset = Program.objects.all().order_by('name')
+        self.fields['godfather'].queryset = Godfather.objects.all().order_by('full_name', 'phone_number', 'email')
+        self.fields['bac_etablissement_existant'].queryset = School.objects.filter(level='secondary').order_by(
+            'name', 'phone_number'
+        )
+
+        program_id = None
+        if self.data:
+            program_id = self.data.get('program')
+        elif self.instance and self.instance.program_id:
+            program_id = self.instance.program_id
+        elif self.initial:
+            program_id = self.initial.get('program')
+
+        speciality_field_names = [
+            'specialite_souhaitee_1',
+            'specialite_souhaitee_2',
+            'specialite_souhaitee_3',
+        ]
+
+        if program_id:
+            try:
+                program_id = int(program_id)
+                specialities = Speciality.objects.filter(program_id=program_id).order_by('name')
+                for index, field_name in enumerate(speciality_field_names, start=1):
+                    self.fields[field_name].queryset = specialities
+                    self.fields[field_name].widget.attrs.pop('disabled', None)
+                    self.fields[field_name].empty_label = (
+                        f"Sélectionner la spécialité #{index}"
+                        if index == 1 else f"Sélectionner la spécialité #{index} (optionnel)"
+                    )
+            except (TypeError, ValueError):
+                for field_name in speciality_field_names:
+                    self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
+                    self.fields[field_name].widget.attrs.pop('disabled', None)
+        else:
+            for field_name in speciality_field_names:
+                self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
+
+        if not self.is_bound and self.instance and self.instance.pk:
+            if self.instance.school:
+                if self.instance.school.level == 'secondary':
+                    self.initial.setdefault('bac_etablissement_existant', self.instance.school)
+                else:
+                    self.initial.setdefault('bac_etablissement', self.instance.school.name)
+
+            if self.instance.program_id:
+                for field_name in speciality_field_names:
+                    speciality_name = getattr(self.instance, field_name, '')
+                    if not speciality_name:
+                        continue
+
+                    speciality = Speciality.objects.filter(
+                        program_id=self.instance.program_id,
+                        name=speciality_name,
+                    ).first()
+                    if speciality:
+                        self.initial.setdefault(field_name, speciality)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
+        bac_etablissement = (cleaned_data.get('bac_etablissement') or '').strip()
+
+        cleaned_data['bac_etablissement'] = (
+            bac_etablissement_existant.name if bac_etablissement_existant else bac_etablissement
+        )
+        cleaned_data['school'] = bac_etablissement_existant
+
+        programme = cleaned_data.get('program')
+        selected_specialities = []
+
+        for field_name in [
+            'specialite_souhaitee_1',
+            'specialite_souhaitee_2',
+            'specialite_souhaitee_3',
+        ]:
+            specialite = cleaned_data.get(field_name)
+
+            if programme and specialite and specialite.program_id != programme.id:
+                self.add_error(
+                    field_name,
+                    "La spécialité sélectionnée doit appartenir au programme choisi.",
+                )
+                continue
+
+            if not specialite:
+                continue
+
+            if specialite.pk in selected_specialities:
+                self.add_error(field_name, "Veuillez choisir une spécialité différente pour chaque choix.")
+                continue
+
+            selected_specialities.append(specialite.pk)
+
+        return cleaned_data
+
     def save(self, commit=True):
         previous_photo = None
         if self.instance.pk:
@@ -1489,6 +1691,28 @@ class StudentEditForm(forms.ModelForm):
         should_remove_photo = self.cleaned_data.get('remove_profile_photo') and not uploaded_photo
 
         student = super().save(commit=False)
+
+        school = self.cleaned_data.get('bac_etablissement_existant')
+        if not school:
+            school_name = (self.cleaned_data.get('bac_etablissement') or '').strip()
+            if school_name:
+                school = School.objects.filter(name__iexact=school_name, level='secondary').first()
+                if not school:
+                    school = School.objects.create(name=school_name, level='secondary')
+
+        student.school = school
+        student.specialite_souhaitee_1 = (
+            self.cleaned_data['specialite_souhaitee_1'].name
+            if self.cleaned_data.get('specialite_souhaitee_1') else ''
+        )
+        student.specialite_souhaitee_2 = (
+            self.cleaned_data['specialite_souhaitee_2'].name
+            if self.cleaned_data.get('specialite_souhaitee_2') else ''
+        )
+        student.specialite_souhaitee_3 = (
+            self.cleaned_data['specialite_souhaitee_3'].name
+            if self.cleaned_data.get('specialite_souhaitee_3') else ''
+        )
 
         if should_remove_photo:
             student.profile_photo = None
@@ -1510,6 +1734,58 @@ class StudentEditForm(forms.ModelForm):
 
 class StudentMetaDataEditForm(forms.ModelForm):
     """Formulaire de modification des métadonnées de l'étudiant"""
+
+    remove_preuve_baccalaureat = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_acte_naissance = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_certificat_nationalite = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_releve_notes_last_class = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_justificatif_dernier_diplome = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_bulletins_terminale = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+
+    removable_file_fields = [
+        'preuve_baccalaureat',
+        'acte_naissance',
+        'certificat_nationalite',
+        'releve_notes_last_class',
+        'justificatif_dernier_diplome',
+        'bulletins_terminale',
+    ]
 
     class Meta:
         model = StudentMetaData
@@ -1648,6 +1924,47 @@ class StudentMetaDataEditForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name != 'original_country':
                 field.required = False
+
+    def save(self, commit=True):
+        previous_files = {}
+        if self.instance.pk:
+            previous_instance = StudentMetaData.objects.get(pk=self.instance.pk)
+            previous_files = {
+                field_name: getattr(previous_instance, field_name)
+                for field_name in self.removable_file_fields
+            }
+
+        uploaded_files = {
+            field_name: self.files.get(field_name)
+            for field_name in self.removable_file_fields
+        }
+        removal_flags = {
+            field_name: bool(self.cleaned_data.get(f'remove_{field_name}')) and not uploaded_files[field_name]
+            for field_name in self.removable_file_fields
+        }
+
+        metadata = super().save(commit=False)
+
+        for field_name, should_remove in removal_flags.items():
+            if should_remove:
+                setattr(metadata, field_name, None)
+
+        if commit:
+            metadata.save()
+            self.save_m2m()
+
+            for field_name in self.removable_file_fields:
+                previous_file = previous_files.get(field_name)
+                previous_file_name = getattr(previous_file, 'name', '')
+                current_file = getattr(metadata, field_name)
+                current_file_name = getattr(current_file, 'name', '')
+
+                if removal_flags[field_name] and previous_file_name:
+                    previous_file.storage.delete(previous_file_name)
+                elif uploaded_files[field_name] and previous_file_name and previous_file_name != current_file_name:
+                    previous_file.storage.delete(previous_file_name)
+
+        return metadata
 
 
 class OfficialDocumentForm(forms.ModelForm):

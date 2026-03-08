@@ -1,5 +1,5 @@
 {% extends 'main/base.html' %}
-{% load static %}
+{% load static main_extras %}
 
 {% block title %}{{ page_title|default:"Modifier l'étudiant" }} - YSEM{% endblock %}
 
@@ -62,7 +62,8 @@
                                             <label class="form-label font-weight-bold">{{ student_form.profile_photo.label }}</label>
                                             {% if student.profile_photo %}
                                                 <div class="small mb-2">
-                                                    <a href="{{ student.profile_photo.url }}" target="_blank" rel="noopener">Voir la photo actuelle</a>
+                                                    <span class="font-weight-bold">Fichier actuel :</span>
+                                                    <a href="{{ student.profile_photo.url }}" target="_blank" rel="noopener">{{ student.profile_photo.name|basename }}</a>
                                                 </div>
                                             {% endif %}
                                             {{ student_form.profile_photo }}
@@ -195,17 +196,17 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ student_form.school.label }}</label>
-                                <select class="form-control shadow-inset border-light" name="{{ student_form.school.name }}" id="{{ student_form.school.id_for_label }}">
+                                <label class="form-label font-weight-bold">{{ student_form.bac_etablissement_existant.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.bac_etablissement_existant.name }}" id="{{ student_form.bac_etablissement_existant.id_for_label }}">
                                     <option value="">---------</option>
-                                    {% for value, label in student_form.school.field.choices %}
+                                    {% for value, label in student_form.bac_etablissement_existant.field.choices %}
                                         {% if value %}
-                                            <option value="{{ value }}" {% if student_form.school.value == value %}selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}" {% if student_form.bac_etablissement_existant.value == value %}selected{% endif %}>{{ label }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
-                                {% if student_form.school.errors %}
-                                    <div class="text-danger small">{{ student_form.school.errors.0 }}</div>
+                                {% if student_form.bac_etablissement_existant.errors %}
+                                    <div class="text-danger small">{{ student_form.bac_etablissement_existant.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -238,6 +239,64 @@
                                 </select>
                                 {% if student_form.godfather.errors %}
                                     <div class="text-danger small">{{ student_form.godfather.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-12" id="manual-bac-etablissement-field">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.bac_etablissement.label }}</label>
+                                <input type="text" class="form-control shadow-inset border-light" name="{{ student_form.bac_etablissement.name }}" value="{{ student_form.bac_etablissement.value|default:'' }}" id="{{ student_form.bac_etablissement.id_for_label }}">
+                                <small class="text-muted">Si l'établissement n'existe pas dans la liste, saisissez-le ici.</small>
+                                {% if student_form.bac_etablissement.errors %}
+                                    <div class="text-danger small">{{ student_form.bac_etablissement.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.specialite_souhaitee_1.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.specialite_souhaitee_1.name }}" id="{{ student_form.specialite_souhaitee_1.id_for_label }}" {% if student_form.specialite_souhaitee_1.field.widget.attrs.disabled %}disabled{% endif %}>
+                                    <option value="">{{ student_form.specialite_souhaitee_1.field.empty_label|default:'Sélectionner d\'abord un programme' }}</option>
+                                    {% for value, label in student_form.specialite_souhaitee_1.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.specialite_souhaitee_1.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.specialite_souhaitee_1.errors %}
+                                    <div class="text-danger small">{{ student_form.specialite_souhaitee_1.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.specialite_souhaitee_2.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.specialite_souhaitee_2.name }}" id="{{ student_form.specialite_souhaitee_2.id_for_label }}" {% if student_form.specialite_souhaitee_2.field.widget.attrs.disabled %}disabled{% endif %}>
+                                    <option value="">{{ student_form.specialite_souhaitee_2.field.empty_label|default:'Sélectionner d\'abord un programme' }}</option>
+                                    {% for value, label in student_form.specialite_souhaitee_2.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.specialite_souhaitee_2.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.specialite_souhaitee_2.errors %}
+                                    <div class="text-danger small">{{ student_form.specialite_souhaitee_2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label font-weight-bold">{{ student_form.specialite_souhaitee_3.label }}</label>
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.specialite_souhaitee_3.name }}" id="{{ student_form.specialite_souhaitee_3.id_for_label }}" {% if student_form.specialite_souhaitee_3.field.widget.attrs.disabled %}disabled{% endif %}>
+                                    <option value="">{{ student_form.specialite_souhaitee_3.field.empty_label|default:'Sélectionner d\'abord un programme' }}</option>
+                                    {% for value, label in student_form.specialite_souhaitee_3.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" {% if student_form.specialite_souhaitee_3.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if student_form.specialite_souhaitee_3.errors %}
+                                    <div class="text-danger small">{{ student_form.specialite_souhaitee_3.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -472,11 +531,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.acte_naissance.label }}</label>
                                 {% if metadata_form.instance.acte_naissance %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.acte_naissance.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.acte_naissance.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.acte_naissance.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.acte_naissance }}
+                                {% if metadata_form.instance.acte_naissance %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_acte_naissance }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_acte_naissance.id_for_label }}">
+                                            {{ metadata_form.remove_acte_naissance.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.acte_naissance.errors %}
                                     <div class="text-danger small">{{ metadata_form.acte_naissance.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_acte_naissance.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_acte_naissance.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -484,11 +558,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.preuve_baccalaureat.label }}</label>
                                 {% if metadata_form.instance.preuve_baccalaureat %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.preuve_baccalaureat.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.preuve_baccalaureat.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.preuve_baccalaureat.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.preuve_baccalaureat }}
+                                {% if metadata_form.instance.preuve_baccalaureat %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_preuve_baccalaureat }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_preuve_baccalaureat.id_for_label }}">
+                                            {{ metadata_form.remove_preuve_baccalaureat.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.preuve_baccalaureat.errors %}
                                     <div class="text-danger small">{{ metadata_form.preuve_baccalaureat.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_preuve_baccalaureat.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_preuve_baccalaureat.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -496,11 +585,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.certificat_nationalite.label }}</label>
                                 {% if metadata_form.instance.certificat_nationalite %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.certificat_nationalite.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.certificat_nationalite.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.certificat_nationalite.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.certificat_nationalite }}
+                                {% if metadata_form.instance.certificat_nationalite %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_certificat_nationalite }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_certificat_nationalite.id_for_label }}">
+                                            {{ metadata_form.remove_certificat_nationalite.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.certificat_nationalite.errors %}
                                     <div class="text-danger small">{{ metadata_form.certificat_nationalite.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_certificat_nationalite.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_certificat_nationalite.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -508,11 +612,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.releve_notes_last_class.label }}</label>
                                 {% if metadata_form.instance.releve_notes_last_class %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.releve_notes_last_class.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.releve_notes_last_class.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.releve_notes_last_class.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.releve_notes_last_class }}
+                                {% if metadata_form.instance.releve_notes_last_class %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_releve_notes_last_class }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_releve_notes_last_class.id_for_label }}">
+                                            {{ metadata_form.remove_releve_notes_last_class.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.releve_notes_last_class.errors %}
                                     <div class="text-danger small">{{ metadata_form.releve_notes_last_class.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_releve_notes_last_class.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_releve_notes_last_class.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -520,11 +639,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.justificatif_dernier_diplome.label }}</label>
                                 {% if metadata_form.instance.justificatif_dernier_diplome %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.justificatif_dernier_diplome.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.justificatif_dernier_diplome.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.justificatif_dernier_diplome.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.justificatif_dernier_diplome }}
+                                {% if metadata_form.instance.justificatif_dernier_diplome %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_justificatif_dernier_diplome }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_justificatif_dernier_diplome.id_for_label }}">
+                                            {{ metadata_form.remove_justificatif_dernier_diplome.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.justificatif_dernier_diplome.errors %}
                                     <div class="text-danger small">{{ metadata_form.justificatif_dernier_diplome.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_justificatif_dernier_diplome.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_justificatif_dernier_diplome.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -532,11 +666,26 @@
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ metadata_form.bulletins_terminale.label }}</label>
                                 {% if metadata_form.instance.bulletins_terminale %}
-                                    <div class="small mb-2"><a href="{{ metadata_form.instance.bulletins_terminale.url }}" target="_blank">Document actuel</a></div>
+                                    <div class="small mb-2">
+                                        <span class="font-weight-bold">Fichier actuel :</span>
+                                        <a href="{{ metadata_form.instance.bulletins_terminale.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.bulletins_terminale.name|basename }}</a>
+                                    </div>
                                 {% endif %}
                                 {{ metadata_form.bulletins_terminale }}
+                                {% if metadata_form.instance.bulletins_terminale %}
+                                    <div class="form-check mt-3">
+                                        {{ metadata_form.remove_bulletins_terminale }}
+                                        <label class="form-check-label" for="{{ metadata_form.remove_bulletins_terminale.id_for_label }}">
+                                            {{ metadata_form.remove_bulletins_terminale.label }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
+                                {% endif %}
                                 {% if metadata_form.bulletins_terminale.errors %}
                                     <div class="text-danger small">{{ metadata_form.bulletins_terminale.errors.0 }}</div>
+                                {% endif %}
+                                {% if metadata_form.remove_bulletins_terminale.errors %}
+                                    <div class="text-danger small mt-2">{{ metadata_form.remove_bulletins_terminale.errors.0 }}</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -563,5 +712,112 @@
         </div>
     </div>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const programSelect = document.getElementById('id_program');
+        const specialiteSelects = [
+            {
+                element: document.getElementById('id_specialite_souhaitee_1'),
+                placeholder: 'Sélectionner la spécialité #1',
+                selectedValue: '{{ student_form.specialite_souhaitee_1.value|default:""|escapejs }}'
+            },
+            {
+                element: document.getElementById('id_specialite_souhaitee_2'),
+                placeholder: 'Sélectionner la spécialité #2 (optionnel)',
+                selectedValue: '{{ student_form.specialite_souhaitee_2.value|default:""|escapejs }}'
+            },
+            {
+                element: document.getElementById('id_specialite_souhaitee_3'),
+                placeholder: 'Sélectionner la spécialité #3 (optionnel)',
+                selectedValue: '{{ student_form.specialite_souhaitee_3.value|default:""|escapejs }}'
+            }
+        ];
+        const bacEtablissementExistantSelect = document.getElementById('id_bac_etablissement_existant');
+        const manualBacEtablissementField = document.getElementById('manual-bac-etablissement-field');
+
+        function resetSpecialitySelects(defaultLabel) {
+            specialiteSelects.forEach(({ element }) => {
+                if (!element) {
+                    return;
+                }
+
+                element.innerHTML = `<option value="">${defaultLabel}</option>`;
+                element.disabled = true;
+            });
+        }
+
+        function loadSpecialities(programId) {
+            if (!programId) {
+                resetSpecialitySelects('Sélectionner d\'abord un programme');
+                return;
+            }
+
+            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        resetSpecialitySelects('Aucune spécialité disponible');
+                        return;
+                    }
+
+                    specialiteSelects.forEach(({ element, placeholder, selectedValue }) => {
+                        if (!element) {
+                            return;
+                        }
+
+                        element.innerHTML = `<option value="">${placeholder}</option>`;
+
+                        data.specialities.forEach(speciality => {
+                            const option = document.createElement('option');
+                            option.value = speciality.id;
+                            option.textContent = speciality.name;
+
+                            if (selectedValue && String(speciality.id) === String(selectedValue)) {
+                                option.selected = true;
+                            }
+
+                            element.appendChild(option);
+                        });
+
+                        element.disabled = false;
+                    });
+                })
+                .catch(() => {
+                    resetSpecialitySelects('Erreur de chargement des spécialités');
+                });
+        }
+
+        function toggleManualBacEtablissementField() {
+            if (!bacEtablissementExistantSelect || !manualBacEtablissementField) {
+                return;
+            }
+
+            manualBacEtablissementField.style.display = bacEtablissementExistantSelect.value ? 'none' : 'block';
+        }
+
+        if (bacEtablissementExistantSelect) {
+            bacEtablissementExistantSelect.addEventListener('change', toggleManualBacEtablissementField);
+            toggleManualBacEtablissementField();
+        }
+
+        if (!programSelect) {
+            return;
+        }
+
+        programSelect.addEventListener('change', function () {
+            specialiteSelects.forEach((config) => {
+                config.selectedValue = '';
+            });
+            loadSpecialities(this.value);
+        });
+
+        if (programSelect.value) {
+            loadSpecialities(programSelect.value);
+        } else {
+            resetSpecialitySelects('Sélectionner d\'abord un programme');
+        }
+    });
+</script>
 
 {% endblock %}

@@ -26,41 +26,42 @@
 
                 <!-- Section 1: Informations personnelles -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-user me-2 mr-1"></i>Informations personnelles</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-user me-2 mr-1"></i>Informations
+                        personnelles</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.nom.label_tag }}
                             {{ form.nom }}
                             {% if form.nom.errors %}
-                                <div class="text-danger small">{{ form.nom.errors }}</div>
+                            <div class="text-danger small">{{ form.nom.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.prenom.label_tag }}
                             {{ form.prenom }}
                             {% if form.prenom.errors %}
-                                <div class="text-danger small">{{ form.prenom.errors }}</div>
+                            <div class="text-danger small">{{ form.prenom.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.date_naissance.label_tag }}
                             {{ form.date_naissance }}
                             {% if form.date_naissance.errors %}
-                                <div class="text-danger small">{{ form.date_naissance.errors }}</div>
+                            <div class="text-danger small">{{ form.date_naissance.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.lieu_naissance.label_tag }}
                             {{ form.lieu_naissance }}
                             {% if form.lieu_naissance.errors %}
-                                <div class="text-danger small">{{ form.lieu_naissance.errors }}</div>
+                            <div class="text-danger small">{{ form.lieu_naissance.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.sexe.label_tag }}
                             {{ form.sexe }}
                             {% if form.sexe.errors %}
-                                <div class="text-danger small">{{ form.sexe.errors }}</div>
+                            <div class="text-danger small">{{ form.sexe.errors }}</div>
                             {% endif %}
                         </div>
 
@@ -68,28 +69,37 @@
                             {{ form.premiere_langue_officielle.label_tag }}
                             {{ form.premiere_langue_officielle }}
                             {% if form.premiere_langue_officielle.errors %}
-                                <div class="text-danger small">{{ form.premiere_langue_officielle.errors }}</div>
+                            <div class="text-danger small">{{ form.premiere_langue_officielle.errors }}</div>
                             {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.profile_photo.label_tag }}
+                            {{ form.profile_photo }}
+                            {% if form.profile_photo.errors %}
+                            <div class="text-danger small">{{ form.profile_photo.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">{{ form.profile_photo.help_text }}</small>
                         </div>
                     </div>
                 </div>
 
                 <!-- Section 2: Coordonnées -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-envelope me-2 mr-1"></i>Coordonnées</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i
+                            class="fas fa-envelope me-2 mr-1"></i>Coordonnées</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.courriel.label_tag }}
                             {{ form.courriel }}
                             {% if form.courriel.errors %}
-                                <div class="text-danger small">{{ form.courriel.errors }}</div>
+                            <div class="text-danger small">{{ form.courriel.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.telephone.label_tag }}
                             {{ form.telephone }}
                             {% if form.telephone.errors %}
-                                <div class="text-danger small">{{ form.telephone.errors }}</div>
+                            <div class="text-danger small">{{ form.telephone.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -97,41 +107,53 @@
 
                 <!-- Section 3: Informations académiques -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-graduation-cap me-2 mr-1"></i>Informations académiques</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i
+                            class="fas fa-graduation-cap me-2 mr-1"></i>Informations académiques</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.annee_academique.label_tag }}
                             {{ form.annee_academique }}
                             {% if form.annee_academique.errors %}
-                                <div class="text-danger small">{{ form.annee_academique.errors }}</div>
+                            <div class="text-danger small">{{ form.annee_academique.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.niveau.label_tag }}
                             {{ form.niveau }}
                             {% if form.niveau.errors %}
-                                <div class="text-danger small">{{ form.niveau.errors }}</div>
+                            <div class="text-danger small">{{ form.niveau.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
                             {{ form.programme.label_tag }}
                             {{ form.programme }}
                             {% if form.programme.errors %}
-                                <div class="text-danger small">{{ form.programme.errors }}</div>
+                            <div class="text-danger small">{{ form.programme.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.specialite_souhaitee.label_tag }}
-                            {{ form.specialite_souhaitee }}
-                            {% if form.specialite_souhaitee.errors %}
-                                <div class="text-danger small">{{ form.specialite_souhaitee.errors }}</div>
+                        </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.specialite_souhaitee_1.label_tag }}
+                            {{ form.specialite_souhaitee_1 }}
+                            {% if form.specialite_souhaitee_1.errors %}
+                            <div class="text-danger small">{{ form.specialite_souhaitee_1.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-12 mb-3" id="autre-specialite" style="display: none;">
-                            {{ form.autre_specialite.label_tag }}
-                            {{ form.autre_specialite }}
-                            {% if form.autre_specialite.errors %}
-                                <div class="text-danger small">{{ form.autre_specialite.errors }}</div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.specialite_souhaitee_2.label_tag }}
+                            {{ form.specialite_souhaitee_2 }}
+                            {% if form.specialite_souhaitee_2.errors %}
+                            <div class="text-danger small">{{ form.specialite_souhaitee_2.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.specialite_souhaitee_3.label_tag }}
+                            {{ form.specialite_souhaitee_3 }}
+                            {% if form.specialite_souhaitee_3.errors %}
+                            <div class="text-danger small">{{ form.specialite_souhaitee_3.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -139,48 +161,49 @@
 
                 <!-- Section 4: Informations géographiques -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-map-marker-alt me-2 mr-1"></i>Informations géographiques</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i
+                            class="fas fa-map-marker-alt me-2 mr-1"></i>Informations géographiques</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.pays_origine.label_tag }}
                             {{ form.pays_origine }}
                             {% if form.pays_origine.errors %}
-                                <div class="text-danger small">{{ form.pays_origine.errors }}</div>
+                            <div class="text-danger small">{{ form.pays_origine.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.region_origine.label_tag }}
                             {{ form.region_origine }}
                             {% if form.region_origine.errors %}
-                                <div class="text-danger small">{{ form.region_origine.errors }}</div>
+                            <div class="text-danger small">{{ form.region_origine.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.departement_origine.label_tag }}
                             {{ form.departement_origine }}
                             {% if form.departement_origine.errors %}
-                                <div class="text-danger small">{{ form.departement_origine.errors }}</div>
+                            <div class="text-danger small">{{ form.departement_origine.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.arrondissement_origine.label_tag }}
                             {{ form.arrondissement_origine }}
                             {% if form.arrondissement_origine.errors %}
-                                <div class="text-danger small">{{ form.arrondissement_origine.errors }}</div>
+                            <div class="text-danger small">{{ form.arrondissement_origine.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.ville_residence.label_tag }}
                             {{ form.ville_residence }}
                             {% if form.ville_residence.errors %}
-                                <div class="text-danger small">{{ form.ville_residence.errors }}</div>
+                            <div class="text-danger small">{{ form.ville_residence.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.quartier_residence.label_tag }}
                             {{ form.quartier_residence }}
                             {% if form.quartier_residence.errors %}
-                                <div class="text-danger small">{{ form.quartier_residence.errors }}</div>
+                            <div class="text-danger small">{{ form.quartier_residence.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -188,7 +211,8 @@
 
                 <!-- Section 5: Informations familiales -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-users me-2 mr-1"></i>Informations familiales</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i
+                            class="fas fa-users me-2 mr-1"></i>Informations familiales</h6>
 
                     <!-- Informations du père -->
                     <h6 class="mb-2 text-secondary">Informations du père</h6>
@@ -251,7 +275,7 @@
                             {{ form.parrain_existant.label_tag }}
                             {{ form.parrain_existant }}
                             {% if form.parrain_existant.errors %}
-                                <div class="text-danger small">{{ form.parrain_existant.errors }}</div>
+                            <div class="text-danger small">{{ form.parrain_existant.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.parrain_existant.help_text }}</small>
                         </div>
@@ -259,7 +283,8 @@
 
                     <div class="row mb-3" id="manual-godfather-fields">
                         <div class="col-12 mb-2">
-                            <small class="text-muted">Si le parrain ne figure pas dans la liste, renseignez ses informations ci-dessous.</small>
+                            <small class="text-muted">Si le parrain ne figure pas dans la liste, renseignez ses
+                                informations ci-dessous.</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.nom_tuteur.label_tag }}
@@ -300,7 +325,8 @@
 
                 <!-- Section 6: Cursus scolaire -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-school me-2 mr-1"></i>Cursus scolaire et universitaire</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-school me-2 mr-1"></i>Cursus
+                        scolaire et universitaire</h6>
 
                     <!-- BEPC/CAP -->
                     <h6 class="mb-2 text-secondary">BEPC / CAP</h6>
@@ -338,14 +364,14 @@
                             {{ form.bac_etablissement_existant.label_tag }}
                             {{ form.bac_etablissement_existant }}
                             {% if form.bac_etablissement_existant.errors %}
-                                <div class="text-danger small">{{ form.bac_etablissement_existant.errors }}</div>
+                            <div class="text-danger small">{{ form.bac_etablissement_existant.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.bac_etablissement_existant.help_text }}</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div id="manual-bac-etablissement-field">
-                            {{ form.bac_etablissement.label_tag }}
-                            {{ form.bac_etablissement }}
+                                {{ form.bac_etablissement.label_tag }}
+                                {{ form.bac_etablissement }}
                             </div>
                         </div>
                     </div>
@@ -361,14 +387,15 @@
 
                 <!-- Section 7: Documents requis -->
                 <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-file-upload me-2 mr-1"></i>Documents requis</h6>
+                    <h6 class="mb-3 text-secondary border-bottom pb-2"><i
+                            class="fas fa-file-upload me-2 mr-1"></i>Documents requis</h6>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.acte_naissance.label_tag }}
                             {{ form.acte_naissance }}
                             {% if form.acte_naissance.errors %}
-                                <div class="text-danger small">{{ form.acte_naissance.errors }}</div>
+                            <div class="text-danger small">{{ form.acte_naissance.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.acte_naissance.help_text }}</small>
                         </div>
@@ -376,7 +403,7 @@
                             {{ form.certificat_nationalite.label_tag }}
                             {{ form.certificat_nationalite }}
                             {% if form.certificat_nationalite.errors %}
-                                <div class="text-danger small">{{ form.certificat_nationalite.errors }}</div>
+                            <div class="text-danger small">{{ form.certificat_nationalite.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.certificat_nationalite.help_text }}</small>
                         </div>
@@ -384,7 +411,7 @@
                             {{ form.preuve_baccalaureat.label_tag }}
                             {{ form.preuve_baccalaureat }}
                             {% if form.preuve_baccalaureat.errors %}
-                                <div class="text-danger small">{{ form.preuve_baccalaureat.errors }}</div>
+                            <div class="text-danger small">{{ form.preuve_baccalaureat.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.preuve_baccalaureat.help_text }}</small>
                         </div>
@@ -392,7 +419,7 @@
                             {{ form.releve_notes_last_class.label_tag }}
                             {{ form.releve_notes_last_class }}
                             {% if form.releve_notes_last_class.errors %}
-                                <div class="text-danger small">{{ form.releve_notes_last_class.errors }}</div>
+                            <div class="text-danger small">{{ form.releve_notes_last_class.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.releve_notes_last_class.help_text }}</small>
                         </div>
@@ -400,7 +427,7 @@
                             {{ form.justificatif_dernier_diplome.label_tag }}
                             {{ form.justificatif_dernier_diplome }}
                             {% if form.justificatif_dernier_diplome.errors %}
-                                <div class="text-danger small">{{ form.justificatif_dernier_diplome.errors }}</div>
+                            <div class="text-danger small">{{ form.justificatif_dernier_diplome.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.justificatif_dernier_diplome.help_text }}</small>
                         </div>
@@ -408,7 +435,7 @@
                             {{ form.bulletins_terminale.label_tag }}
                             {{ form.bulletins_terminale }}
                             {% if form.bulletins_terminale.errors %}
-                                <div class="text-danger small">{{ form.bulletins_terminale.errors }}</div>
+                            <div class="text-danger small">{{ form.bulletins_terminale.errors }}</div>
                             {% endif %}
                             <small class="text-muted">{{ form.bulletins_terminale.help_text }}</small>
                         </div>
@@ -435,27 +462,15 @@
                                 {{ form.is_complete.label_tag }}
                             </div>
                             {% if form.is_complete.errors %}
-                                <div class="text-danger small">{{ form.is_complete.errors }}</div>
+                            <div class="text-danger small">{{ form.is_complete.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-
-                <!-- Section 8: Attestation (optionnelle) -->
-                <!-- <div class="card-neumorphic p-3 mb-4">
-                    <h6 class="mb-3 text-primary"><i class="fas fa-check-circle me-2"></i>Attestation</h6>
-                    <div class="form-check">
-                        {{ form.attestation_veracite }}
-                        {{ form.attestation_veracite.label_tag }}
-                        {% if form.attestation_veracite.errors %}
-                            <div class="text-danger small">{{ form.attestation_veracite.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div> -->
-
                 <!-- Boutons d'action -->
                 <div class="d-flex justify-content-end flex-wrap gap-4">
-                    <button type="submit" name="save_action" value="save_and_new" class="btn btn-outline-secondary btn-lg mx-2">
+                    <button type="submit" name="save_action" value="save_and_new"
+                        class="btn btn-outline-secondary btn-lg mx-2">
                         <i class="fas fa-plus mr-2"></i>Pré-inscrire et nouveau
                     </button>
                     <button type="submit" name="save_action" value="save" class="btn btn-primary btn-lg mx-2">
@@ -466,123 +481,139 @@
 
             <!-- Messages -->
             {% if messages %}
-                <div class="mt-4">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
+            <div class="mt-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+                {% endfor %}
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
 
 <script>
-// Script pour gérer la sélection dynamique des spécialités
-document.addEventListener('DOMContentLoaded', function() {
-    const programSelect = document.getElementById('id_programme');
-    const specialiteSelect = document.getElementById('id_specialite_souhaitee');
-    const autreSpecialiteDiv = document.getElementById('autre-specialite');
-    const parrainExistantSelect = document.getElementById('id_parrain_existant');
-    const manualGodfatherFields = document.getElementById('manual-godfather-fields');
-    const bacEtablissementExistantSelect = document.getElementById('id_bac_etablissement_existant');
-    const manualBacEtablissementField = document.getElementById('manual-bac-etablissement-field');
+    // Script pour gérer la sélection dynamique des spécialités
+    document.addEventListener('DOMContentLoaded', function () {
+        const programSelect = document.getElementById('id_programme');
+        const specialiteSelects = [
+            {
+                element: document.getElementById('id_specialite_souhaitee_1'),
+                placeholder: 'Sélectionner la spécialité #1',
+                selectedValue: '{{ form.specialite_souhaitee_1.value|default:""|escapejs }}'
+            },
+            {
+                element: document.getElementById('id_specialite_souhaitee_2'),
+                placeholder: 'Sélectionner la spécialité #2 (optionnel)',
+                selectedValue: '{{ form.specialite_souhaitee_2.value|default:""|escapejs }}'
+            },
+            {
+                element: document.getElementById('id_specialite_souhaitee_3'),
+                placeholder: 'Sélectionner la spécialité #3 (optionnel)',
+                selectedValue: '{{ form.specialite_souhaitee_3.value|default:""|escapejs }}'
+            }
+        ];
+        const parrainExistantSelect = document.getElementById('id_parrain_existant');
+        const manualGodfatherFields = document.getElementById('manual-godfather-fields');
+        const bacEtablissementExistantSelect = document.getElementById('id_bac_etablissement_existant');
+        const manualBacEtablissementField = document.getElementById('manual-bac-etablissement-field');
 
-    // Valeur précédemment sélectionnée (en cas de re-rendu après erreur de validation)
-    const previousSpecialiteValue = specialiteSelect.dataset.selectedValue || '{{ form.specialite_souhaitee.value|default:"" }}';
-
-    function loadSpecialities(programId, selectedValue) {
-        if (!programId) {
-            // Réinitialiser le champ spécialité
-            specialiteSelect.innerHTML = '<option value="">Sélectionner d\'abord un programme</option>';
-            specialiteSelect.disabled = true;
-            return;
-        }
-
-        // Faire la requête AJAX pour récupérer les spécialités
-        fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Vider le select et ajouter l'option par défaut
-                    specialiteSelect.innerHTML = '<option value="">Sélectionner une spécialité</option>';
-
-                    // Ajouter les spécialités
-                    data.specialities.forEach(speciality => {
-                        const option = document.createElement('option');
-                        option.value = speciality.id;
-                        option.textContent = speciality.name;
-                        // Restaurer la sélection précédente si elle correspond
-                        if (selectedValue && String(speciality.id) === String(selectedValue)) {
-                            option.selected = true;
-                        }
-                        specialiteSelect.appendChild(option);
-                    });
-
-                    // Activer le champ
-                    specialiteSelect.disabled = false;
-                    toggleAutreSpecialite();
-                } else {
-                    console.error('Erreur lors du chargement des spécialités:', data.error);
-                    specialiteSelect.innerHTML = '<option value="">Erreur de chargement</option>';
-                    specialiteSelect.disabled = true;
+        function resetSpecialitySelects(defaultLabel) {
+            specialiteSelects.forEach(({ element }) => {
+                if (!element) {
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Erreur AJAX:', error);
-                specialiteSelect.innerHTML = '<option value="">Erreur de chargement</option>';
-                specialiteSelect.disabled = true;
+
+                element.innerHTML = `<option value="">${defaultLabel}</option>`;
+                element.disabled = true;
             });
-    }
+        }
 
-    function toggleAutreSpecialite() {
-        if (specialiteSelect.value === 'autre') {
-            autreSpecialiteDiv.style.display = 'block';
+        function loadSpecialities(programId) {
+            if (!programId) {
+                resetSpecialitySelects('Sélectionner d\'abord un programme');
+                return;
+            }
+
+            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        specialiteSelects.forEach(({ element, placeholder, selectedValue }) => {
+                            if (!element) {
+                                return;
+                            }
+
+                            element.innerHTML = `<option value="">${placeholder}</option>`;
+
+                            data.specialities.forEach(speciality => {
+                                const option = document.createElement('option');
+                                option.value = speciality.id;
+                                option.textContent = speciality.name;
+
+                                if (selectedValue && String(speciality.id) === String(selectedValue)) {
+                                    option.selected = true;
+                                }
+
+                                element.appendChild(option);
+                            });
+
+                            element.disabled = false;
+                        });
+                    } else {
+                        console.error('Erreur lors du chargement des spécialités:', data.error);
+                        resetSpecialitySelects('Erreur de chargement');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur AJAX:', error);
+                    resetSpecialitySelects('Erreur de chargement');
+                });
+        }
+
+        function toggleManualGodfatherFields() {
+            if (!parrainExistantSelect || !manualGodfatherFields) {
+                return;
+            }
+
+            manualGodfatherFields.style.display = parrainExistantSelect.value ? 'none' : 'flex';
+        }
+
+        function toggleManualBacEtablissementField() {
+            if (!bacEtablissementExistantSelect || !manualBacEtablissementField) {
+                return;
+            }
+
+            manualBacEtablissementField.style.display = bacEtablissementExistantSelect.value ? 'none' : 'block';
+        }
+
+        if (!programSelect) {
+            return;
+        }
+
+        programSelect.addEventListener('change', function () {
+            specialiteSelects.forEach((config) => {
+                config.selectedValue = '';
+            });
+            loadSpecialities(this.value);
+        });
+
+        if (parrainExistantSelect) {
+            parrainExistantSelect.addEventListener('change', toggleManualGodfatherFields);
+            toggleManualGodfatherFields();
+        }
+        if (bacEtablissementExistantSelect) {
+            bacEtablissementExistantSelect.addEventListener('change', toggleManualBacEtablissementField);
+            toggleManualBacEtablissementField();
+        }
+
+        if (programSelect.value) {
+            loadSpecialities(programSelect.value);
         } else {
-            autreSpecialiteDiv.style.display = 'none';
+            resetSpecialitySelects('Sélectionner d\'abord un programme');
         }
-    }
-
-    function toggleManualGodfatherFields() {
-        if (!parrainExistantSelect || !manualGodfatherFields) {
-            return;
-        }
-
-        manualGodfatherFields.style.display = parrainExistantSelect.value ? 'none' : 'flex';
-    }
-
-    function toggleManualBacEtablissementField() {
-        if (!bacEtablissementExistantSelect || !manualBacEtablissementField) {
-            return;
-        }
-
-        manualBacEtablissementField.style.display = bacEtablissementExistantSelect.value ? 'none' : 'block';
-    }
-
-    // Événements
-    programSelect.addEventListener('change', function() {
-        loadSpecialities(this.value, null);
     });
-
-    specialiteSelect.addEventListener('change', toggleAutreSpecialite);
-    if (parrainExistantSelect) {
-        parrainExistantSelect.addEventListener('change', toggleManualGodfatherFields);
-        toggleManualGodfatherFields();
-    }
-    if (bacEtablissementExistantSelect) {
-        bacEtablissementExistantSelect.addEventListener('change', toggleManualBacEtablissementField);
-        toggleManualBacEtablissementField();
-    }
-
-    // Initialisation : si un programme est déjà sélectionné (ex: re-rendu après erreur),
-    // charger les spécialités et restaurer la sélection précédente
-    if (programSelect.value) {
-        loadSpecialities(programSelect.value, previousSpecialiteValue);
-    } else {
-        toggleAutreSpecialite();
-    }
-});
 </script>
 {% endblock %}

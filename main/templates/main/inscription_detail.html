@@ -50,6 +50,20 @@
                 <i class="fas fa-user me-2"></i>
                 Informations personnelles
             </h4>
+
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <label class="form-label fw-bold d-block">Photo de profil</label>
+                    {% if student.profile_photo %}
+                        <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="rounded-circle border border-light shadow-soft" style="width: 180px; height: 180px; object-fit: cover;">
+                    {% else %}
+                        <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-light text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 180px; height: 180px;">
+                            <span class="fas fa-user fa-3x"></span>
+                        </div>
+                        <div class="text-muted small mt-2">Aucune photo de profil enregistrée</div>
+                    {% endif %}
+                </div>
+            </div>
             
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -174,10 +188,19 @@
                     <i class="fas fa-check-circle mr-2"></i>
                     Pré-inscription approuvée
                 </div>
-                <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-primary w-100">
-                    <i class="fas fa-user me-2"></i>
-                    Voir le profil étudiant
-                </a>
+                <div class="d-grid gap-2">
+                    <form method="post" action="{% url 'main:inscription_register' student.matricule %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success w-100 my-2" onclick="return confirm('Êtes-vous sûr de vouloir inscrire définitivement cet étudiant ?')">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            Inscrire l'étudiant
+                        </button>
+                    </form>
+                    <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-primary w-100">
+                        <i class="fas fa-user me-2"></i>
+                        Voir le profil étudiant
+                    </a>
+                </div>
             {% elif student.status == 'rejected' %}
                 <div class="alert alert-danger">
                     <i class="fas fa-times-circle me-2"></i>
@@ -236,7 +259,7 @@
             </h4>
 
             <div class="row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Programme</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.program %}
@@ -247,7 +270,32 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Spécialités choisies</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.specialite_souhaitee_1 or student.specialite_souhaitee_2 or student.specialite_souhaitee_3 %}
+                            {% if student.specialite_souhaitee_1 %}
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary text-white me-2">Choix 1</span>{{ student.specialite_souhaitee_1 }}
+                                </div>
+                            {% endif %}
+                            {% if student.specialite_souhaitee_2 %}
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary text-white me-2">Choix 2</span>{{ student.specialite_souhaitee_2 }}
+                                </div>
+                            {% endif %}
+                            {% if student.specialite_souhaitee_3 %}
+                                <div>
+                                    <span class="badge bg-secondary text-white me-2">Choix 3</span>{{ student.specialite_souhaitee_3 }}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Aucune spécialité renseignée</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">École d'origine</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.school %}
@@ -258,7 +306,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Parrain</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.godfather %}

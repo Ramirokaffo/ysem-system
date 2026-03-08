@@ -7,14 +7,17 @@ from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 
 from academic.models import AcademicYear, Level, Program, Speciality
 from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, StudentLevelForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
 from .pdf_exports import build_pre_inscription_pdf, build_pre_inscriptions_pdf
 from accounts.models import BaseUser, Godfather
+from schools.models import School
 from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument, PaymentStatus
 import json
+import re
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
 from django.utils import timezone
@@ -113,6 +116,171 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 PRE_INSCRIPTION_STATUSES = ['pending', 'abandoned', 'approved', 'rejected']
 
 
+def _extract_dossier_sequence(dossier_number):
+    """Extrait la séquence numérique finale d'un numéro de dossier."""
+    if not dossier_number:
+        return None
+
+    match = re.search(r'([0-9]{1,4})$', str(dossier_number).strip())
+    if not match:
+        return None
+
+    return int(match.group(1))
+
+
+def _infer_program_code(student, student_level):
+    """Déduit le code programme à partir du programme ou du niveau."""
+    candidates = []
+
+    if student.program and student.program.name:
+        candidates.append(student.program.name)
+    if student_level.level and student_level.level.name:
+        candidates.append(student_level.level.name)
+
+    for candidate in candidates:
+        normalized = candidate.strip().lower()
+        if 'licence' in normalized:
+            return '1'
+        if 'master' in normalized:
+            return '2'
+        if 'doctorat' in normalized or 'phd' in normalized:
+            return '3'
+
+    raise ValidationError("Impossible de déterminer le code programme pour cet étudiant.")
+
+
+def _infer_cycle_code(student_level):
+    """Déduit le code cycle à partir du niveau de l'étudiant."""
+    level_name = student_level.level.name if student_level.level else ''
+    match = re.search(r'([0-9]+)', level_name)
+
+    if not match:
+        raise ValidationError("Impossible de déterminer le code cycle à partir du niveau d'inscription.")
+
+    return match.group(1)[-1]
+
+
+def _infer_dossier_prefix(student, student_level):
+    """Déduit un préfixe de dossier lisible à partir du programme."""
+    candidates = []
+
+    if student.program and student.program.name:
+        candidates.append(student.program.name)
+    if student_level.level and student_level.level.name:
+        candidates.append(student_level.level.name)
+
+    for candidate in candidates:
+        normalized = candidate.strip().lower()
+        if 'licence' in normalized:
+            return 'L'
+        if 'master' in normalized:
+            return 'M'
+        if 'doctorat' in normalized or 'phd' in normalized:
+            return 'D'
+
+    return 'D'
+
+
+def _build_student_matricule(year_code, program_code, cycle_code, dossier_last4):
+    """Construit le matricule final selon la formule métier fournie."""
+    base = f"{year_code}{program_code}{cycle_code}{dossier_last4}"
+
+    if not base.isdigit() or len(year_code) != 2 or len(program_code) != 1 or len(cycle_code) != 1 or len(dossier_last4) != 4:
+        raise ValidationError("Les composants du matricule final sont invalides.")
+
+    check_digit = (sum(int(char) for char in base) * 3) % 10
+    return f"{base}{check_digit}"
+
+
+def _get_next_dossier_sequence():
+    """Retourne la prochaine séquence de dossier disponible."""
+    stored_sequences = [
+        sequence
+        for sequence in (
+            _extract_dossier_sequence(value)
+            for value in Student.objects.exclude(dossier_number__isnull=True)
+            .exclude(dossier_number__exact='')
+            .values_list('dossier_number', flat=True)
+        )
+        if sequence is not None
+    ]
+    highest_sequence = max(stored_sequences, default=0)
+    return max(highest_sequence, Student.objects.count()) + 1
+
+
+def _generate_final_registration_identifiers(student):
+    """Génère le numéro de dossier et le matricule définitif d'une pré-inscription approuvée."""
+    student_level = _get_student_level_for_edit(student)
+    if not student_level or not student_level.level or not student_level.academic_year:
+        raise ValidationError("Impossible d'inscrire cet étudiant sans niveau et année académique actifs.")
+
+    year_code = str(student_level.academic_year.start_at.year)[-2:]
+    program_code = _infer_program_code(student, student_level)
+    cycle_code = _infer_cycle_code(student_level)
+    dossier_prefix = _infer_dossier_prefix(student, student_level)
+    sequence = _extract_dossier_sequence(student.dossier_number) or _get_next_dossier_sequence()
+
+    for _ in range(10000):
+        dossier_last4 = f"{sequence:04d}"
+        dossier_number = f"{dossier_prefix}{dossier_last4}"
+        matricule = _build_student_matricule(year_code, program_code, cycle_code, dossier_last4)
+
+        if not Student.objects.filter(pk=matricule).exclude(pk=student.pk).exists():
+            return dossier_number, matricule
+
+        sequence += 1
+
+    raise ValidationError("Aucun matricule définitif disponible n'a pu être généré.")
+
+
+def _replace_student_primary_key(student, new_matricule, dossier_number):
+    """Crée l'étudiant définitif et rattache les relations à son nouveau matricule."""
+    from Teaching.models import Evaluation
+
+    old_matricule = student.matricule
+    metadata_id = student.metadata_id
+    created_at = student.created_at
+
+    Student.objects.create(
+        matricule=new_matricule,
+        dossier_number=dossier_number,
+        firstname=student.firstname,
+        lastname=student.lastname,
+        date_naiss=student.date_naiss,
+        status='registered',
+        gender=student.gender,
+        lang=student.lang,
+        phone_number=student.phone_number,
+        email=student.email,
+        godfather=student.godfather,
+        metadata=None,
+        school=student.school,
+        program=student.program,
+        specialite_souhaitee_1=student.specialite_souhaitee_1,
+        specialite_souhaitee_2=student.specialite_souhaitee_2,
+        specialite_souhaitee_3=student.specialite_souhaitee_3,
+        external_password_hash=student.external_password_hash,
+        external_password_created_at=student.external_password_created_at,
+        profile_photo=student.profile_photo.name if student.profile_photo else None,
+    )
+
+    StudentLevel.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+    PaymentStatus.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+    Evaluation.objects.filter(student_id=old_matricule).update(student_id=new_matricule)
+
+    Student.objects.filter(pk=old_matricule).delete()
+
+    update_payload = {}
+    if metadata_id:
+        update_payload['metadata_id'] = metadata_id
+    if created_at is not None:
+        update_payload['created_at'] = created_at
+    if update_payload:
+        Student.objects.filter(pk=new_matricule).update(**update_payload)
+
+    return Student.objects.get(pk=new_matricule)
+
+
 def _get_filtered_pre_inscriptions_queryset(params, queryset=None):
     """Construit le queryset de pré-inscriptions à partir des filtres GET."""
     students = queryset if queryset is not None else Student.objects.all()
@@ -144,7 +312,7 @@ def _get_filtered_pre_inscriptions_queryset(params, queryset=None):
 
 
 
-class InscriptionsView(LoginRequiredMixin, TemplateView):
+class PreInscriptionsView(LoginRequiredMixin, TemplateView):
     """Vue pour la gestion des pré-inscriptions"""
     template_name = 'main/inscriptions.html'
 
@@ -850,88 +1018,117 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
 
         if form.is_valid():
             try:
-                # Création de l'étudiant avec les données du formulaire
-                cleaned_data = form.cleaned_data
-                save_action = request.POST.get('save_action', 'save')
+                with transaction.atomic():
+                    # Création de l'étudiant avec les données du formulaire
+                    cleaned_data = form.cleaned_data
+                    save_action = request.POST.get('save_action', 'save')
 
-                # Conversion de la date de naissance si nécessaire
-                date_naissance = cleaned_data.get('date_naissance')
-                if isinstance(date_naissance, str):
-                    from datetime import datetime
-                    try:
-                        date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d').date()
-                    except (ValueError, TypeError):
-                        date_naissance = None
+                    # Conversion de la date de naissance si nécessaire
+                    date_naissance = cleaned_data.get('date_naissance')
+                    if isinstance(date_naissance, str):
+                        from datetime import datetime
+                        try:
+                            date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d').date()
+                        except (ValueError, TypeError):
+                            date_naissance = None
 
-                # Création des métadonnées de l'étudiant
-                student_metadata = StudentMetaData.objects.create(
-                    mother_full_name=cleaned_data.get('nom_mere', ''),
-                    mother_live_city=cleaned_data.get('ville_residence_mere', ''),
-                    mother_email=cleaned_data.get('courriel_mere', ''),
-                    mother_occupation=cleaned_data.get('profession_mere', ''),
-                    mother_phone_number=cleaned_data.get('telephone_mere', ''),
-                    father_full_name=cleaned_data.get('nom_pere', ''),
-                    father_live_city=cleaned_data.get('ville_residence_pere', ''),
-                    father_email=cleaned_data.get('courriel_pere', ''),
-                    father_occupation=cleaned_data.get('profession_pere', ''),
-                    father_phone_number=cleaned_data.get('telephone_pere', ''),
-                    original_country=cleaned_data.get('nationalite', 'Cameroun'),
-                    original_region=cleaned_data.get('region_origine', ''),
-                    original_department=cleaned_data.get('departement_origine', ''),
-                    original_district=cleaned_data.get('arrondissement_origine', ''),
-                    residence_city=cleaned_data.get('ville_residence', ''),
-                    residence_quarter=cleaned_data.get('quartier_residence', ''),
-                    is_complete=cleaned_data.get('is_complete', False),
-                    # Ajout des fichiers d'inscription
-                    acte_naissance=request.FILES.get('acte_naissance'),
-                    certificat_nationalite=request.FILES.get('certificat_nationalite'),
-                    preuve_baccalaureat=request.FILES.get('preuve_baccalaureat'),
-                    releve_notes_last_class=request.FILES.get('releve_notes_last_class'),
-                    justificatif_dernier_diplome=request.FILES.get('justificatif_dernier_diplome'),
-                    bulletins_terminale=request.FILES.get('bulletins_terminale'),
-                )
+                    school = cleaned_data.get('bac_etablissement_existant')
+                    if not school:
+                        school_name = (cleaned_data.get('bac_etablissement') or '').strip()
+                        if school_name:
+                            school = School.objects.filter(
+                                name__iexact=school_name,
+                                level='secondary',
+                            ).first()
+                            if not school:
+                                school = School.objects.create(
+                                    name=school_name,
+                                    level='secondary',
+                                )
 
-                # Réutilisation d'un parrain existant ou création manuelle si nécessaire
-                godfather = cleaned_data.get('parrain_existant')
-                if not godfather and any(
-                    cleaned_data.get(field_name)
-                    for field_name in ['nom_tuteur', 'profession_tuteur', 'telephone_tuteur', 'courriel_tuteur']
-                ):
-                    godfather = Godfather.objects.create(
-                        full_name=cleaned_data.get('nom_tuteur', ''),
-                        occupation=cleaned_data.get('profession_tuteur', ''),
-                        phone_number=cleaned_data.get('telephone_tuteur', ''),
-                        email=cleaned_data.get('courriel_tuteur', ''),
+                    # Création des métadonnées de l'étudiant
+                    student_metadata = StudentMetaData.objects.create(
+                        mother_full_name=cleaned_data.get('nom_mere', ''),
+                        mother_live_city=cleaned_data.get('ville_residence_mere', ''),
+                        mother_email=cleaned_data.get('courriel_mere', ''),
+                        mother_occupation=cleaned_data.get('profession_mere', ''),
+                        mother_phone_number=cleaned_data.get('telephone_mere', ''),
+                        father_full_name=cleaned_data.get('nom_pere', ''),
+                        father_live_city=cleaned_data.get('ville_residence_pere', ''),
+                        father_email=cleaned_data.get('courriel_pere', ''),
+                        father_occupation=cleaned_data.get('profession_pere', ''),
+                        father_phone_number=cleaned_data.get('telephone_pere', ''),
+                        original_country=cleaned_data.get('nationalite', 'Cameroun'),
+                        original_region=cleaned_data.get('region_origine', ''),
+                        original_department=cleaned_data.get('departement_origine', ''),
+                        original_district=cleaned_data.get('arrondissement_origine', ''),
+                        residence_city=cleaned_data.get('ville_residence', ''),
+                        residence_quarter=cleaned_data.get('quartier_residence', ''),
+                        is_complete=cleaned_data.get('is_complete', False),
+                        # Ajout des fichiers d'inscription
+                        acte_naissance=request.FILES.get('acte_naissance'),
+                        certificat_nationalite=request.FILES.get('certificat_nationalite'),
+                        preuve_baccalaureat=request.FILES.get('preuve_baccalaureat'),
+                        releve_notes_last_class=request.FILES.get('releve_notes_last_class'),
+                        justificatif_dernier_diplome=request.FILES.get('justificatif_dernier_diplome'),
+                        bulletins_terminale=request.FILES.get('bulletins_terminale'),
                     )
 
-                # Génération d'un matricule pour l'étudiant interne
-                import uuid
-                matricule = f"INT_{uuid.uuid4().hex[:8].upper()}"
+                    # Réutilisation d'un parrain existant ou création manuelle si nécessaire
+                    godfather = cleaned_data.get('parrain_existant')
+                    if not godfather and any(
+                        cleaned_data.get(field_name)
+                        for field_name in ['nom_tuteur', 'profession_tuteur', 'telephone_tuteur', 'courriel_tuteur']
+                    ):
+                        godfather = Godfather.objects.create(
+                            full_name=cleaned_data.get('nom_tuteur', ''),
+                            occupation=cleaned_data.get('profession_tuteur', ''),
+                            phone_number=cleaned_data.get('telephone_tuteur', ''),
+                            email=cleaned_data.get('courriel_tuteur', ''),
+                        )
 
-                # Création de l'étudiant
-                student = Student.objects.create(
-                    matricule=matricule,
-                    firstname=cleaned_data.get('prenom'),
-                    lastname=cleaned_data.get('nom'),
-                    date_naiss=date_naissance,
-                    gender='M' if cleaned_data.get('sexe') == 'M' else 'F',
-                    lang='fr' if cleaned_data.get('premiere_langue_officielle') == 'francais' else 'en',
-                    phone_number=cleaned_data.get('telephone'),
-                    email=cleaned_data.get('courriel'),
-                    status='pending',  # Statut en attente pour les inscriptions internes
-                    program=cleaned_data.get('programme'),
-                    metadata=student_metadata,
-                    godfather=godfather,
-                )
+                    # Génération d'un matricule pour l'étudiant interne
+                    import uuid
+                    matricule = f"INT_{uuid.uuid4().hex[:8].upper()}"
 
-                # Création du StudentLevel
-                if cleaned_data.get('annee_academique') and cleaned_data.get('niveau'):
-                    StudentLevel.objects.create(
-                        student=student,
-                        level=cleaned_data.get('niveau'),
-                        academic_year=cleaned_data.get('annee_academique'),
-                        is_active=True
+                    # Création de l'étudiant
+                    student = Student.objects.create(
+                        matricule=matricule,
+                        firstname=cleaned_data.get('prenom'),
+                        lastname=cleaned_data.get('nom'),
+                        date_naiss=date_naissance,
+                        gender='M' if cleaned_data.get('sexe') == 'M' else 'F',
+                        lang='fr' if cleaned_data.get('premiere_langue_officielle') == 'francais' else 'en',
+                        phone_number=cleaned_data.get('telephone'),
+                        email=cleaned_data.get('courriel'),
+                        status='pending',  # Statut en attente pour les inscriptions internes
+                        program=cleaned_data.get('programme'),
+                        metadata=student_metadata,
+                        godfather=godfather,
+                        school=school,
+                        specialite_souhaitee_1=(
+                            cleaned_data['specialite_souhaitee_1'].name
+                            if cleaned_data.get('specialite_souhaitee_1') else ''
+                        ),
+                        specialite_souhaitee_2=(
+                            cleaned_data['specialite_souhaitee_2'].name
+                            if cleaned_data.get('specialite_souhaitee_2') else ''
+                        ),
+                        specialite_souhaitee_3=(
+                            cleaned_data['specialite_souhaitee_3'].name
+                            if cleaned_data.get('specialite_souhaitee_3') else ''
+                        ),
+                        profile_photo=cleaned_data.get('profile_photo'),
                     )
+
+                    # Création du StudentLevel
+                    if cleaned_data.get('annee_academique') and cleaned_data.get('niveau'):
+                        StudentLevel.objects.create(
+                            student=student,
+                            level=cleaned_data.get('niveau'),
+                            academic_year=cleaned_data.get('annee_academique'),
+                            is_active=True
+                        )
 
                 # Redirection vers la page de succès
                 messages.success(request, 'Inscription éffectuée avec succès!')
@@ -1093,14 +1290,15 @@ def _render_student_edit(request, student, detail_route_name, page_title, succes
         student_level_form = StudentLevelForm(request.POST, instance=student_level, student=student)
 
         if student_form.is_valid() and metadata_form.is_valid() and student_level_form.is_valid():
-            student_form.save()
-            metadata_form.save()
+            with transaction.atomic():
+                student_form.save()
+                metadata_form.save()
 
-            saved_student_level = student_level_form.save(commit=False)
-            saved_student_level.student = student
-            saved_student_level.is_active = True
-            saved_student_level.save()
-            student.student_levels.exclude(pk=saved_student_level.pk).update(is_active=False)
+                saved_student_level = student_level_form.save(commit=False)
+                saved_student_level.student = student
+                saved_student_level.is_active = True
+                saved_student_level.save()
+                student.student_levels.exclude(pk=saved_student_level.pk).update(is_active=False)
 
             messages.success(request, success_message)
             return redirect(detail_route_name, pk=student.matricule)
@@ -1470,6 +1668,39 @@ def pre_inscription_reject(request, pk):
         return redirect('main:inscription_detail', pk=pk)
 
     return redirect('main:inscriptions')
+
+
+@login_required
+def pre_inscription_register(request, pk):
+    """Transforme une pré-inscription approuvée en étudiant inscrit avec matricule définitif."""
+    if request.method != 'POST':
+        return redirect('main:inscriptions')
+
+    student = get_object_or_404(
+        Student.objects.select_related('metadata', 'school', 'program', 'godfather').prefetch_related(
+            'student_levels__level',
+            'student_levels__academic_year',
+        ),
+        pk=pk,
+    )
+
+    if student.status != 'approved':
+        messages.error(request, "Seules les pré-inscriptions approuvées peuvent être inscrites définitivement.")
+        return redirect('main:inscription_detail', pk=pk)
+
+    try:
+        with transaction.atomic():
+            dossier_number, final_matricule = _generate_final_registration_identifiers(student)
+            _replace_student_primary_key(student, final_matricule, dossier_number)
+    except ValidationError as exc:
+        messages.error(request, exc.messages[0] if exc.messages else str(exc))
+        return redirect('main:inscription_detail', pk=pk)
+
+    messages.success(
+        request,
+        f"L'étudiant {student.firstname} {student.lastname} a été inscrit avec succès sous le matricule {final_matricule}.",
+    )
+    return redirect('main:etudiant_detail', pk=final_matricule)
 
 
 def get_specialities_by_program(request):

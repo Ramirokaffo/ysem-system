@@ -8,13 +8,15 @@ favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
 app_name = 'main'
 
 urlpatterns = [
+    path('', RedirectView.as_view(pattern_name='main:dashboard', permanent=False)),
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),
-    path('inscriptions/', views.InscriptionsView.as_view(), name='inscriptions'),
+    path('inscriptions/', views.PreInscriptionsView.as_view(), name='inscriptions'),
     path('inscriptions/imprimer-pdf/', views.pre_inscriptions_print_pdf, name='inscriptions_print_pdf'),
     path('inscription/<str:pk>/', views.pre_inscription_detail, name='inscription_detail'),
     path('inscription/<str:pk>/imprimer-pdf/', views.pre_inscription_print_pdf, name='inscription_print_pdf'),
     path('inscription/<str:pk>/modifier/', views.pre_inscription_edit, name='inscription_edit'),
     path('inscription/<str:pk>/approuver/', views.pre_inscription_approve, name='inscription_approve'),
+    path('inscription/<str:pk>/inscrire/', views.pre_inscription_register, name='inscription_register'),
     path('inscription/<str:pk>/rejeter/', views.pre_inscription_reject, name='inscription_reject'),
     path('etudiants/', views.EtudiantsView.as_view(), name='etudiants'),
     path('documents/', views.DocumentsView.as_view(), name='documents'),

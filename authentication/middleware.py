@@ -163,14 +163,14 @@ class DashboardRedirectMiddleware:
 
             # Définir les URLs de redirection par rôle
             role_redirects = {
-                'scholar': '/scholar/',
-                'teaching': '/teach/',
-                'planning': '/planning/',
-                'super_admin': '/scholar/',
-                'student': '/portail-etudiant/connexion/'  # Les étudiants doivent utiliser le portail
+                'scholar': 'main:dashboard',
+                'teaching': 'teaching:Teaching',
+                'planning': 'planification:dashboard',
+                'super_admin': 'main:dashboard',
+                'student': 'student_portal:login'  # Les étudiants doivent utiliser le portail
             }
 
-            redirect_url = role_redirects.get(user_role, '/scholar/')
+            redirect_url = role_redirects.get(user_role, 'main:dashboard')
             return redirect(redirect_url)
 
         return self.get_response(request)

@@ -95,6 +95,7 @@ class Student(models.Model):
     Modèle principal pour les étudiants
     """
     matricule = models.CharField(max_length=50, primary_key=True, verbose_name="Matricule")
+    dossier_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de dossier")
     firstname = models.CharField(max_length=100, verbose_name="Prénom")
     lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")

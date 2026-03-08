@@ -139,6 +139,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Photo</th>
                             <th>Matricule</th>
                             <th>Nom complet</th>
                             <th>Genre</th>
@@ -151,6 +152,17 @@
                     <tbody>
                         {% for student in students %}
                             <tr {% if student.created_at|timesince|slice:":1" == "0" %}class="table-warning"{% endif %}>
+                                <td>
+                                    <a href="{% url 'main:inscription_detail' student.matricule %}" class="d-inline-flex align-items-center justify-content-center">
+                                        {% if student.profile_photo %}
+                                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="rounded-circle border border-light shadow-soft" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <span class="icon icon-xs shadow-soft border border-light rounded-circle bg-light text-secondary d-inline-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                <i class="fas fa-user"></i>
+                                            </span>
+                                        {% endif %}
+                                    </a>
+                                </td>
                                 <td><strong>{{ student.matricule }}</strong></td>
                                 <td>
                                     <a href="{% url 'main:inscription_detail' student.matricule %}">

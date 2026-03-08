@@ -156,7 +156,7 @@ def _build_summary_pdf(student, annex_entries):
         ('Programme', getattr(student.program, 'name', None)),
         ('École d\'origine', getattr(student.school, 'name', None)),
         ('Parrain', godfather_label),
-        ('Niveaux d\'études', ' ; '.join(levels) if levels else None),
+        ('Niveaux d\'études d\'entrée', ' ; '.join(levels) if levels else None),
         ('Spécialités souhaitées', ' ; '.join(specialities) if specialities else None),
     ], styles))
 
