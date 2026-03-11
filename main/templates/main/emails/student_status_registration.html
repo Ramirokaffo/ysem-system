@@ -1,0 +1,19 @@
+{% block subject %}{{ institution_name }} - Confirmation de votre inscription{% endblock %}
+
+{% block text_body %}
+Bonjour {{ student_name }},
+
+Votre inscription à {{ institution_name }} a été finalisée avec succès.
+Votre matricule définitif est : {{ student.matricule }}
+Votre numéro de dossier est : {{ student.dossier_number|default:'Non renseigné' }}
+
+Email de contact : {{ contact_email }}
+Site web : {{ website }}
+
+Cordialement,
+L'équipe {{ institution_name }}
+{% endblock %}
+
+{% block html_body %}
+<!DOCTYPE html><html lang="fr"><body style="margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e5e7eb;">{% if email_logo_url %}<div style="text-align:center;margin-bottom:24px;"><img src="{{ email_logo_url }}" alt="Logo {{ institution_name }}" style="max-height:64px;width:auto;"></div>{% endif %}<h1 style="margin:0 0 16px;font-size:24px;">Confirmation de votre inscription</h1><p>Bonjour {{ student_name }},</p><p>Votre inscription à <strong>{{ institution_name }}</strong> a été finalisée avec succès.</p><p style="background:#f9fafb;border-radius:12px;padding:16px;"><strong>Matricule :</strong> {{ student.matricule }}<br><strong>Numéro de dossier :</strong> {{ student.dossier_number|default:'Non renseigné' }}</p><p><strong>Email de contact :</strong> {{ contact_email }}<br><strong>Site web :</strong> {{ website }}</p><p style="margin-top:24px;">Cordialement,<br>L'équipe {{ institution_name }}</p></div></body></html>
+{% endblock %}

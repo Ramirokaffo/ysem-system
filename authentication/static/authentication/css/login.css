@@ -50,9 +50,10 @@ body {
     box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #fff;
 }
 
-.login-logo i {
-    font-size: 1.8rem;
-    color: var(--text-color);
+.login-logo img {
+    max-width: 70%;
+    max-height: 70%;
+    object-fit: contain;
 }
 
 .login-title {
@@ -220,7 +221,8 @@ body {
         height: 60px;
     }
     
-    .login-logo i {
-        font-size: 1.5rem;
+    .login-logo img {
+        max-width: 70%;
+        max-height: 70%;
     }
 }

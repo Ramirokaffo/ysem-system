@@ -12,7 +12,7 @@ class SystemSettingsAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('institution_name', 'institution_code', 'address', 'phone', 'email', 'website', 'timezone', 'language')
+            'fields': ('institution_name', 'institution_long_name', 'institution_code', 'address', 'phone', 'email', 'website', 'logo', 'timezone', 'language')
         }),
         ('Paramètres académiques', {
             'fields': ('inscription_period', 'auto_approval', 'require_documents', 'allow_external_registration')

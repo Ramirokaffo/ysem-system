@@ -24,13 +24,15 @@
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
-    {% if student_form.non_field_errors or metadata_form.non_field_errors or student_level_form.non_field_errors %}
+    {% if student_form.non_field_errors or metadata_form.non_field_errors or student_level_form.non_field_errors or secondary_diploma_formset.non_form_errors or university_level_formset.non_form_errors %}
     <div class="row">
         <div class="col-12">
             <div class="alert alert-danger">
                 {% for error in student_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
                 {% for error in metadata_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
                 {% for error in student_level_form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                {% for error in secondary_diploma_formset.non_form_errors %}<div>{{ error }}</div>{% endfor %}
+                {% for error in university_level_formset.non_form_errors %}<div>{{ error }}</div>{% endfor %}
             </div>
         </div>
     </div>
@@ -518,6 +520,184 @@
         </div>
     </div>
 
+    <!-- Cursus scolaire et universitaire -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+                <div class="card-header bg-primary border-light pb-0">
+                    <h5 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus scolaire et universitaire</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <h6 class="mb-0 text-primary">Diplômes du secondaire</h6>
+                        <button type="button" id="add-secondary-diploma" class="btn btn-outline-secondary btn-sm shadow-soft">
+                            <span class="fas fa-plus mr-1"></span>Ajouter un diplôme
+                        </button>
+                    </div>
+
+                    {{ secondary_diploma_formset.management_form }}
+
+                    <div id="secondary-diploma-forms" data-formset-prefix="{{ secondary_diploma_formset.prefix }}">
+                        {% for diploma_form in secondary_diploma_formset %}
+                        <div class="card bg-primary shadow-inset border-light p-3 mb-3" data-formset-form data-formset-label="Diplôme secondaire" data-existing-form="{% if diploma_form.initial %}true{% else %}false{% endif %}">
+                            {% for hidden_field in diploma_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            {{ diploma_form.DELETE.as_hidden }}
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Diplôme secondaire #{{ forloop.counter }}</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm shadow-soft" data-formset-remove>
+                                    <span class="fas fa-trash-alt mr-1"></span>Retirer
+                                </button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.name.label_tag }}
+                                    {{ diploma_form.name }}
+                                    {% if diploma_form.name.errors %}<div class="text-danger small">{{ diploma_form.name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.serie.label_tag }}
+                                    {{ diploma_form.serie }}
+                                    {% if diploma_form.serie.errors %}<div class="text-danger small">{{ diploma_form.serie.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.obtained_year.label_tag }}
+                                    {{ diploma_form.obtained_year }}
+                                    {% if diploma_form.obtained_year.errors %}<div class="text-danger small">{{ diploma_form.obtained_year.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.mention.label_tag }}
+                                    {{ diploma_form.mention }}
+                                    {% if diploma_form.mention.errors %}<div class="text-danger small">{{ diploma_form.mention.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    {{ diploma_form.school_existant.label_tag }}
+                                    {{ diploma_form.school_existant }}
+                                    {% if diploma_form.school_existant.errors %}<div class="text-danger small">{{ diploma_form.school_existant.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3" data-manual-school-field>
+                                    {{ diploma_form.school_name.label_tag }}
+                                    {{ diploma_form.school_name }}
+                                    {% if diploma_form.school_name.errors %}<div class="text-danger small">{{ diploma_form.school_name.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <template id="secondary-diploma-empty-form-template">
+                        <div class="card bg-primary shadow-inset border-light p-3 mb-3" data-formset-form data-formset-label="Diplôme secondaire" data-existing-form="false">
+                            {% for hidden_field in secondary_diploma_formset.empty_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            {{ secondary_diploma_formset.empty_form.DELETE.as_hidden }}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Diplôme secondaire</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm shadow-soft" data-formset-remove>
+                                    <span class="fas fa-trash-alt mr-1"></span>Retirer
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.name.label_tag }}{{ secondary_diploma_formset.empty_form.name }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.serie.label_tag }}{{ secondary_diploma_formset.empty_form.serie }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.obtained_year.label_tag }}{{ secondary_diploma_formset.empty_form.obtained_year }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.mention.label_tag }}{{ secondary_diploma_formset.empty_form.mention }}</div>
+                                <div class="col-12 mb-3">{{ secondary_diploma_formset.empty_form.school_existant.label_tag }}{{ secondary_diploma_formset.empty_form.school_existant }}</div>
+                                <div class="col-12 mb-3" data-manual-school-field>{{ secondary_diploma_formset.empty_form.school_name.label_tag }}{{ secondary_diploma_formset.empty_form.school_name }}</div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
+                        <h6 class="mb-0 text-primary">Cursus universitaire</h6>
+                        <button type="button" id="add-university-level" class="btn btn-outline-secondary btn-sm shadow-soft">
+                            <span class="fas fa-plus mr-1"></span>Ajouter un niveau universitaire
+                        </button>
+                    </div>
+
+                    {{ university_level_formset.management_form }}
+
+                    <div id="university-level-forms" data-formset-prefix="{{ university_level_formset.prefix }}">
+                        {% for level_form in university_level_formset %}
+                        <div class="card bg-primary shadow-inset border-light p-3 mb-3" data-formset-form data-formset-label="Niveau universitaire" data-existing-form="{% if level_form.initial %}true{% else %}false{% endif %}">
+                            {% for hidden_field in level_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            {{ level_form.DELETE.as_hidden }}
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Niveau universitaire #{{ forloop.counter }}</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm shadow-soft" data-formset-remove>
+                                    <span class="fas fa-trash-alt mr-1"></span>Retirer
+                                </button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.level_name.label_tag }}
+                                    {{ level_form.level_name }}
+                                    {% if level_form.level_name.errors %}<div class="text-danger small">{{ level_form.level_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.diploma_name.label_tag }}
+                                    {{ level_form.diploma_name }}
+                                    {% if level_form.diploma_name.errors %}<div class="text-danger small">{{ level_form.diploma_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.speciality.label_tag }}
+                                    {{ level_form.speciality }}
+                                    {% if level_form.speciality.errors %}<div class="text-danger small">{{ level_form.speciality.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.academic_year.label_tag }}
+                                    {{ level_form.academic_year }}
+                                    {% if level_form.academic_year.errors %}<div class="text-danger small">{{ level_form.academic_year.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    {{ level_form.university_existant.label_tag }}
+                                    {{ level_form.university_existant }}
+                                    {% if level_form.university_existant.errors %}<div class="text-danger small">{{ level_form.university_existant.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3" data-manual-university-field>
+                                    {{ level_form.university_name.label_tag }}
+                                    {{ level_form.university_name }}
+                                    {% if level_form.university_name.errors %}<div class="text-danger small">{{ level_form.university_name.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <template id="university-level-empty-form-template">
+                        <div class="card bg-primary shadow-inset border-light p-3 mb-3" data-formset-form data-formset-label="Niveau universitaire" data-existing-form="false">
+                            {% for hidden_field in university_level_formset.empty_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            {{ university_level_formset.empty_form.DELETE.as_hidden }}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Niveau universitaire</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm shadow-soft" data-formset-remove>
+                                    <span class="fas fa-trash-alt mr-1"></span>Retirer
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.level_name.label_tag }}{{ university_level_formset.empty_form.level_name }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.diploma_name.label_tag }}{{ university_level_formset.empty_form.diploma_name }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.speciality.label_tag }}{{ university_level_formset.empty_form.speciality }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.academic_year.label_tag }}{{ university_level_formset.empty_form.academic_year }}</div>
+                                <div class="col-12 mb-3">{{ university_level_formset.empty_form.university_existant.label_tag }}{{ university_level_formset.empty_form.university_existant }}</div>
+                                <div class="col-12 mb-3" data-manual-university-field>{{ university_level_formset.empty_form.university_name.label_tag }}{{ university_level_formset.empty_form.university_name }}</div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Documents d'inscription -->
     <div class="row">
         <div class="col-12">
@@ -526,169 +706,55 @@
                     <h5 class="mb-3"><span class="fas fa-folder-open mr-2"></span>Documents d'inscription</h5>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-info py-2 px-3 small mb-3">
+                        {% if documents_mode == 'admin_only_optional' %}
+                        Les documents affichés s'ajustent automatiquement selon le programme sélectionné. Sur cette page, ils sont tous optionnels.
+                        {% else %}
+                        Les documents affichés et marqués comme requis s'ajustent automatiquement selon le programme sélectionné.
+                        {% endif %}
+                    </div>
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        {% for entry in document_entries %}
+                        <div class="col-md-6 {% if not entry.should_display %}d-none{% endif %}"
+                            data-program-document
+                            data-document-field="{{ entry.field_name }}"
+                            data-has-file="{{ entry.has_file|yesno:'true,false' }}">
                             <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.acte_naissance.label }}</label>
-                                {% if metadata_form.instance.acte_naissance %}
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <label class="form-label font-weight-bold mb-0" for="{{ entry.field.id_for_label }}">
+                                        <span data-document-label-text>{{ entry.label }}</span>
+                                        <span class="text-danger {% if not entry.is_required %}d-none{% endif %}" data-document-required-mark>*</span>
+                                    </label>
+                                    <span class="badge {% if entry.is_required %}bg-danger{% else %}bg-secondary{% endif %} text-white" data-document-badge>
+                                        {% if entry.is_required %}Requis{% else %}Optionnel{% endif %}
+                                    </span>
+                                </div>
+                                {% if entry.has_file %}
                                     <div class="small mb-2">
                                         <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.acte_naissance.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.acte_naissance.name|basename }}</a>
+                                        <a href="{{ entry.current_file.url }}" target="_blank" rel="noopener">{{ entry.current_file_name }}</a>
                                     </div>
                                 {% endif %}
-                                {{ metadata_form.acte_naissance }}
-                                {% if metadata_form.instance.acte_naissance %}
+                                {{ entry.field }}
+                                {% if entry.has_file and entry.remove_field %}
                                     <div class="form-check mt-3">
-                                        {{ metadata_form.remove_acte_naissance }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_acte_naissance.id_for_label }}">
-                                            {{ metadata_form.remove_acte_naissance.label }}
+                                        {{ entry.remove_field }}
+                                        <label class="form-check-label" for="{{ entry.remove_field.id_for_label }}">
+                                            {{ entry.remove_field.label }}
                                         </label>
                                     </div>
                                     <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
                                 {% endif %}
-                                {% if metadata_form.acte_naissance.errors %}
-                                    <div class="text-danger small">{{ metadata_form.acte_naissance.errors.0 }}</div>
+                                {% if entry.field.errors %}
+                                    <div class="text-danger small">{{ entry.field.errors.0 }}</div>
                                 {% endif %}
-                                {% if metadata_form.remove_acte_naissance.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_acte_naissance.errors.0 }}</div>
+                                {% if entry.remove_field and entry.remove_field.errors %}
+                                    <div class="text-danger small mt-2">{{ entry.remove_field.errors.0 }}</div>
                                 {% endif %}
+                                <small class="text-muted d-block mt-2" data-document-help>{{ entry.help_text }}</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.preuve_baccalaureat.label }}</label>
-                                {% if metadata_form.instance.preuve_baccalaureat %}
-                                    <div class="small mb-2">
-                                        <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.preuve_baccalaureat.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.preuve_baccalaureat.name|basename }}</a>
-                                    </div>
-                                {% endif %}
-                                {{ metadata_form.preuve_baccalaureat }}
-                                {% if metadata_form.instance.preuve_baccalaureat %}
-                                    <div class="form-check mt-3">
-                                        {{ metadata_form.remove_preuve_baccalaureat }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_preuve_baccalaureat.id_for_label }}">
-                                            {{ metadata_form.remove_preuve_baccalaureat.label }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
-                                {% endif %}
-                                {% if metadata_form.preuve_baccalaureat.errors %}
-                                    <div class="text-danger small">{{ metadata_form.preuve_baccalaureat.errors.0 }}</div>
-                                {% endif %}
-                                {% if metadata_form.remove_preuve_baccalaureat.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_preuve_baccalaureat.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.certificat_nationalite.label }}</label>
-                                {% if metadata_form.instance.certificat_nationalite %}
-                                    <div class="small mb-2">
-                                        <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.certificat_nationalite.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.certificat_nationalite.name|basename }}</a>
-                                    </div>
-                                {% endif %}
-                                {{ metadata_form.certificat_nationalite }}
-                                {% if metadata_form.instance.certificat_nationalite %}
-                                    <div class="form-check mt-3">
-                                        {{ metadata_form.remove_certificat_nationalite }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_certificat_nationalite.id_for_label }}">
-                                            {{ metadata_form.remove_certificat_nationalite.label }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
-                                {% endif %}
-                                {% if metadata_form.certificat_nationalite.errors %}
-                                    <div class="text-danger small">{{ metadata_form.certificat_nationalite.errors.0 }}</div>
-                                {% endif %}
-                                {% if metadata_form.remove_certificat_nationalite.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_certificat_nationalite.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.releve_notes_last_class.label }}</label>
-                                {% if metadata_form.instance.releve_notes_last_class %}
-                                    <div class="small mb-2">
-                                        <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.releve_notes_last_class.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.releve_notes_last_class.name|basename }}</a>
-                                    </div>
-                                {% endif %}
-                                {{ metadata_form.releve_notes_last_class }}
-                                {% if metadata_form.instance.releve_notes_last_class %}
-                                    <div class="form-check mt-3">
-                                        {{ metadata_form.remove_releve_notes_last_class }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_releve_notes_last_class.id_for_label }}">
-                                            {{ metadata_form.remove_releve_notes_last_class.label }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
-                                {% endif %}
-                                {% if metadata_form.releve_notes_last_class.errors %}
-                                    <div class="text-danger small">{{ metadata_form.releve_notes_last_class.errors.0 }}</div>
-                                {% endif %}
-                                {% if metadata_form.remove_releve_notes_last_class.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_releve_notes_last_class.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.justificatif_dernier_diplome.label }}</label>
-                                {% if metadata_form.instance.justificatif_dernier_diplome %}
-                                    <div class="small mb-2">
-                                        <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.justificatif_dernier_diplome.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.justificatif_dernier_diplome.name|basename }}</a>
-                                    </div>
-                                {% endif %}
-                                {{ metadata_form.justificatif_dernier_diplome }}
-                                {% if metadata_form.instance.justificatif_dernier_diplome %}
-                                    <div class="form-check mt-3">
-                                        {{ metadata_form.remove_justificatif_dernier_diplome }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_justificatif_dernier_diplome.id_for_label }}">
-                                            {{ metadata_form.remove_justificatif_dernier_diplome.label }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
-                                {% endif %}
-                                {% if metadata_form.justificatif_dernier_diplome.errors %}
-                                    <div class="text-danger small">{{ metadata_form.justificatif_dernier_diplome.errors.0 }}</div>
-                                {% endif %}
-                                {% if metadata_form.remove_justificatif_dernier_diplome.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_justificatif_dernier_diplome.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label class="form-label font-weight-bold">{{ metadata_form.bulletins_terminale.label }}</label>
-                                {% if metadata_form.instance.bulletins_terminale %}
-                                    <div class="small mb-2">
-                                        <span class="font-weight-bold">Fichier actuel :</span>
-                                        <a href="{{ metadata_form.instance.bulletins_terminale.url }}" target="_blank" rel="noopener">{{ metadata_form.instance.bulletins_terminale.name|basename }}</a>
-                                    </div>
-                                {% endif %}
-                                {{ metadata_form.bulletins_terminale }}
-                                {% if metadata_form.instance.bulletins_terminale %}
-                                    <div class="form-check mt-3">
-                                        {{ metadata_form.remove_bulletins_terminale }}
-                                        <label class="form-check-label" for="{{ metadata_form.remove_bulletins_terminale.id_for_label }}">
-                                            {{ metadata_form.remove_bulletins_terminale.label }}
-                                        </label>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">Cochez cette option pour retirer le document sans le remplacer.</small>
-                                {% endif %}
-                                {% if metadata_form.bulletins_terminale.errors %}
-                                    <div class="text-danger small">{{ metadata_form.bulletins_terminale.errors.0 }}</div>
-                                {% endif %}
-                                {% if metadata_form.remove_bulletins_terminale.errors %}
-                                    <div class="text-danger small mt-2">{{ metadata_form.remove_bulletins_terminale.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -716,6 +782,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const programSelect = document.getElementById('id_program');
+        const documentsMode = '{{ documents_mode|default:""|escapejs }}';
         const specialiteSelects = [
             {
                 element: document.getElementById('id_specialite_souhaitee_1'),
@@ -735,6 +802,15 @@
         ];
         const bacEtablissementExistantSelect = document.getElementById('id_bac_etablissement_existant');
         const manualBacEtablissementField = document.getElementById('manual-bac-etablissement-field');
+        const documentCards = Array.from(document.querySelectorAll('[data-program-document]'));
+
+        function toggleManualInstitutionField(selectElement, manualField) {
+            if (!selectElement || !manualField) {
+                return;
+            }
+
+            manualField.style.display = selectElement.value ? 'none' : 'block';
+        }
 
         function resetSpecialitySelects(defaultLabel) {
             specialiteSelects.forEach(({ element }) => {
@@ -747,17 +823,52 @@
             });
         }
 
-        function loadSpecialities(programId) {
-            if (!programId) {
-                resetSpecialitySelects('Sélectionner d\'abord un programme');
-                return;
-            }
+        function updateProgramDocuments(documents) {
+            const documentsByField = new Map((documents || []).map(document => [document.field_name, document]));
 
-            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+            documentCards.forEach((card) => {
+                const fieldName = card.dataset.documentField;
+                const hasFile = card.dataset.hasFile === 'true';
+                const document = documentsByField.get(fieldName);
+                const shouldDisplay = Boolean((document && document.should_display) || hasFile);
+                const labelText = card.querySelector('[data-document-label-text]');
+                const helpText = card.querySelector('[data-document-help]');
+                const badge = card.querySelector('[data-document-badge]');
+                const requiredMark = card.querySelector('[data-document-required-mark]');
+
+                card.classList.toggle('d-none', !shouldDisplay);
+
+                if (labelText && document) {
+                    labelText.textContent = document.label;
+                }
+                if (helpText && document) {
+                    helpText.textContent = document.help_text;
+                }
+                if (requiredMark) {
+                    requiredMark.classList.toggle('d-none', !(document && document.is_required));
+                }
+                if (badge) {
+                    badge.textContent = document && document.is_required ? 'Requis' : 'Optionnel';
+                    badge.classList.toggle('bg-danger', Boolean(document && document.is_required));
+                    badge.classList.toggle('bg-secondary', !(document && document.is_required));
+                }
+            });
+        }
+
+        function loadProgramConfiguration(programId) {
+            const documentsModeQuery = documentsMode ? `&documents_mode=${encodeURIComponent(documentsMode)}` : '';
+            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${encodeURIComponent(programId || '')}${documentsModeQuery}`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success) {
                         resetSpecialitySelects('Aucune spécialité disponible');
+                        return;
+                    }
+
+                    updateProgramDocuments(data.documents);
+
+                    if (!programId) {
+                        resetSpecialitySelects('Sélectionner d\'abord un programme');
                         return;
                     }
 
@@ -766,7 +877,7 @@
                             return;
                         }
 
-                        element.innerHTML = `<option value="">${placeholder}</option>`;
+                        element.innerHTML = `<option value="">${data.specialities.length ? placeholder : 'Aucune spécialité disponible'}</option>`;
 
                         data.specialities.forEach(speciality => {
                             const option = document.createElement('option');
@@ -780,7 +891,7 @@
                             element.appendChild(option);
                         });
 
-                        element.disabled = false;
+                        element.disabled = data.specialities.length === 0;
                     });
                 })
                 .catch(() => {
@@ -789,11 +900,123 @@
         }
 
         function toggleManualBacEtablissementField() {
-            if (!bacEtablissementExistantSelect || !manualBacEtablissementField) {
+            toggleManualInstitutionField(bacEtablissementExistantSelect, manualBacEtablissementField);
+        }
+
+        function setupEducationForm(formElement) {
+            if (!formElement || formElement.dataset.formsetReady === 'true') {
                 return;
             }
 
-            manualBacEtablissementField.style.display = bacEtablissementExistantSelect.value ? 'none' : 'block';
+            const schoolSelect = formElement.querySelector('select[name$="-school_existant"]');
+            const manualSchoolField = formElement.querySelector('[data-manual-school-field]');
+            const universitySelect = formElement.querySelector('select[name$="-university_existant"]');
+            const manualUniversityField = formElement.querySelector('[data-manual-university-field]');
+
+            if (schoolSelect && manualSchoolField) {
+                schoolSelect.addEventListener('change', function () {
+                    toggleManualInstitutionField(schoolSelect, manualSchoolField);
+                });
+                toggleManualInstitutionField(schoolSelect, manualSchoolField);
+            }
+
+            if (universitySelect && manualUniversityField) {
+                universitySelect.addEventListener('change', function () {
+                    toggleManualInstitutionField(universitySelect, manualUniversityField);
+                });
+                toggleManualInstitutionField(universitySelect, manualUniversityField);
+            }
+
+            formElement.dataset.formsetReady = 'true';
+        }
+
+        function initializeDynamicFormset({ containerId, addButtonId, templateId, totalFormsInputId }) {
+            const container = document.getElementById(containerId);
+            const addButton = document.getElementById(addButtonId);
+            const template = document.getElementById(templateId);
+            const totalFormsInput = document.getElementById(totalFormsInputId);
+
+            if (!container || !template || !totalFormsInput) {
+                return;
+            }
+
+            const prefix = container.dataset.formsetPrefix;
+
+            function updateFormIndices() {
+                const forms = Array.from(container.querySelectorAll('[data-formset-form]'));
+
+                forms.forEach((formElement, index) => {
+                    const title = formElement.querySelector('[data-formset-title]');
+                    if (title && !formElement.classList.contains('d-none')) {
+                        title.textContent = `${formElement.dataset.formsetLabel} #${index + 1}`;
+                    }
+
+                    formElement.querySelectorAll('input, select, textarea, label').forEach((element) => {
+                        ['name', 'id', 'for'].forEach((attributeName) => {
+                            const attributeValue = element.getAttribute(attributeName);
+                            if (!attributeValue) {
+                                return;
+                            }
+
+                            element.setAttribute(
+                                attributeName,
+                                attributeValue.replace(
+                                    new RegExp(`${prefix}-(?:__prefix__|[0-9]+)-`, 'g'),
+                                    `${prefix}-${index}-`
+                                )
+                            );
+                        });
+                    });
+
+                    setupEducationForm(formElement);
+                });
+
+                totalFormsInput.value = forms.length;
+            }
+
+            Array.from(container.querySelectorAll('[data-formset-form]')).forEach(setupEducationForm);
+
+            container.addEventListener('click', function (event) {
+                const removeButton = event.target.closest('[data-formset-remove]');
+                if (!removeButton) {
+                    return;
+                }
+
+                const formElement = removeButton.closest('[data-formset-form]');
+                if (!formElement) {
+                    return;
+                }
+
+                if (formElement.dataset.existingForm === 'true') {
+                    const deleteInput = formElement.querySelector('input[name$="-DELETE"]');
+                    if (deleteInput) {
+                        deleteInput.checked = true;
+                    }
+                    formElement.classList.add('d-none');
+                } else {
+                    formElement.remove();
+                }
+
+                updateFormIndices();
+            });
+
+            if (addButton) {
+                addButton.addEventListener('click', function () {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = template.innerHTML.trim().replace(/__prefix__/g, totalFormsInput.value);
+                    const formElement = wrapper.firstElementChild;
+
+                    if (!formElement) {
+                        return;
+                    }
+
+                    container.appendChild(formElement);
+                    setupEducationForm(formElement);
+                    updateFormIndices();
+                });
+            }
+
+            updateFormIndices();
         }
 
         if (bacEtablissementExistantSelect) {
@@ -801,21 +1024,33 @@
             toggleManualBacEtablissementField();
         }
 
-        if (!programSelect) {
-            return;
-        }
-
-        programSelect.addEventListener('change', function () {
-            specialiteSelects.forEach((config) => {
-                config.selectedValue = '';
-            });
-            loadSpecialities(this.value);
+        initializeDynamicFormset({
+            containerId: 'secondary-diploma-forms',
+            addButtonId: 'add-secondary-diploma',
+            templateId: 'secondary-diploma-empty-form-template',
+            totalFormsInputId: 'id_secondary_diplomas-TOTAL_FORMS'
         });
 
-        if (programSelect.value) {
-            loadSpecialities(programSelect.value);
-        } else {
-            resetSpecialitySelects('Sélectionner d\'abord un programme');
+        initializeDynamicFormset({
+            containerId: 'university-level-forms',
+            addButtonId: 'add-university-level',
+            templateId: 'university-level-empty-form-template',
+            totalFormsInputId: 'id_university_levels-TOTAL_FORMS'
+        });
+
+        if (programSelect) {
+            programSelect.addEventListener('change', function () {
+                specialiteSelects.forEach((config) => {
+                    config.selectedValue = '';
+                });
+                loadProgramConfiguration(this.value);
+            });
+
+            if (programSelect.value) {
+                loadProgramConfiguration(programSelect.value);
+            } else {
+                loadProgramConfiguration('');
+            }
         }
     });
 </script>

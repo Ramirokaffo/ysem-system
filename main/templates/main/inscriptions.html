@@ -196,7 +196,7 @@
                                     <small class="text-muted">{{ student.created_at|timesince }} ago</small>
                                 </td>
                                 <td>
-                                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'registered' %}bg-success text-white{% elif student.status == 'rejected' %}bg-danger{% endif %}">{{ student.get_status_display }}</span>
+                                    <span class="badge {% if student.status == 'pending' %}bg-warning{% elif student.status == 'registered' %}bg-success text-white{% elif student.status == 'rejected' %}bg-danger text-white{% endif %}">{{ student.get_status_display }}</span>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">

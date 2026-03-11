@@ -61,7 +61,7 @@
                         <i class="fas fa-sliders-h me-2"></i>
                         Paramètres généraux
                     </h5>
-                    <form method="post">
+                    <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="general">
 
@@ -106,6 +106,24 @@
                         <div class="mb-3">
                             <label for="{{ general_form.website.id_for_label }}" class="form-label">{{ general_form.website.label }}</label>
                             {{ general_form.website }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ general_form.logo.id_for_label }}" class="form-label">{{ general_form.logo.label }}</label>
+                            {{ general_form.logo }}
+                            <small class="form-text text-muted d-block mt-2">Téléchargez un logo d'établissement pour remplacer le visuel par défaut dans l'application et les emails.</small>
+                            <div class="mt-3">
+                                <div class="card-neumorphic d-inline-flex align-items-center justify-content-center p-3">
+                                    <img src="{% if general_form.instance.logo %}{{ general_form.instance.logo.url }}{% else %}{{ institution_logo_url }}{% endif %}" alt="{{ institution_logo_alt }}" style="max-height: 70px; width: auto;">
+                                </div>
+                                <div class="small text-muted mt-2">
+                                    {% if general_form.instance.logo %}
+                                        Logo actuellement configuré.
+                                    {% else %}
+                                        Aucun logo personnalisé enregistré : le logo par défaut est utilisé.
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary">

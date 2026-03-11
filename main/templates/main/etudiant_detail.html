@@ -275,6 +275,88 @@
 {% endif %}
 
 <div class="row">
+    <div class="col-lg-6">
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus académique</h4>
+            </div>
+            <div class="card-body">
+                {% if student.secondary_diplomas.all %}
+                    {% for diploma in student.secondary_diplomas.all %}
+                    <div class="row g-3 mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Diplôme</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Année d'obtention</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.obtained_year }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Série / spécialité</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.serie|default:"Non renseignée" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Mention</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.mention|default:"Non renseignée" }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted font-weight-bold">Établissement</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                {% if diploma.school %}{{ diploma.school.name }}{% else %}<span class="text-muted">Non renseigné</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted">Aucun diplôme du secondaire renseigné.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h4 class="mb-3"><span class="fas fa-university mr-2"></span>Cursus universitaire</h4>
+            </div>
+            <div class="card-body">
+                {% if student.university_levels.all %}
+                    {% for university_level in student.university_levels.all %}
+                    <div class="row g-3 mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Niveau</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.level_name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Année académique</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.academic_year|default:"Non renseignée" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Diplôme obtenu</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.diploma_name|default:"Non renseigné" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted font-weight-bold">Spécialité</label>
+                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.speciality|default:"Non renseignée" }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted font-weight-bold">Université</label>
+                            <div class="form-control shadow-inset border-light bg-primary">
+                                {% if university_level.university %}{{ university_level.university.name }}{% else %}<span class="text-muted">Non renseignée</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted">Aucun cursus universitaire renseigné.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-4 mb-4">
             <div class="card-header bg-primary border-light pb-0">
@@ -361,9 +443,11 @@
                             <tr>
                                 <th class="border-light">Niveau</th>
                                 <th class="border-light">Type de document</th>
+                                <th class="border-light">Référence</th>
                                 <th class="border-light">Statut</th>
                                 <th class="border-light">Date de retrait</th>
                                 <th class="border-light">Date de création</th>
+                                <th class="border-light">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -372,6 +456,7 @@
                                 <tr>
                                     <td class="border-light">{{ sl.level.name }} ({{ sl.academic_year.name }})</td>
                                     <td class="border-light">{{ doc.get_type_display }}</td>
+                                    <td class="border-light">{{ doc.reference|default:'-' }}</td>
                                     <td class="border-light">
                                         {% if doc.status == 'available' %}
                                             <span class="badge badge-success">{{ doc.get_status_display }}</span>
@@ -383,10 +468,19 @@
                                     </td>
                                     <td class="border-light">{{ doc.withdrawn_date|date:'d/m/Y'|default:'-' }}</td>
                                     <td class="border-light">{{ doc.created_at|date:'d/m/Y' }}</td>
+                                    <td class="border-light">
+                                        {% if doc.type == 'registration_certificate' %}
+                                            <a href="{% url 'main:registration_certificate_download' doc.pk %}" class="btn btn-sm btn-outline-primary shadow-soft text-dark">
+                                                <span class="fas fa-download mr-1"></span>Télécharger
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             {% empty %}
-                            <tr><td colspan="5" class="text-center text-muted border-light">Aucun document officiel enregistré</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted border-light">Aucun document officiel enregistré</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

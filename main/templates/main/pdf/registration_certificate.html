@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4; margin: 1.5cm 1.7cm 2cm 1.7cm; }
+        body { font-family: DejaVu Sans, sans-serif; color: #111827; font-size: 12px; line-height: 1.5; }
+        .header { display: table; width: 100%; border-bottom: 2px solid #0f766e; padding-bottom: 14px; }
+        .logo, .institution { display: table-cell; vertical-align: top; }
+        .logo { width: 120px; }
+        .logo img { width: 95px; height: auto; }
+        .institution { text-align: center; }
+        .institution h1 { margin: 0; font-size: 18px; text-transform: uppercase; color: #0f172a; }
+        .institution p { margin: 3px 0; font-size: 11px; }
+        .title { text-align: center; margin: 28px 0 10px; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; text-decoration: underline; }
+        .reference { text-align: right; font-size: 11px; margin-bottom: 20px; }
+        .intro { text-align: justify; margin-bottom: 14px; }
+        .field { margin: 8px 0; }
+        .label { font-weight: 700; }
+        .value { border-bottom: 1px dotted #374151; display: inline-block; min-width: 62%; padding: 0 4px 2px; }
+        .body-text { text-align: justify; margin-top: 18px; }
+        .footer-note { position: fixed; bottom: 0.4cm; left: 0; right: 0; font-size: 9px; color: #6b7280; display: table; width: 100%; }
+        .footer-note div { display: table-cell; }
+        .footer-note .right { text-align: right; }
+        .signature { margin-top: 42px; width: 100%; }
+        .signature-box { width: 42%; margin-left: auto; text-align: center; }
+        .signature-box .place-date { text-align: right; margin-bottom: 42px; }
+        .signature-box .signatory { font-weight: 700; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            {% if logo_uri %}<img src="{{ logo_uri }}" alt="{{ logo_alt }}">{% endif %}
+        </div>
+        <div class="institution">
+            <h1>{{ institution_name }}</h1>
+            <p><strong>Code institution :</strong> {{ institution_code }}</p>
+            <p>{{ address }}</p>
+            <p>Tél. : {{ phone }}{% if email != 'Non renseigné' %} • Email : {{ email }}{% endif %}</p>
+            {% if website != 'Non renseigné' %}<p>{{ website }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="title">Certificat d'inscription</div>
+    <div class="reference"><strong>Référence :</strong> {{ reference }}</div>
+
+    <p class="intro">
+        Le responsable académique soussigné certifie que l'étudiant(e) dont les informations suivent
+        est régulièrement inscrit(e) au sein de <strong>{{ institution_name }}</strong>.
+    </p>
+
+    <p class="field"><span class="label">Nom et prénoms :</span> <span class="value">{{ full_name }}</span></p>
+    <p class="field"><span class="label">Date de naissance :</span> <span class="value">{{ birth_date }}</span></p>
+    <p class="field"><span class="label">Matricule :</span> <span class="value">{{ matricule }}</span></p>
+    <p class="field"><span class="label">Numéro de dossier :</span> <span class="value">{{ dossier_number }}</span></p>
+    <p class="field"><span class="label">Filière / Programme :</span> <span class="value">{{ program_name }}</span></p>
+    <p class="field"><span class="label">Niveau :</span> <span class="value">{{ level_name }}</span></p>
+    <p class="field"><span class="label">Année académique :</span> <span class="value">{{ academic_year_name }}</span></p>
+
+    <p class="body-text">
+        En foi de quoi, le présent certificat lui est délivré pour servir et valoir ce que de droit.
+        Ce document est édité à la demande et n'est généré qu'au moment de son téléchargement.
+    </p>
+
+    <div class="signature">
+        <div class="signature-box">
+            <div class="place-date">Fait à {{ signature_city }}, le {{ issue_date }}</div>
+            <div class="signatory">{{ institution_name }}</div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <div>{{ institution_name }} — Certificat d'inscription généré le {{ issue_date_short }}</div>
+        <div class="right">Réf. {{ reference }}</div>
+    </div>
+</body>
+</html>

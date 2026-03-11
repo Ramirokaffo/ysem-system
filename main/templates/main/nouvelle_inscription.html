@@ -11,16 +11,6 @@
         <div class="card-neumorphic p-4 mb-4">
             <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-plus mr-2"></i>Nouvelle Pré-Inscription</h5>
 
-            <!-- Informations importantes -->
-            <div class="alert alert-info mb-4 d-flex flex-column align-items-start">
-                <h4><i class="fas fa-info-circle me-2 mr-1"></i>Documents requis</h4>
-                <ul class="mb-0">
-                    <li>Tous les documents doivent être lisibles et de bonne qualité</li>
-                    <li>Taille maximale par fichier : 5 Mo</li>
-                    <li>Formats acceptés uniquement : PNG, JPG, PDF</li>
-                </ul>
-            </div>
-
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
@@ -328,61 +318,177 @@
                     <h6 class="mb-3 text-secondary border-bottom pb-2"><i class="fas fa-school me-2 mr-1"></i>Cursus
                         scolaire et universitaire</h6>
 
-                    <!-- BEPC/CAP -->
-                    <h6 class="mb-2 text-secondary">BEPC / CAP</h6>
-                    <div class="row mb-3">
-                        <div class="col-md-4 mb-3">
-                            {{ form.bepc_cap_serie.label_tag }}
-                            {{ form.bepc_cap_serie }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.bepc_cap_annee.label_tag }}
-                            {{ form.bepc_cap_annee }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            {{ form.bepc_cap_mention.label_tag }}
-                            {{ form.bepc_cap_mention }}
-                        </div>
+                    <!-- <div class="alert alert-light border small mb-4">
+                        Ajoutez autant de diplômes du secondaire et de niveaux universitaires que nécessaire.
+                    </div> -->
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <h6 class="mb-0 text-secondary">Diplômes du secondaire</h6>
+                        <button type="button" id="add-secondary-diploma" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-plus me-1 mr-1"></i>Ajouter un diplôme
+                        </button>
                     </div>
 
-                    <!-- Baccalauréat -->
-                    <h6 class="mb-2 text-secondary">Baccalauréat</h6>
-                    <div class="row mb-3">
-                        <div class="col-md-6 mb-3">
-                            {{ form.bac_serie.label_tag }}
-                            {{ form.bac_serie }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.bac_annee.label_tag }}
-                            {{ form.bac_annee }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.bac_mention.label_tag }}
-                            {{ form.bac_mention }}
-                        </div>
-                        <div class="col-12 mb-3">
-                            {{ form.bac_etablissement_existant.label_tag }}
-                            {{ form.bac_etablissement_existant }}
-                            {% if form.bac_etablissement_existant.errors %}
-                            <div class="text-danger small">{{ form.bac_etablissement_existant.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.bac_etablissement_existant.help_text }}</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div id="manual-bac-etablissement-field">
-                                {{ form.bac_etablissement.label_tag }}
-                                {{ form.bac_etablissement }}
+                    {{ secondary_diploma_formset.management_form }}
+                    {% if secondary_diploma_formset.non_form_errors %}
+                    <div class="alert alert-danger py-2 px-3 small mb-3">{{ secondary_diploma_formset.non_form_errors }}</div>
+                    {% endif %}
+
+                    <div id="secondary-diploma-forms" data-formset-prefix="{{ secondary_diploma_formset.prefix }}">
+                        {% for diploma_form in secondary_diploma_formset %}
+                        <div class="border rounded p-3 mb-3" data-formset-form data-formset-label="Diplôme secondaire">
+                            {% for hidden_field in diploma_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Diplôme secondaire #{{ forloop.counter }}</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-formset-remove>
+                                    <i class="fas fa-trash-alt me-1 mr-1"></i>Retirer
+                                </button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.name.label_tag }}
+                                    {{ diploma_form.name }}
+                                    {% if diploma_form.name.errors %}<div class="text-danger small">{{ diploma_form.name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.serie.label_tag }}
+                                    {{ diploma_form.serie }}
+                                    {% if diploma_form.serie.errors %}<div class="text-danger small">{{ diploma_form.serie.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.obtained_year.label_tag }}
+                                    {{ diploma_form.obtained_year }}
+                                    {% if diploma_form.obtained_year.errors %}<div class="text-danger small">{{ diploma_form.obtained_year.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ diploma_form.mention.label_tag }}
+                                    {{ diploma_form.mention }}
+                                    {% if diploma_form.mention.errors %}<div class="text-danger small">{{ diploma_form.mention.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    {{ diploma_form.school_existant.label_tag }}
+                                    {{ diploma_form.school_existant }}
+                                    {% if diploma_form.school_existant.errors %}<div class="text-danger small">{{ diploma_form.school_existant.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-12 mb-3" data-manual-school-field>
+                                    {{ diploma_form.school_name.label_tag }}
+                                    {{ diploma_form.school_name }}
+                                    {% if diploma_form.school_name.errors %}<div class="text-danger small">{{ diploma_form.school_name.errors }}</div>{% endif %}
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
 
-                    <!-- Études supérieures -->
-                    <div class="row">
-                        <div class="col-12 mb-3">
-                            {{ form.etudes_superieures.label_tag }}
-                            {{ form.etudes_superieures }}
+                    <template id="secondary-diploma-empty-form-template">
+                        <div class="border rounded p-3 mb-3" data-formset-form data-formset-label="Diplôme secondaire">
+                            {% for hidden_field in secondary_diploma_formset.empty_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Diplôme secondaire</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-formset-remove>
+                                    <i class="fas fa-trash-alt me-1 mr-2"></i>Retirer
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.name.label_tag }}{{ secondary_diploma_formset.empty_form.name }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.serie.label_tag }}{{ secondary_diploma_formset.empty_form.serie }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.obtained_year.label_tag }}{{ secondary_diploma_formset.empty_form.obtained_year }}</div>
+                                <div class="col-md-6 mb-3">{{ secondary_diploma_formset.empty_form.mention.label_tag }}{{ secondary_diploma_formset.empty_form.mention }}</div>
+                                <div class="col-12 mb-3">{{ secondary_diploma_formset.empty_form.school_existant.label_tag }}{{ secondary_diploma_formset.empty_form.school_existant }}</div>
+                                <div class="col-12 mb-3" data-manual-school-field>{{ secondary_diploma_formset.empty_form.school_name.label_tag }}{{ secondary_diploma_formset.empty_form.school_name }}</div>
+                            </div>
                         </div>
+                    </template>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
+                        <h6 class="mb-0 text-secondary">Cursus universitaire</h6>
+                        <button type="button" id="add-university-level" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-plus me-1 mr-1"></i>Ajouter un niveau universitaire
+                        </button>
                     </div>
+
+                    {{ university_level_formset.management_form }}
+                    {% if university_level_formset.non_form_errors %}
+                    <div class="alert alert-danger py-2 px-3 small mb-3">{{ university_level_formset.non_form_errors }}</div>
+                    {% endif %}
+
+                    <div id="university-level-forms" data-formset-prefix="{{ university_level_formset.prefix }}">
+                        {% for level_form in university_level_formset %}
+                        <div class="border rounded p-3 mb-3" data-formset-form data-formset-label="Niveau universitaire">
+                            {% for hidden_field in level_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Niveau universitaire #{{ forloop.counter }}</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-formset-remove>
+                                    <i class="fas fa-trash-alt me-1 mr-1"></i>Retirer
+                                </button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.level_name.label_tag }}
+                                    {{ level_form.level_name }}
+                                    {% if level_form.level_name.errors %}<div class="text-danger small">{{ level_form.level_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.diploma_name.label_tag }}
+                                    {{ level_form.diploma_name }}
+                                    {% if level_form.diploma_name.errors %}<div class="text-danger small">{{ level_form.diploma_name.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.speciality.label_tag }}
+                                    {{ level_form.speciality }}
+                                    {% if level_form.speciality.errors %}<div class="text-danger small">{{ level_form.speciality.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ level_form.academic_year.label_tag }}
+                                    {{ level_form.academic_year }}
+                                    {% if level_form.academic_year.errors %}<div class="text-danger small">{{ level_form.academic_year.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    {{ level_form.university_existant.label_tag }}
+                                    {{ level_form.university_existant }}
+                                    {% if level_form.university_existant.errors %}<div class="text-danger small">{{ level_form.university_existant.errors }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-12 mb-3" data-manual-university-field>
+                                    {{ level_form.university_name.label_tag }}
+                                    {{ level_form.university_name }}
+                                    {% if level_form.university_name.errors %}<div class="text-danger small">{{ level_form.university_name.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <template id="university-level-empty-form-template">
+                        <div class="border rounded p-3 mb-3" data-formset-form data-formset-label="Niveau universitaire">
+                            {% for hidden_field in university_level_formset.empty_form.hidden_fields %}
+                            {{ hidden_field }}
+                            {% endfor %}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0" data-formset-title>Niveau universitaire</h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-formset-remove>
+                                    <i class="fas fa-trash-alt me-1 mr-1"></i>Retirer
+                                </button>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.level_name.label_tag }}{{ university_level_formset.empty_form.level_name }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.diploma_name.label_tag }}{{ university_level_formset.empty_form.diploma_name }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.speciality.label_tag }}{{ university_level_formset.empty_form.speciality }}</div>
+                                <div class="col-md-6 mb-3">{{ university_level_formset.empty_form.academic_year.label_tag }}{{ university_level_formset.empty_form.academic_year }}</div>
+                                <div class="col-12 mb-3">{{ university_level_formset.empty_form.university_existant.label_tag }}{{ university_level_formset.empty_form.university_existant }}</div>
+                                <div class="col-12 mb-3" data-manual-university-field>{{ university_level_formset.empty_form.university_name.label_tag }}{{ university_level_formset.empty_form.university_name }}</div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Section 7: Documents requis -->
@@ -390,55 +496,32 @@
                     <h6 class="mb-3 text-secondary border-bottom pb-2"><i
                             class="fas fa-file-upload me-2 mr-1"></i>Documents requis</h6>
 
+                    <div class="alert alert-info py-2 px-3 small mb-3">
+                        La liste des documents visibles et requis se met à jour automatiquement selon le programme choisi.
+                    </div>
+
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.acte_naissance.label_tag }}
-                            {{ form.acte_naissance }}
-                            {% if form.acte_naissance.errors %}
-                            <div class="text-danger small">{{ form.acte_naissance.errors }}</div>
+                        {% for entry in form.program_document_entries %}
+                        <div class="col-md-6 mb-3 {% if not entry.should_display %}d-none{% endif %}"
+                            data-program-document
+                            data-document-field="{{ entry.field_name }}"
+                            data-has-file="false">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <label class="form-label fw-bold mb-0" for="{{ entry.field.id_for_label }}">
+                                    <span data-document-label-text>{{ entry.label }}</span>
+                                    <span class="text-danger {% if not entry.is_required %}d-none{% endif %}" data-document-required-mark>*</span>
+                                </label>
+                                <span class="badge {% if entry.is_required %}bg-danger{% else %}bg-secondary{% endif %} text-white" data-document-badge>
+                                    {% if entry.is_required %}Requis{% else %}Optionnel{% endif %}
+                                </span>
+                            </div>
+                            {{ entry.field }}
+                            {% if entry.field.errors %}
+                            <div class="text-danger small">{{ entry.field.errors }}</div>
                             {% endif %}
-                            <small class="text-muted">{{ form.acte_naissance.help_text }}</small>
+                            <small class="text-muted" data-document-help>{{ entry.help_text }}</small>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.certificat_nationalite.label_tag }}
-                            {{ form.certificat_nationalite }}
-                            {% if form.certificat_nationalite.errors %}
-                            <div class="text-danger small">{{ form.certificat_nationalite.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.certificat_nationalite.help_text }}</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.preuve_baccalaureat.label_tag }}
-                            {{ form.preuve_baccalaureat }}
-                            {% if form.preuve_baccalaureat.errors %}
-                            <div class="text-danger small">{{ form.preuve_baccalaureat.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.preuve_baccalaureat.help_text }}</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.releve_notes_last_class.label_tag }}
-                            {{ form.releve_notes_last_class }}
-                            {% if form.releve_notes_last_class.errors %}
-                            <div class="text-danger small">{{ form.releve_notes_last_class.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.releve_notes_last_class.help_text }}</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.justificatif_dernier_diplome.label_tag }}
-                            {{ form.justificatif_dernier_diplome }}
-                            {% if form.justificatif_dernier_diplome.errors %}
-                            <div class="text-danger small">{{ form.justificatif_dernier_diplome.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.justificatif_dernier_diplome.help_text }}</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.bulletins_terminale.label_tag }}
-                            {{ form.bulletins_terminale }}
-                            {% if form.bulletins_terminale.errors %}
-                            <div class="text-danger small">{{ form.bulletins_terminale.errors }}</div>
-                            {% endif %}
-                            <small class="text-muted">{{ form.bulletins_terminale.help_text }}</small>
-                        </div>
+                        {% endfor %}
                     </div>
 
                     <!-- Documents optionnels -->
@@ -517,8 +600,6 @@
         ];
         const parrainExistantSelect = document.getElementById('id_parrain_existant');
         const manualGodfatherFields = document.getElementById('manual-godfather-fields');
-        const bacEtablissementExistantSelect = document.getElementById('id_bac_etablissement_existant');
-        const manualBacEtablissementField = document.getElementById('manual-bac-etablissement-field');
 
         function resetSpecialitySelects(defaultLabel) {
             specialiteSelects.forEach(({ element }) => {
@@ -531,41 +612,81 @@
             });
         }
 
-        function loadSpecialities(programId) {
-            if (!programId) {
-                resetSpecialitySelects('Sélectionner d\'abord un programme');
-                return;
-            }
+        const documentCards = Array.from(document.querySelectorAll('[data-program-document]'));
 
-            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${programId}`)
+        function updateProgramDocuments(documents) {
+            const documentsByField = new Map((documents || []).map(document => [document.field_name, document]));
+
+            documentCards.forEach((card) => {
+                const fieldName = card.dataset.documentField;
+                const document = documentsByField.get(fieldName);
+                const shouldDisplay = Boolean(document && document.should_display);
+                const labelText = card.querySelector('[data-document-label-text]');
+                const helpText = card.querySelector('[data-document-help]');
+                const badge = card.querySelector('[data-document-badge]');
+                const requiredMark = card.querySelector('[data-document-required-mark]');
+                const input = card.querySelector('input[type="file"]');
+
+                card.classList.toggle('d-none', !shouldDisplay);
+
+                if (labelText && document) {
+                    labelText.textContent = document.label;
+                }
+                if (helpText && document) {
+                    helpText.textContent = document.help_text;
+                }
+                if (requiredMark) {
+                    requiredMark.classList.toggle('d-none', !(document && document.is_required));
+                }
+                if (badge) {
+                    badge.textContent = document && document.is_required ? 'Requis' : 'Optionnel';
+                    badge.classList.toggle('bg-danger', Boolean(document && document.is_required));
+                    badge.classList.toggle('bg-secondary', !(document && document.is_required));
+                }
+                if (input) {
+                    input.required = Boolean(document && document.is_required && shouldDisplay);
+                }
+            });
+        }
+
+        function loadProgramConfiguration(programId) {
+            fetch(`{% url 'main:get_specialities_by_program' %}?program_id=${encodeURIComponent(programId || '')}&documents_mode=admin_only_optional`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        specialiteSelects.forEach(({ element, placeholder, selectedValue }) => {
-                            if (!element) {
-                                return;
-                            }
-
-                            element.innerHTML = `<option value="">${placeholder}</option>`;
-
-                            data.specialities.forEach(speciality => {
-                                const option = document.createElement('option');
-                                option.value = speciality.id;
-                                option.textContent = speciality.name;
-
-                                if (selectedValue && String(speciality.id) === String(selectedValue)) {
-                                    option.selected = true;
-                                }
-
-                                element.appendChild(option);
-                            });
-
-                            element.disabled = false;
-                        });
-                    } else {
+                    if (!data.success) {
                         console.error('Erreur lors du chargement des spécialités:', data.error);
                         resetSpecialitySelects('Erreur de chargement');
+                        return;
                     }
+
+                    updateProgramDocuments(data.documents);
+
+                    if (!programId) {
+                        resetSpecialitySelects('Sélectionner d\'abord un programme');
+                        return;
+                    }
+
+                    specialiteSelects.forEach(({ element, placeholder, selectedValue }) => {
+                        if (!element) {
+                            return;
+                        }
+
+                        element.innerHTML = `<option value="">${data.specialities.length ? placeholder : 'Aucune spécialité disponible'}</option>`;
+
+                        data.specialities.forEach(speciality => {
+                            const option = document.createElement('option');
+                            option.value = speciality.id;
+                            option.textContent = speciality.name;
+
+                            if (selectedValue && String(speciality.id) === String(selectedValue)) {
+                                option.selected = true;
+                            }
+
+                            element.appendChild(option);
+                        });
+
+                        element.disabled = data.specialities.length === 0;
+                    });
                 })
                 .catch(error => {
                     console.error('Erreur AJAX:', error);
@@ -581,38 +702,153 @@
             manualGodfatherFields.style.display = parrainExistantSelect.value ? 'none' : 'flex';
         }
 
-        function toggleManualBacEtablissementField() {
-            if (!bacEtablissementExistantSelect || !manualBacEtablissementField) {
+        function toggleManualInstitutionField(selectElement, manualField) {
+            if (!selectElement || !manualField) {
                 return;
             }
 
-            manualBacEtablissementField.style.display = bacEtablissementExistantSelect.value ? 'none' : 'block';
+            manualField.style.display = selectElement.value ? 'none' : 'block';
         }
 
-        if (!programSelect) {
-            return;
+        function setupEducationForm(formElement) {
+            if (!formElement || formElement.dataset.formsetReady === 'true') {
+                return;
+            }
+
+            const schoolSelect = formElement.querySelector('select[name$="-school_existant"]');
+            const manualSchoolField = formElement.querySelector('[data-manual-school-field]');
+            const universitySelect = formElement.querySelector('select[name$="-university_existant"]');
+            const manualUniversityField = formElement.querySelector('[data-manual-university-field]');
+
+            if (schoolSelect && manualSchoolField) {
+                schoolSelect.addEventListener('change', function () {
+                    toggleManualInstitutionField(schoolSelect, manualSchoolField);
+                });
+                toggleManualInstitutionField(schoolSelect, manualSchoolField);
+            }
+
+            if (universitySelect && manualUniversityField) {
+                universitySelect.addEventListener('change', function () {
+                    toggleManualInstitutionField(universitySelect, manualUniversityField);
+                });
+                toggleManualInstitutionField(universitySelect, manualUniversityField);
+            }
+
+            formElement.dataset.formsetReady = 'true';
         }
 
-        programSelect.addEventListener('change', function () {
-            specialiteSelects.forEach((config) => {
-                config.selectedValue = '';
+        function initializeDynamicFormset({ containerId, addButtonId, templateId, totalFormsInputId }) {
+            const container = document.getElementById(containerId);
+            const addButton = document.getElementById(addButtonId);
+            const template = document.getElementById(templateId);
+            const totalFormsInput = document.getElementById(totalFormsInputId);
+
+            if (!container || !template || !totalFormsInput) {
+                return;
+            }
+
+            const prefix = container.dataset.formsetPrefix;
+
+            function updateFormIndices() {
+                const forms = Array.from(container.querySelectorAll('[data-formset-form]'));
+
+                forms.forEach((formElement, index) => {
+                    const title = formElement.querySelector('[data-formset-title]');
+                    if (title) {
+                        title.textContent = `${formElement.dataset.formsetLabel} #${index + 1}`;
+                    }
+
+                    formElement.querySelectorAll('input, select, textarea, label').forEach((element) => {
+                        ['name', 'id', 'for'].forEach((attributeName) => {
+                            const attributeValue = element.getAttribute(attributeName);
+                            if (!attributeValue) {
+                                return;
+                            }
+
+                            element.setAttribute(
+                                attributeName,
+                                attributeValue.replace(
+                                    new RegExp(`${prefix}-(?:__prefix__|[0-9]+)-`, 'g'),
+                                    `${prefix}-${index}-`
+                                )
+                            );
+                        });
+                    });
+
+                    setupEducationForm(formElement);
+                });
+
+                totalFormsInput.value = forms.length;
+            }
+
+            Array.from(container.querySelectorAll('[data-formset-form]')).forEach(setupEducationForm);
+
+            container.addEventListener('click', function (event) {
+                const removeButton = event.target.closest('[data-formset-remove]');
+                if (!removeButton) {
+                    return;
+                }
+
+                const formElement = removeButton.closest('[data-formset-form]');
+                if (!formElement) {
+                    return;
+                }
+
+                formElement.remove();
+                updateFormIndices();
             });
-            loadSpecialities(this.value);
-        });
+
+            if (addButton) {
+                addButton.addEventListener('click', function () {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = template.innerHTML.trim().replace(/__prefix__/g, totalFormsInput.value);
+                    const formElement = wrapper.firstElementChild;
+
+                    if (!formElement) {
+                        return;
+                    }
+
+                    container.appendChild(formElement);
+                    setupEducationForm(formElement);
+                    updateFormIndices();
+                });
+            }
+
+            updateFormIndices();
+        }
 
         if (parrainExistantSelect) {
             parrainExistantSelect.addEventListener('change', toggleManualGodfatherFields);
             toggleManualGodfatherFields();
         }
-        if (bacEtablissementExistantSelect) {
-            bacEtablissementExistantSelect.addEventListener('change', toggleManualBacEtablissementField);
-            toggleManualBacEtablissementField();
-        }
 
-        if (programSelect.value) {
-            loadSpecialities(programSelect.value);
-        } else {
-            resetSpecialitySelects('Sélectionner d\'abord un programme');
+        initializeDynamicFormset({
+            containerId: 'secondary-diploma-forms',
+            addButtonId: 'add-secondary-diploma',
+            templateId: 'secondary-diploma-empty-form-template',
+            totalFormsInputId: 'id_secondary_diplomas-TOTAL_FORMS'
+        });
+
+        initializeDynamicFormset({
+            containerId: 'university-level-forms',
+            addButtonId: 'add-university-level',
+            templateId: 'university-level-empty-form-template',
+            totalFormsInputId: 'id_university_levels-TOTAL_FORMS'
+        });
+
+        if (programSelect) {
+            programSelect.addEventListener('change', function () {
+                specialiteSelects.forEach((config) => {
+                    config.selectedValue = '';
+                });
+                loadProgramConfiguration(this.value);
+            });
+
+            if (programSelect.value) {
+                loadProgramConfiguration(programSelect.value);
+            } else {
+                loadProgramConfiguration('');
+            }
         }
     });
 </script>

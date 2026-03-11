@@ -1,6 +1,25 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Speciality, Department, Level, Course, Program, AcademicYear
+from .models import Speciality, Department, Level, Course, Program, AcademicYear, ProgramDocumentRequirement
+
+
+class ProgramDocumentRequirementInline(admin.StackedInline):
+    model = ProgramDocumentRequirement
+    can_delete = False
+    extra = 0
+    max_num = 1
+    verbose_name_plural = 'Documents requis pour ce programme'
+    fields = (
+        'acte_naissance',
+        'preuve_baccalaureat',
+        'certificat_nationalite',
+        'releve_notes_last_class',
+        'justificatif_dernier_diplome',
+        'decharge_equivalence',
+        'bulletins_terminale',
+        'releve_notes_master1',
+        'photocopie_bts_hnd',
+    )
 
 
 @admin.register(Speciality)
@@ -130,6 +149,7 @@ class ProgramAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = ['created_at', 'last_updated']
+    inlines = [ProgramDocumentRequirementInline]
 
 
 @admin.register(AcademicYear)

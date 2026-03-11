@@ -2,18 +2,21 @@ from io import BytesIO
 import os
 from xml.sax.saxutils import escape
 
+from django.utils import timezone
 from PIL import Image, UnidentifiedImageError
 from pypdf import PdfReader, PdfWriter
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Image as PlatypusImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+from .models import SystemSettings
 
 
 ANNEX_FIELD_DEFINITIONS = [
-    ('student', 'profile_photo'),
     ('metadata', 'acte_naissance'),
     ('metadata', 'preuve_baccalaureat'),
     ('metadata', 'certificat_nationalite'),
@@ -54,6 +57,83 @@ def build_pre_inscriptions_pdf(students):
     output = BytesIO()
     writer.write(output)
     return output.getvalue()
+
+
+def build_registration_certificate_pdf(official_document):
+    student_level = official_document.student_level
+    student = student_level.student
+    settings = SystemSettings.get_settings()
+    issue_date = timezone.localdate()
+    styles = _build_styles()
+    buffer = BytesIO()
+
+    document = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.7 * cm, bottomMargin=1.7 * cm)
+    full_name = f'{student.firstname} {student.lastname}'.strip()
+    contact_parts = [settings.address]
+    if settings.phone:
+        contact_parts.append(f"Tél. : {settings.phone}")
+    if settings.email:
+        contact_parts.append(f"Email : {settings.email}")
+    if settings.website:
+        contact_parts.append(settings.website)
+    contact_line = ' · '.join(part for part in contact_parts if part)
+
+    story = [
+        Paragraph(escape(settings.institution_name), styles['title_centered']),
+        Paragraph(escape(contact_line or ' '), styles['subtitle_centered']),
+        Spacer(1, 0.45 * cm),
+        Paragraph("CERTIFICAT D'INSCRIPTION", styles['certificate_title']),
+        Paragraph(f"Référence : {escape(_display_value(official_document.reference))}", styles['certificate_reference']),
+        Spacer(1, 0.35 * cm),
+    ]
+
+    story.extend(_build_section('Informations de l’inscription', [
+        ('Nom complet', full_name),
+        ('Matricule', student.matricule),
+        ('Numéro de dossier', student.dossier_number),
+        ('Programme', getattr(student.program, 'name', None)),
+        ('Niveau', getattr(student_level.level, 'name', None)),
+        ('Année académique', getattr(student_level.academic_year, 'name', None)),
+        ('Date de délivrance', _format_date(issue_date)),
+    ], styles))
+
+    story.append(Paragraph(
+        (
+            f"Nous certifions que <b>{escape(_display_value(full_name))}</b>, matricule "
+            f"<b>{escape(_display_value(student.matricule))}</b>, numéro de dossier "
+            f"<b>{escape(_display_value(student.dossier_number))}</b>, est régulièrement inscrit(e) "
+            f"en <b>{escape(_display_value(getattr(student_level.level, 'name', None)))}</b> au titre de "
+            f"l'année académique <b>{escape(_display_value(getattr(student_level.academic_year, 'name', None)))}</b> "
+            f"au sein de <b>{escape(settings.institution_name)}</b>."
+        ),
+        styles['body'],
+    ))
+    story.append(Spacer(1, 0.2 * cm))
+    story.append(Paragraph(
+        "Le présent certificat est délivré à l'intéressé(e) pour servir et valoir ce que de droit.",
+        styles['body'],
+    ))
+    story.append(Spacer(1, 1.0 * cm))
+    story.append(Paragraph(f"Fait à Yaoundé, le {_format_date(issue_date)}", styles['signature']))
+    story.append(Spacer(1, 1.5 * cm))
+    story.append(Paragraph(escape(settings.institution_name), styles['signature']))
+
+    document.build(
+        story,
+        onFirstPage=lambda pdf_canvas, doc: _draw_registration_certificate_footer(
+            pdf_canvas,
+            doc,
+            settings.institution_name,
+            official_document.reference,
+        ),
+        onLaterPages=lambda pdf_canvas, doc: _draw_registration_certificate_footer(
+            pdf_canvas,
+            doc,
+            settings.institution_name,
+            official_document.reference,
+        ),
+    )
+    return buffer.getvalue()
 
 
 def _prepare_annex_entries(student):
@@ -107,11 +187,7 @@ def _build_summary_pdf(student, annex_entries):
     buffer = BytesIO()
     document = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.4 * cm, bottomMargin=1.4 * cm)
     styles = _build_styles()
-    story = [
-        Paragraph('Fiche administrative de pré-inscription', styles['title']),
-        Paragraph(f"Candidat : {escape(f'{student.firstname} {student.lastname}')}", styles['subtitle']),
-        Spacer(1, 0.35 * cm),
-    ]
+    story = _build_summary_header(student, styles)
 
     metadata = getattr(student, 'metadata', None)
     story.extend(_build_section('Informations personnelles', [
@@ -155,10 +231,16 @@ def _build_summary_pdf(student, annex_entries):
     story.extend(_build_section('Informations académiques', [
         ('Programme', getattr(student.program, 'name', None)),
         ('École d\'origine', getattr(student.school, 'name', None)),
+        ('Spécialités souhaitées', ' ; '.join(specialities) if specialities else None),
         ('Parrain', godfather_label),
         ('Niveaux d\'études d\'entrée', ' ; '.join(levels) if levels else None),
-        ('Spécialités souhaitées', ' ; '.join(specialities) if specialities else None),
     ], styles))
+
+    story.extend(_build_section(
+        'Cursus scolaire et universitaire',
+        _build_curriculum_rows(student),
+        styles,
+    ))
 
     family_rows = []
     address_rows = []
@@ -199,6 +281,125 @@ def _build_summary_pdf(student, annex_entries):
 
     document.build(story, onFirstPage=_draw_page_footer, onLaterPages=_draw_page_footer)
     return buffer.getvalue()
+
+
+def _build_summary_header(student, styles):
+    header_table = Table(
+        [[
+            [
+                Paragraph('Fiche administrative de pré-inscription', styles['title']),
+                Paragraph(f"Candidat : {escape(f'{student.firstname} {student.lastname}')}", styles['subtitle']),
+            ],
+            _build_profile_photo_cell(student, styles),
+        ]],
+        colWidths=[12.2 * cm, 4.2 * cm],
+        hAlign='LEFT',
+    )
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    return [header_table, Spacer(1, 0.35 * cm)]
+
+
+def _build_profile_photo_cell(student, styles):
+    box_width = 3.2 * cm
+    box_height = 4.0 * cm
+    photo_content = _build_profile_photo_flowable(student, box_width - 0.35 * cm, box_height - 0.35 * cm)
+    if photo_content is None:
+        photo_content = Spacer(1, 0.1 * cm)
+
+    photo_table = Table([[photo_content]], colWidths=[box_width], rowHeights=[box_height], hAlign='RIGHT')
+    photo_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.7, colors.HexColor('#9ca3af')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    return photo_table
+
+
+def _build_profile_photo_flowable(student, max_width, max_height):
+    profile_photo = getattr(student, 'profile_photo', None)
+    if not profile_photo:
+        return None
+
+    try:
+        with profile_photo.open('rb') as image_file:
+            image_bytes = image_file.read()
+    except FileNotFoundError:
+        return None
+
+    try:
+        with Image.open(BytesIO(image_bytes)) as image:
+            if image.mode in ('RGBA', 'LA', 'P'):
+                image = image.convert('RGB')
+            elif image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            width, height = image.size
+            if not width or not height:
+                return None
+
+            scale = min(max_width / width, max_height / height)
+            rendered = BytesIO()
+            image.save(rendered, format='JPEG', quality=90)
+            rendered.seek(0)
+            return PlatypusImage(rendered, width=width * scale, height=height * scale)
+    except (UnidentifiedImageError, OSError):
+        return None
+
+
+def _build_curriculum_rows(student):
+    rows = []
+
+    secondary_diplomas = sorted(
+        student.secondary_diplomas.all(),
+        key=lambda diploma: (diploma.obtained_year or 0, diploma.pk or 0),
+    )
+    for index, diploma in enumerate(secondary_diplomas, start=1):
+        rows.append((f'Cursus scolaire {index}', _format_secondary_diploma(diploma)))
+
+    university_levels = sorted(
+        student.university_levels.all(),
+        key=lambda level: (level.academic_year or '', level.pk or 0),
+    )
+    for index, university_level in enumerate(university_levels, start=1):
+        rows.append((f'Cursus universitaire {index}', _format_university_level(university_level)))
+
+    return rows or [('Cursus', 'Non renseigné')]
+
+
+def _format_secondary_diploma(diploma):
+    details = [diploma.name]
+    if diploma.serie:
+        details.append(f'Série / spécialité : {diploma.serie}')
+    if diploma.obtained_year:
+        details.append(f'Année d\'obtention : {diploma.obtained_year}')
+    if diploma.mention:
+        details.append(f'Mention : {diploma.mention}')
+    if diploma.school:
+        details.append(f'Établissement : {diploma.school.name}')
+    return ' ; '.join(details)
+
+
+def _format_university_level(university_level):
+    details = [f'Niveau : {university_level.level_name}']
+    if university_level.diploma_name:
+        details.append(f'Diplôme obtenu : {university_level.diploma_name}')
+    if university_level.speciality:
+        details.append(f'Spécialité : {university_level.speciality}')
+    if university_level.academic_year:
+        details.append(f'Année académique : {university_level.academic_year}')
+    if university_level.university:
+        details.append(f'Université : {university_level.university.name}')
+    return ' ; '.join(details)
 
 
 def _build_section(title, rows, styles):
@@ -291,12 +492,24 @@ def _build_styles():
     styles.add(ParagraphStyle(name='YsemSection', parent=styles['Heading2'], fontSize=12, leading=15, textColor=colors.HexColor('#111827'), spaceAfter=5, spaceBefore=6))
     styles.add(ParagraphStyle(name='YsemCell', parent=styles['Normal'], fontSize=9.2, leading=11))
     styles.add(ParagraphStyle(name='YsemCellLabel', parent=styles['Normal'], fontSize=9.2, leading=11))
+    styles.add(ParagraphStyle(name='YsemTitleCentered', parent=styles['YsemTitle'], alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='YsemSubtitleCentered', parent=styles['YsemSubtitle'], alignment=TA_CENTER))
+    styles.add(ParagraphStyle(name='YsemCertificateTitle', parent=styles['Heading1'], fontSize=18, leading=22, alignment=TA_CENTER, textColor=colors.HexColor('#111827'), spaceAfter=5))
+    styles.add(ParagraphStyle(name='YsemCertificateReference', parent=styles['Normal'], fontSize=10.5, leading=13, alignment=TA_CENTER, textColor=colors.HexColor('#374151'), spaceAfter=6))
+    styles.add(ParagraphStyle(name='YsemBody', parent=styles['Normal'], fontSize=11, leading=17, alignment=TA_JUSTIFY, textColor=colors.HexColor('#111827'), spaceAfter=6))
+    styles.add(ParagraphStyle(name='YsemSignature', parent=styles['Normal'], fontSize=10.5, leading=14, alignment=TA_RIGHT, textColor=colors.HexColor('#111827')))
     return {
         'title': styles['YsemTitle'],
+        'title_centered': styles['YsemTitleCentered'],
         'subtitle': styles['YsemSubtitle'],
+        'subtitle_centered': styles['YsemSubtitleCentered'],
         'section': styles['YsemSection'],
         'cell': styles['YsemCell'],
         'cell_label': styles['YsemCellLabel'],
+        'certificate_title': styles['YsemCertificateTitle'],
+        'certificate_reference': styles['YsemCertificateReference'],
+        'body': styles['YsemBody'],
+        'signature': styles['YsemSignature'],
     }
 
 
@@ -306,4 +519,13 @@ def _draw_page_footer(pdf_canvas, document):
     pdf_canvas.setFillColor(colors.HexColor('#6b7280'))
     pdf_canvas.drawString(1.4 * cm, 1.0 * cm, 'YSEM — Dossier administratif de pré-inscription')
     pdf_canvas.drawRightString(A4[0] - 1.4 * cm, 1.0 * cm, f'Page {document.page}')
+    pdf_canvas.restoreState()
+
+
+def _draw_registration_certificate_footer(pdf_canvas, document, institution_name, reference):
+    pdf_canvas.saveState()
+    pdf_canvas.setFont('Helvetica', 8)
+    pdf_canvas.setFillColor(colors.HexColor('#6b7280'))
+    pdf_canvas.drawString(1.4 * cm, 1.0 * cm, f"{institution_name} — Certificat d'inscription généré à la demande")
+    pdf_canvas.drawRightString(A4[0] - 1.4 * cm, 1.0 * cm, f"Réf. {reference or '-'} · Page {document.page}")
     pdf_canvas.restoreState()

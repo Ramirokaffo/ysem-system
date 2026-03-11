@@ -1,4 +1,5 @@
 from django.db import models
+from django.templatetags.static import static
 
 
 class SystemSettings(models.Model):
@@ -6,12 +7,14 @@ class SystemSettings(models.Model):
     Modèle pour stocker les paramètres système de YSEM
     """
     # Paramètres généraux
-    institution_name = models.CharField(max_length=200, default="YSEM - École Supérieure", verbose_name="Nom de l'institution")
+    institution_name = models.CharField(max_length=200, default="YSEM", verbose_name="Nom de l'institution")
+    institution_long_name = models.CharField(max_length=200, default="Yaoundé Higher School of Economic and Management", verbose_name="Nom complet de l'institution")
     institution_code = models.CharField(max_length=50, default="YSEM001", verbose_name="Code de l'institution")
     address = models.TextField(default="Damas, Yaoundé, Cameroun", verbose_name="Adresse")
     phone = models.CharField(max_length=20, default="+237 XXX XXX XXX", verbose_name="Téléphone")
     email = models.EmailField(default="contact@ysem.education", verbose_name="Email")
     website = models.URLField(default="https://www.ysem.education", verbose_name="Site web")
+    logo = models.ImageField(upload_to='system/logo/', blank=True, null=True, verbose_name="Logo de l'institution")
     timezone = models.CharField(max_length=50, default="Africa/Douala", verbose_name="Fuseau horaire")
     language = models.CharField(max_length=10, default="fr", verbose_name="Langue")
 
@@ -78,6 +81,14 @@ class SystemSettings(models.Model):
 
     def __str__(self):
         return f"Paramètres système - {self.institution_name}"
+
+    def get_logo_url(self):
+        if self.logo:
+            return self.logo.url
+        return static('main/images/ysemlogo.png')
+
+    def get_logo_alt(self):
+        return f"Logo {self.institution_name}"
 
     @classmethod
     def get_settings(cls):

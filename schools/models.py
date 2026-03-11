@@ -29,10 +29,19 @@ class UniversityLevel(models.Model):
     """
     Modèle pour les niveaux universitaires
     """
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name='university_levels',
+        blank=True,
+        null=True,
+        verbose_name="Étudiant",
+    )
     level_name = models.CharField(max_length=100)
     diploma_name = models.CharField(max_length=200, blank=True, null=True)
     speciality = models.CharField(max_length=200, blank=True, null=True)
     academic_year = models.CharField(max_length=20, blank=True, null=True)
+    university = models.ForeignKey(School, on_delete=models.CASCADE, related_name='university_levels', blank=True, null=True, verbose_name="Université fréquentée")
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
@@ -48,10 +57,19 @@ class SecondaryDiploma(models.Model):
     """
     Modèle pour les diplômes du secondaire
     """
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name='secondary_diplomas',
+        blank=True,
+        null=True,
+        verbose_name="Étudiant",
+    )
     name = models.CharField(max_length=200)
     serie = models.CharField(max_length=100, blank=True, null=True)
     obtained_year = models.IntegerField()
     mention = models.CharField(max_length=100, blank=True, null=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='secondary_diplomas', blank=True, null=True, verbose_name="École d'obtention")
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 

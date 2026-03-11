@@ -66,12 +66,36 @@ class StudentMetaData(models.Model):
         help_text="Photocopie du justificatif du dernier diplôme obtenu (PNG/JPG/PDF, max 5Mo)"
     )
 
+    decharge_equivalence = models.FileField(
+        upload_to='documents/inscription/decharge_equivalence/',
+        blank=True,
+        null=True,
+        verbose_name="Décharge de la demande d'équivalence pour les diplômes étrangers",
+        help_text="Photocopie de la décharge de la demande d'équivalence pour les diplômes étrangers (PNG/JPG/PDF, max 5Mo)"
+    )
+
     bulletins_terminale = models.FileField(
         upload_to='documents/inscription/bulletins/',
         blank=True,
         null=True,
         verbose_name="Bulletins de la classe de terminale",
         help_text="Photocopie des bulletins de notes de la classe de terminale (PNG/JPG/PDF, max 5Mo)"
+    )
+
+    releve_notes_master1 = models.FileField(
+        upload_to='documents/inscription/releve_master1/',
+        blank=True,
+        null=True,
+        verbose_name="Relevé de notes du Master 1 ou de tout autre diplôme équivalent",
+        help_text="Relevé de notes du Master 1 ou de tout autre diplôme équivalent (PNG/JPG/PDF, max 5Mo)"
+    )
+
+    photocopie_bts_hnd = models.FileField(
+        upload_to='documents/inscription/bts_hnd/',
+        blank=True,
+        null=True,
+        verbose_name="Photocopie du BTS, HND ou de tout autre diplôme équivalent",
+        help_text="Photocopie du BTS, HND ou de tout autre diplôme équivalent (PNG/JPG/PDF, max 5Mo)"
     )
 
     certificat_nationalite = models.FileField(
@@ -179,6 +203,13 @@ class Student(models.Model):
             # Si aucun statut de paiement n'existe, autoriser par défaut
             return True, "Aucun statut de paiement défini"
 
+    def get_active_level(self):
+        """
+        Récupère le niveau académique actif de l'étudiant
+        """
+        active_level = self.student_levels.filter(is_active=True).first()
+        return active_level
+    
     class Meta:
         verbose_name = "Étudiant"
         verbose_name_plural = "Étudiants"
@@ -193,6 +224,7 @@ class StudentLevel(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='student_levels')
     academic_year = models.ForeignKey(AcademicYear, null=True, on_delete=models.CASCADE, related_name='student_levels')
     is_active = models.BooleanField(default=False, verbose_name="Niveau actuel de l'étudiant?")
+    is_registered = models.BooleanField(default=False, verbose_name="L'étudiant est-il officiellement inscrit à ce niveau?")
 
     def save(self, *args, **kwargs):
         # Met à jour le champ name avant de sauvegarder
@@ -200,6 +232,10 @@ class StudentLevel(models.Model):
         year_name = self.academic_year.name if self.academic_year else ''
         self.name = f"{level_name} - {year_name}"
         super().save(*args, **kwargs)
+
+    def mark_as_registered(self):
+        self.is_registered = True
+        self.save()
 
     def __str__(self):
         return f"{self.student.matricule} - {self.level.name} - {self.academic_year.name}"
@@ -292,8 +328,23 @@ class OfficialDocument(models.Model):
     """
     Modèle pour les documents officiels des étudiants
     """
+    TYPE_STUDENT_CARD = 'student_card'
+    TYPE_TRANSCRIPT = 'transcript'
+    TYPE_DIPLOMA = 'diploma'
+    TYPE_CERTIFICATE = 'certificate'
+    TYPE_REGISTRATION_CERTIFICATE = 'registration_certificate'
+
+    TYPE_CHOICES = [
+        (TYPE_STUDENT_CARD, "Carte d'étudiant"),
+        (TYPE_TRANSCRIPT, 'Relevé de notes'),
+        (TYPE_DIPLOMA, 'Diplôme'),
+        (TYPE_CERTIFICATE, 'Certificat de scolarité'),
+        (TYPE_REGISTRATION_CERTIFICATE, 'CERTIFICAT D’INSCRIPTION'),
+    ]
+
     student_level = models.ForeignKey(StudentLevel, on_delete=models.CASCADE, null=True, related_name='official_documents')
-    type = models.CharField(max_length=100, choices=[("student_card", "Carte d'étudiant"), ("transcript", "Relevé de notes"), ("diploma", "Diplôme"), ("certificate", "Certificat de scolarité")])
+    type = models.CharField(max_length=100, choices=TYPE_CHOICES)
+    reference = models.CharField(max_length=100, blank=True, null=True, verbose_name='Référence')
     status = models.CharField(max_length=50, choices=[('available', 'Non déchargé'), ('withdrawn', 'Déchargé'), ('returned', 'Retourné'), ('lost', 'Perdu')], default='available')
     withdrawn_date = models.DateField(blank=True, null=True)
     returned_at = models.DateField(blank=True, null=True)
@@ -301,7 +352,8 @@ class OfficialDocument(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.type} - {str(self.student_level)}"
+        reference_suffix = f" ({self.reference})" if self.reference else ''
+        return f"{self.get_type_display()} - {str(self.student_level)}{reference_suffix}"
 
     class Meta:
         verbose_name = "documents officiel"

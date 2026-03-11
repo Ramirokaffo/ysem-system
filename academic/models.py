@@ -3,6 +3,12 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
+from .document_requirements import (
+    DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS,
+    PROGRAM_DOCUMENT_FIELD_NAMES,
+    PROGRAM_DOCUMENTS_BY_FIELD,
+)
+
 
 
 class Department(models.Model):
@@ -54,6 +60,92 @@ class Program(models.Model):
     class Meta:
         verbose_name = "Programme"
         verbose_name_plural = "Programmes"
+
+
+class ProgramDocumentRequirement(models.Model):
+    """Configuration des documents requis pour un programme."""
+
+    program = models.OneToOneField(
+        Program,
+        on_delete=models.CASCADE,
+        related_name='document_configuration',
+        verbose_name='Programme',
+    )
+    acte_naissance = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['acte_naissance']['label'],
+    )
+    preuve_baccalaureat = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['preuve_baccalaureat']['label'],
+    )
+    certificat_nationalite = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['certificat_nationalite']['label'],
+    )
+    releve_notes_last_class = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['releve_notes_last_class']['label'],
+    )
+    justificatif_dernier_diplome = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['justificatif_dernier_diplome']['label'],
+    )
+    decharge_equivalence = models.BooleanField(
+        default=False,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['decharge_equivalence']['label'],
+    )
+    bulletins_terminale = models.BooleanField(
+        default=True,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['bulletins_terminale']['label'],
+    )
+    releve_notes_master1 = models.BooleanField(
+        default=False,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['releve_notes_master1']['label'],
+    )
+    photocopie_bts_hnd = models.BooleanField(
+        default=False,
+        verbose_name=PROGRAM_DOCUMENTS_BY_FIELD['photocopie_bts_hnd']['label'],
+    )
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name='dernière mise à jour')
+
+    @classmethod
+    def default_flags(cls):
+        return {
+            field_name: field_name in DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS
+            for field_name in PROGRAM_DOCUMENT_FIELD_NAMES
+        }
+
+    @classmethod
+    def get_for_program(cls, program):
+        if not program:
+            return None
+        configuration, _ = cls.objects.get_or_create(
+            program=program,
+            defaults=cls.default_flags(),
+        )
+        return configuration
+
+    def get_required_document_fields(self):
+        return [
+            field_name
+            for field_name in PROGRAM_DOCUMENT_FIELD_NAMES
+            if getattr(self, field_name)
+        ]
+
+    def get_required_documents(self):
+        return [
+            PROGRAM_DOCUMENTS_BY_FIELD[field_name]
+            for field_name in self.get_required_document_fields()
+        ]
+
+    def __str__(self):
+        return f"Documents requis - {self.program.name}"
+
+    class Meta:
+        verbose_name = 'Configuration des documents requis'
+        verbose_name_plural = 'Configurations des documents requis'
 
 
 

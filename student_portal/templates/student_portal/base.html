@@ -22,7 +22,7 @@
         <nav class="navbar navbar-expand-lg shadow-soft border-light navbar-light">
             <div class="container position-relative">
                 <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light" href="{% url 'student_portal:dashboard' %}">
-                    <i class="fas fa-graduation-cap me-2"></i>
+                    <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}" class="me-2" style="height: 28px; width: auto;">
                     <span class="fw-bold">YSEM</span>
                     <small class="text-muted ms-2">Portail Étudiant</small>
                 </a>
@@ -32,7 +32,7 @@
                         <div class="row">
                             <div class="col-6 collapse-brand">
                                 <a href="{% url 'student_portal:dashboard' %}" class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
-                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}" class="me-2" style="height: 28px; width: auto;">
                                     <span class="fw-bold">YSEM</span>
                                 </a>
                             </div>

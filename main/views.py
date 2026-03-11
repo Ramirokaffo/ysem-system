@@ -9,16 +9,20 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
-from django.conf import settings
 
+from academic.document_requirements import DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS, PROGRAM_DOCUMENT_FIELD_NAMES
 from academic.models import AcademicYear, Level, Program, Speciality
 from audit.utils import log_audit_event
-from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, StudentEditForm, StudentMetaDataEditForm, StudentLevelForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm
-from .models import SystemSettings
-from .pdf_exports import build_pre_inscription_pdf, build_pre_inscriptions_pdf
+from .emails import send_student_status_email
+from .forms import InscriptionCompleteForm, InscriptionEtape2Form, InscriptionEtape3Form, InscriptionEtape4Form, SecondaryDiplomaFormSet, StudentEditForm, StudentMetaDataEditForm, StudentLevelForm, OfficialDocumentForm, BulkDocumentCreationForm, PaymentStatusForm, PaymentStatusSearchForm, UniversityLevelFormSet
+from .pdf_exports import build_pre_inscription_pdf, build_pre_inscriptions_pdf, build_registration_certificate_pdf
+from .program_documents import (
+    build_program_document_entries,
+    build_program_document_payload,
+    get_required_program_document_field_names,
+)
 from accounts.models import BaseUser, Godfather
-from schools.models import School
+from schools.models import School, SecondaryDiploma, UniversityLevel
 from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument, PaymentStatus
 import json
 import logging
@@ -26,6 +30,115 @@ import re
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
 from django.utils import timezone
+
+
+SECONDARY_DIPLOMA_FORMSET_PREFIX = 'secondary_diplomas'
+UNIVERSITY_LEVEL_FORMSET_PREFIX = 'university_levels'
+
+
+def _build_secondary_diploma_initial_data(student):
+    return [
+        {
+            'name': diploma.name,
+            'serie': diploma.serie or '',
+            'obtained_year': diploma.obtained_year,
+            'mention': diploma.mention or '',
+            'school_existant': diploma.school_id or '',
+            'school_name': '',
+        }
+        for diploma in student.secondary_diplomas.select_related('school').order_by('obtained_year', 'pk')
+    ]
+
+
+def _build_university_level_initial_data(student):
+    return [
+        {
+            'level_name': university_level.level_name,
+            'diploma_name': university_level.diploma_name or '',
+            'speciality': university_level.speciality or '',
+            'academic_year': university_level.academic_year or '',
+            'university_existant': university_level.university_id or '',
+            'university_name': '',
+        }
+        for university_level in student.university_levels.select_related('university').order_by('academic_year', 'pk')
+    ]
+
+
+def _build_secondary_diploma_formset_for_student(student, data=None):
+    return SecondaryDiplomaFormSet(
+        data=data,
+        initial=_build_secondary_diploma_initial_data(student),
+        prefix=SECONDARY_DIPLOMA_FORMSET_PREFIX,
+    )
+
+
+def _build_university_level_formset_for_student(student, data=None):
+    return UniversityLevelFormSet(
+        data=data,
+        initial=_build_university_level_initial_data(student),
+        prefix=UNIVERSITY_LEVEL_FORMSET_PREFIX,
+    )
+
+
+def _get_or_create_school(name, level):
+    school_name = (name or '').strip()
+    if not school_name:
+        return None
+
+    school = School.objects.filter(name__iexact=school_name, level=level).first()
+    if school:
+        return school
+
+    return School.objects.create(name=school_name, level=level)
+
+
+def _save_secondary_diplomas(student, formset):
+    secondary_diplomas = []
+
+    for diploma_form in formset:
+        if not getattr(diploma_form, 'cleaned_data', None):
+            continue
+        if diploma_form.cleaned_data.get('DELETE'):
+            continue
+
+        diploma = diploma_form.save(commit=False)
+        diploma.student = student
+        diploma.school = diploma_form.cleaned_data.get('school_existant') or _get_or_create_school(
+            diploma_form.cleaned_data.get('school_name'),
+            'secondary',
+        )
+        diploma.save()
+        secondary_diplomas.append(diploma)
+
+    return secondary_diplomas
+
+
+def _save_university_levels(student, formset):
+    for level_form in formset:
+        if not getattr(level_form, 'cleaned_data', None):
+            continue
+        if level_form.cleaned_data.get('DELETE'):
+            continue
+
+        university_level = level_form.save(commit=False)
+        university_level.student = student
+        university_level.university = level_form.cleaned_data.get('university_existant') or _get_or_create_school(
+            level_form.cleaned_data.get('university_name'),
+            'higher',
+        )
+        university_level.save()
+
+
+def _resolve_student_school(secondary_diplomas):
+    for diploma in secondary_diplomas:
+        if diploma.school and 'bac' in (diploma.name or '').lower():
+            return diploma.school
+
+    for diploma in secondary_diplomas:
+        if diploma.school:
+            return diploma.school
+
+    return None
 
 
 class HomeView(TemplateView):
@@ -123,95 +236,60 @@ PRE_INSCRIPTION_STATUSES = ['pending', 'abandoned', 'approved', 'rejected']
 logger = logging.getLogger(__name__)
 
 
-def _get_student_display_name(student):
-    return f"{student.firstname} {student.lastname}".strip() or str(student)
+def _get_program_from_value(program_value):
+    if isinstance(program_value, Program):
+        return program_value
+    if not program_value:
+        return None
+    return Program.objects.filter(pk=program_value).first()
+
+
+def _metadata_form_has_document(metadata_form, field_name):
+    if metadata_form.files.get(field_name):
+        return True
+    if metadata_form.cleaned_data.get(f'remove_{field_name}'):
+        return False
+
+    current_file = getattr(metadata_form.instance, field_name, None)
+    return bool(getattr(current_file, 'name', ''))
+
+
+def _validate_metadata_program_documents(metadata_form, program, force_optional=False):
+    if force_optional:
+        return True
+
+    is_valid = True
+
+    for field_name in get_required_program_document_field_names(program):
+        if _metadata_form_has_document(metadata_form, field_name):
+            continue
+
+        metadata_form.add_error(field_name, "Ce document est requis pour le programme sélectionné.")
+        is_valid = False
+
+    return is_valid
+
+
+def _build_metadata_form_document_entries(metadata_form, program=None, force_optional=False):
+    entries = []
+    for document_entry in build_program_document_entries(
+        program=program,
+        metadata=metadata_form.instance,
+        fallback_visible_fields=None if force_optional else DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS,
+        force_optional=force_optional,
+    ):
+        remove_field_name = f"remove_{document_entry['field_name']}"
+        entries.append({
+            **document_entry,
+            'field': metadata_form[document_entry['field_name']],
+            'remove_field': metadata_form[remove_field_name] if remove_field_name in metadata_form.fields else None,
+        })
+
+    return entries
 
 
 def _send_student_status_email(student, notification_type):
-    recipient = (student.email or '').strip()
-    if not recipient:
-        return False
-
-    try:
-        system_settings = SystemSettings.get_settings()
-        if not system_settings.email_enrollment:
-            return False
-
-        institution_name = system_settings.institution_name
-        contact_email = system_settings.email
-        website = system_settings.website
-    except Exception:
-        logger.exception("Impossible de récupérer les paramètres système pour l'email étudiant.")
-        institution_name = 'YSEM'
-        contact_email = ''
-        website = ''
-
-    from_email = getattr(settings, 'EMAIL_HOST_USER', '') or contact_email or 'noreply@ysem.education'
-    student_name = _get_student_display_name(student)
-
-    notifications = {
-        'pre_inscription': {
-            'subject': f"{institution_name} - Confirmation de votre pré-inscription",
-            'body': (
-                f"Bonjour {student_name},\n\n"
-                f"Nous confirmons la réception de votre pré-inscription à {institution_name}.\n"
-                "Votre dossier est désormais en attente de validation par l'administration.\n\n"
-                f"Référence de votre dossier : {student.matricule}\n"
-                f"Email de contact : {contact_email or 'Non renseigné'}\n"
-                f"Site web : {website or 'Non renseigné'}\n\n"
-                "Cordialement,\n"
-                f"L'équipe {institution_name}"
-            ),
-        },
-        'pre_inscription_approved': {
-            'subject': f"{institution_name} - Validation de votre pré-inscription",
-            'body': (
-                f"Bonjour {student_name},\n\n"
-                f"Votre pré-inscription à {institution_name} a été validée.\n"
-                "Vous pouvez désormais poursuivre les démarches administratives nécessaires à votre inscription définitive.\n\n"
-                f"Référence de votre dossier : {student.matricule}\n"
-                f"Email de contact : {contact_email or 'Non renseigné'}\n"
-                f"Site web : {website or 'Non renseigné'}\n\n"
-                "Cordialement,\n"
-                f"L'équipe {institution_name}"
-            ),
-        },
-        'registration': {
-            'subject': f"{institution_name} - Confirmation de votre inscription",
-            'body': (
-                f"Bonjour {student_name},\n\n"
-                f"Votre inscription à {institution_name} a été finalisée avec succès.\n"
-                f"Votre matricule définitif est : {student.matricule}\n"
-                f"Votre numéro de dossier est : {student.dossier_number or 'Non renseigné'}\n\n"
-                f"Email de contact : {contact_email or 'Non renseigné'}\n"
-                f"Site web : {website or 'Non renseigné'}\n\n"
-                "Cordialement,\n"
-                f"L'équipe {institution_name}"
-            ),
-        },
-    }
-
-    notification = notifications.get(notification_type)
-    if not notification:
-        return False
-
-    try:
-        send_mail(
-            subject=notification['subject'],
-            message=notification['body'],
-            from_email=from_email,
-            recipient_list=[recipient],
-            fail_silently=False,
-        )
-    except Exception:
-        logger.exception(
-            "Échec de l'envoi de l'email '%s' à l'étudiant %s.",
-            notification_type,
-            student.pk,
-        )
-        return False
-
-    return True
+    return send_student_status_email(student, notification_type)
 
 
 def _queue_student_status_email(student, notification_type):
@@ -333,6 +411,44 @@ def _generate_final_registration_identifiers(student):
         sequence += 1
 
     raise ValidationError("Aucun matricule définitif disponible n'a pu être généré.")
+
+
+def _build_registration_certificate_reference(student, student_level):
+    """Construit la référence du certificat d'inscription."""
+    if not student_level or not student_level.academic_year or not student_level.academic_year.start_at:
+        raise ValidationError("Impossible de générer la référence du certificat d'inscription sans année académique active.")
+
+    return f"CI-{student_level.academic_year.start_at.year}-{student.matricule}"
+
+
+def _ensure_registration_certificate(student):
+    """Crée ou met à jour le certificat d'inscription rattaché à l'étudiant."""
+    student_level = _get_student_level_for_edit(student)
+    if not student_level:
+        raise ValidationError("Impossible de créer le certificat d'inscription sans niveau étudiant actif.")
+
+    reference = _build_registration_certificate_reference(student, student_level)
+    document, _ = OfficialDocument.objects.get_or_create(
+        student_level=student_level,
+        type=OfficialDocument.TYPE_REGISTRATION_CERTIFICATE,
+        defaults={
+            'reference': reference,
+            'status': 'available',
+        },
+    )
+
+    fields_to_update = []
+    if document.reference != reference:
+        document.reference = reference
+        fields_to_update.append('reference')
+    if document.status != 'available':
+        document.status = 'available'
+        fields_to_update.append('status')
+
+    if fields_to_update:
+        document.save(update_fields=fields_to_update)
+
+    return document
 
 
 def _replace_student_primary_key(student, new_matricule, dossier_number):
@@ -731,7 +847,7 @@ class ParametresView(LoginRequiredMixin, TemplateView):
         form_type = request.POST.get('form_type')
 
         if form_type == 'general':
-            form = GeneralSettingsForm(request.POST, instance=settings)
+            form = GeneralSettingsForm(request.POST, request.FILES, instance=settings)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Paramètres généraux mis à jour avec succès.')
@@ -1147,20 +1263,105 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
     """Vue pour le formulaire d'inscription complet (sans étapes) - PUBLIQUE"""
     template_name = 'main/nouvelle_inscription.html'
 
+    secondary_diploma_prefix = 'secondary_diplomas'
+    university_level_prefix = 'university_levels'
+
+    def _build_secondary_diploma_formset(self, data=None):
+        return SecondaryDiplomaFormSet(data=data, prefix=self.secondary_diploma_prefix)
+
+    def _build_university_level_formset(self, data=None):
+        return UniversityLevelFormSet(data=data, prefix=self.university_level_prefix)
+
+    @staticmethod
+    def _get_or_create_school(name, level):
+        school_name = (name or '').strip()
+        if not school_name:
+            return None
+
+        school = School.objects.filter(name__iexact=school_name, level=level).first()
+        if school:
+            return school
+
+        return School.objects.create(name=school_name, level=level)
+
+    def _save_secondary_diplomas(self, student, formset):
+        secondary_diplomas = []
+
+        for diploma_form in formset:
+            if not getattr(diploma_form, 'cleaned_data', None):
+                continue
+            if diploma_form.cleaned_data.get('DELETE'):
+                continue
+
+            diploma = diploma_form.save(commit=False)
+            diploma.student = student
+            diploma.school = diploma_form.cleaned_data.get('school_existant') or self._get_or_create_school(
+                diploma_form.cleaned_data.get('school_name'),
+                'secondary',
+            )
+            diploma.save()
+            secondary_diplomas.append(diploma)
+
+        return secondary_diplomas
+
+    def _save_university_levels(self, student, formset):
+        for level_form in formset:
+            if not getattr(level_form, 'cleaned_data', None):
+                continue
+            if level_form.cleaned_data.get('DELETE'):
+                continue
+
+            university_level = level_form.save(commit=False)
+            university_level.student = student
+            university_level.university = level_form.cleaned_data.get('university_existant') or self._get_or_create_school(
+                level_form.cleaned_data.get('university_name'),
+                'higher',
+            )
+            university_level.save()
+
+    @staticmethod
+    def _resolve_student_school(secondary_diplomas):
+        for diploma in secondary_diplomas:
+            if diploma.school and 'bac' in (diploma.name or '').lower():
+                return diploma.school
+
+        for diploma in secondary_diplomas:
+            if diploma.school:
+                return diploma.school
+
+        return None
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = InscriptionCompleteForm()
+        form = kwargs.get('form')
+        secondary_diploma_formset = kwargs.get('secondary_diploma_formset')
+        university_level_formset = kwargs.get('university_level_formset')
+
+        if form is None:
+            form = InscriptionCompleteForm()
+        if secondary_diploma_formset is None:
+            secondary_diploma_formset = self._build_secondary_diploma_formset()
+        if university_level_formset is None:
+            university_level_formset = self._build_university_level_formset()
 
         context.update({
             'page_title': 'Nouvelle Pré-Inscription',
             'form': form,
+            'secondary_diploma_formset': secondary_diploma_formset,
+            'university_level_formset': university_level_formset,
         })
         return context
 
     def post(self, request, *args, **kwargs):
         form = InscriptionCompleteForm(request.POST, request.FILES)
+        secondary_diploma_formset = self._build_secondary_diploma_formset(request.POST)
+        university_level_formset = self._build_university_level_formset(request.POST)
 
-        if form.is_valid():
+        form_is_valid = form.is_valid()
+        secondary_diploma_formset_is_valid = secondary_diploma_formset.is_valid()
+        university_level_formset_is_valid = university_level_formset.is_valid()
+
+        if form_is_valid and secondary_diploma_formset_is_valid and university_level_formset_is_valid:
             try:
                 with transaction.atomic():
                     # Création de l'étudiant avec les données du formulaire
@@ -1175,20 +1376,6 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                             date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d').date()
                         except (ValueError, TypeError):
                             date_naissance = None
-
-                    school = cleaned_data.get('bac_etablissement_existant')
-                    if not school:
-                        school_name = (cleaned_data.get('bac_etablissement') or '').strip()
-                        if school_name:
-                            school = School.objects.filter(
-                                name__iexact=school_name,
-                                level='secondary',
-                            ).first()
-                            if not school:
-                                school = School.objects.create(
-                                    name=school_name,
-                                    level='secondary',
-                                )
 
                     # Création des métadonnées de l'étudiant
                     student_metadata = StudentMetaData.objects.create(
@@ -1209,13 +1396,10 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                         residence_city=cleaned_data.get('ville_residence', ''),
                         residence_quarter=cleaned_data.get('quartier_residence', ''),
                         is_complete=cleaned_data.get('is_complete', False),
-                        # Ajout des fichiers d'inscription
-                        acte_naissance=request.FILES.get('acte_naissance'),
-                        certificat_nationalite=request.FILES.get('certificat_nationalite'),
-                        preuve_baccalaureat=request.FILES.get('preuve_baccalaureat'),
-                        releve_notes_last_class=request.FILES.get('releve_notes_last_class'),
-                        justificatif_dernier_diplome=request.FILES.get('justificatif_dernier_diplome'),
-                        bulletins_terminale=request.FILES.get('bulletins_terminale'),
+                        **{
+                            field_name: request.FILES.get(field_name)
+                            for field_name in PROGRAM_DOCUMENT_FIELD_NAMES
+                        },
                     )
 
                     # Réutilisation d'un parrain existant ou création manuelle si nécessaire
@@ -1249,7 +1433,6 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                         program=cleaned_data.get('programme'),
                         metadata=student_metadata,
                         godfather=godfather,
-                        school=school,
                         specialite_souhaitee_1=(
                             cleaned_data['specialite_souhaitee_1'].name
                             if cleaned_data.get('specialite_souhaitee_1') else ''
@@ -1274,6 +1457,14 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                             is_active=True
                         )
 
+                    secondary_diplomas = self._save_secondary_diplomas(student, secondary_diploma_formset)
+                    self._save_university_levels(student, university_level_formset)
+
+                    student_school = self._resolve_student_school(secondary_diplomas)
+                    if student_school:
+                        student.school = student_school
+                        student.save(update_fields=['school'])
+
                     _queue_student_status_email(student, 'pre_inscription')
 
                 # Redirection vers la page de succès
@@ -1286,9 +1477,12 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                 messages.error(request, f'Erreur lors de la création de l\'inscription: {str(e)}')
 
         # Si le formulaire n'est pas valide, on le renvoie avec les erreurs
-        print(form.errors)  # Debug des erreurs de formulaire
-        context = self.get_context_data()
-        context['form'] = form
+        messages.error(request, 'Veuillez corriger les erreurs du formulaire avant de continuer.')
+        context = self.get_context_data(
+            form=form,
+            secondary_diploma_formset=secondary_diploma_formset,
+            university_level_formset=university_level_formset,
+        )
         return self.render_to_response(context)
 
 
@@ -1325,9 +1519,11 @@ def etudiant_detail(request, pk):
             'program',
             'godfather'
         ).prefetch_related(
+            'secondary_diplomas__school',
             'student_levels__level',
             'student_levels__academic_year',
-            'student_levels__official_documents'
+            'student_levels__official_documents',
+            'university_levels__university',
         ),
         pk=pk
     )
@@ -1358,6 +1554,31 @@ def etudiant_detail(request, pk):
     }
 
     return render(request, 'main/etudiant_detail.html', context)
+
+
+@login_required
+def registration_certificate_download(request, pk):
+    """Génère à la demande le PDF d'un certificat d'inscription."""
+    document = get_object_or_404(
+        OfficialDocument.objects.select_related(
+            'student_level__student__program',
+            'student_level__level',
+            'student_level__academic_year',
+        ),
+        pk=pk,
+        type=OfficialDocument.TYPE_REGISTRATION_CERTIFICATE,
+    )
+
+    pdf_content = build_registration_certificate_pdf(document)
+    filename_reference = re.sub(
+        r'[^A-Za-z0-9_-]+',
+        '_',
+        document.reference or f'certificat_inscription_{document.student_level.student.matricule}',
+    ).strip('_')
+
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="certificat_inscription_{filename_reference}.pdf"'
+    return response
 
 
 @login_required
@@ -1424,45 +1645,84 @@ def _get_student_level_for_edit(student):
 
 def _render_student_edit(request, student, detail_route_name, page_title, success_message, back_link_label):
     """Rendu commun des formulaires d'édition étudiant / pré-inscription."""
+    documents_mode = 'admin_only_optional'
+    documents_force_optional = documents_mode == 'admin_only_optional'
+
     if not student.metadata:
         student.metadata = StudentMetaData.objects.create(original_country='Cameroun')
         student.save()
 
     student_level = _get_student_level_for_edit(student)
+    selected_program = student.program
+    secondary_diploma_formset = _build_secondary_diploma_formset_for_student(student)
+    university_level_formset = _build_university_level_formset_for_student(student)
 
     if request.method == 'POST':
         student_form = StudentEditForm(request.POST, request.FILES, instance=student)
         metadata_form = StudentMetaDataEditForm(request.POST, request.FILES, instance=student.metadata)
         student_level_form = StudentLevelForm(request.POST, instance=student_level, student=student)
+        secondary_diploma_formset = _build_secondary_diploma_formset_for_student(student, request.POST)
+        university_level_formset = _build_university_level_formset_for_student(student, request.POST)
+        selected_program = _get_program_from_value(request.POST.get('program')) or student.program
 
-        if student_form.is_valid() and metadata_form.is_valid() and student_level_form.is_valid():
-            with transaction.atomic():
-                student_form.save()
-                metadata_form.save()
+        student_form_is_valid = student_form.is_valid()
+        metadata_form_is_valid = metadata_form.is_valid()
+        student_level_form_is_valid = student_level_form.is_valid()
+        secondary_diploma_formset_is_valid = secondary_diploma_formset.is_valid()
+        university_level_formset_is_valid = university_level_formset.is_valid()
 
-                saved_student_level = student_level_form.save(commit=False)
-                saved_student_level.student = student
-                saved_student_level.is_active = True
-                saved_student_level.save()
-                levels_to_deactivate = list(
-                    student.student_levels.exclude(pk=saved_student_level.pk).filter(is_active=True).values_list('pk', flat=True)
-                )
-                if levels_to_deactivate:
-                    student.student_levels.filter(pk__in=levels_to_deactivate).update(is_active=False)
-                    log_audit_event(
-                        category='business',
-                        action='bulk_update',
-                        instance=student,
-                        context={
-                            'operation': 'deactivate_previous_student_levels',
-                            'deactivated_student_level_ids': levels_to_deactivate,
-                            'active_student_level_id': saved_student_level.pk,
-                        },
-                        message="Désactivation des anciens niveaux actifs de l'étudiant.",
+        if (
+            student_form_is_valid
+            and metadata_form_is_valid
+            and student_level_form_is_valid
+            and secondary_diploma_formset_is_valid
+            and university_level_formset_is_valid
+        ):
+            selected_program = student_form.cleaned_data.get('program') or selected_program
+
+            if _validate_metadata_program_documents(
+                metadata_form,
+                selected_program,
+                force_optional=documents_force_optional,
+            ):
+                with transaction.atomic():
+                    student_form.save()
+                    metadata_form.save()
+
+                    saved_student_level = student_level_form.save(commit=False)
+                    saved_student_level.student = student
+                    saved_student_level.is_active = True
+                    saved_student_level.save()
+                    levels_to_deactivate = list(
+                        student.student_levels.exclude(pk=saved_student_level.pk).filter(is_active=True).values_list('pk', flat=True)
                     )
+                    if levels_to_deactivate:
+                        student.student_levels.filter(pk__in=levels_to_deactivate).update(is_active=False)
+                        log_audit_event(
+                            category='business',
+                            action='bulk_update',
+                            instance=student,
+                            context={
+                                'operation': 'deactivate_previous_student_levels',
+                                'deactivated_student_level_ids': levels_to_deactivate,
+                                'active_student_level_id': saved_student_level.pk,
+                            },
+                            message="Désactivation des anciens niveaux actifs de l'étudiant.",
+                        )
 
-            messages.success(request, success_message)
-            return redirect(detail_route_name, pk=student.matricule)
+                    SecondaryDiploma.objects.filter(student=student).delete()
+                    UniversityLevel.objects.filter(student=student).delete()
+
+                    secondary_diplomas = _save_secondary_diplomas(student, secondary_diploma_formset)
+                    _save_university_levels(student, university_level_formset)
+
+                    student_school = _resolve_student_school(secondary_diplomas)
+                    if student_school and student.school_id != student_school.pk:
+                        student.school = student_school
+                        student.save(update_fields=['school'])
+
+                messages.success(request, success_message)
+                return redirect(detail_route_name, pk=student.matricule)
 
         messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
     else:
@@ -1475,9 +1735,17 @@ def _render_student_edit(request, student, detail_route_name, page_title, succes
         'student_form': student_form,
         'metadata_form': metadata_form,
         'student_level_form': student_level_form,
+        'secondary_diploma_formset': secondary_diploma_formset,
+        'university_level_formset': university_level_formset,
         'page_title': page_title,
         'back_url': reverse(detail_route_name, kwargs={'pk': student.matricule}),
         'back_link_label': back_link_label,
+        'documents_mode': documents_mode,
+        'document_entries': _build_metadata_form_document_entries(
+            metadata_form,
+            selected_program,
+            force_optional=documents_force_optional,
+        ),
     }
 
     return render(request, 'main/etudiant_edit.html', context)
@@ -1723,15 +1991,24 @@ def pre_inscription_detail(request, pk):
             'program',
             'godfather'
         ).prefetch_related(
+            'secondary_diplomas__school',
             'student_levels__level',
-            'student_levels__academic_year'
+            'student_levels__academic_year',
+            'university_levels__university',
         ),
         pk=pk
     )
 
+    # _send_student_status_email(student, "pre_inscription")
+
     context = {
         'student': student,
-        'page_title': f'Pré-Inscription - {student.firstname} {student.lastname}'
+        'page_title': f'Pré-Inscription - {student.firstname} {student.lastname}',
+        'document_entries': build_program_document_entries(
+            program=student.program,
+            metadata=student.metadata,
+            fallback_visible_fields=DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS,
+        ),
     }
 
     return render(request, 'main/inscription_detail.html', context)
@@ -1747,8 +2024,10 @@ def pre_inscription_print_pdf(request, pk):
             'program',
             'godfather'
         ).prefetch_related(
+            'secondary_diplomas__school',
             'student_levels__level',
-            'student_levels__academic_year'
+            'student_levels__academic_year',
+            'university_levels__university',
         ),
         pk=pk
     )
@@ -1770,8 +2049,10 @@ def pre_inscriptions_print_pdf(request):
             'program',
             'godfather'
         ).prefetch_related(
+            'secondary_diplomas__school',
             'student_levels__level',
-            'student_levels__academic_year'
+            'student_levels__academic_year',
+            'university_levels__university',
         )
     )
 
@@ -1817,6 +2098,44 @@ def pre_inscription_approve(request, pk):
 
 
 @login_required
+def pre_inscription_mark_complete(request, pk):
+    """Marque le dossier d'une pré-inscription comme complet."""
+    if request.method != 'POST':
+        return redirect('main:inscriptions')
+
+    student = get_object_or_404(Student.objects.select_related('metadata'), pk=pk)
+
+    if not student.metadata_id:
+        messages.error(request, "Aucune métadonnée n'est associée à cette pré-inscription.")
+        return redirect('main:inscription_detail', pk=pk)
+
+    if student.metadata.is_complete:
+        messages.info(request, 'Ce dossier est déjà marqué comme complet.')
+        return redirect('main:inscription_detail', pk=pk)
+
+    student.metadata.is_complete = True
+    student.metadata.save(update_fields=['is_complete'])
+
+    log_audit_event(
+        category='business',
+        action='update',
+        actor=request.user,
+        instance=student,
+        changes={
+            'is_complete': {'from': False, 'to': True},
+        },
+        context={
+            'operation': 'mark_pre_inscription_complete',
+            'metadata_id': student.metadata_id,
+        },
+        message="Le dossier de pré-inscription a été marqué comme complet.",
+    )
+
+    messages.success(request, f'Le dossier de {student.firstname} {student.lastname} a été marqué comme complet.')
+    return redirect('main:inscription_detail', pk=pk)
+
+
+@login_required
 def pre_inscription_reject(request, pk):
     """
     Vue pour rejeter une pré-inscription
@@ -1854,6 +2173,10 @@ def pre_inscription_register(request, pk):
         with transaction.atomic():
             dossier_number, final_matricule = _generate_final_registration_identifiers(student)
             registered_student = _replace_student_primary_key(student, final_matricule, dossier_number)
+            student_level = registered_student.get_active_level()
+            if student_level:
+                student_level.mark_as_registered()
+            _ensure_registration_certificate(registered_student)
             _queue_student_status_email(registered_student, 'registration')
     except ValidationError as exc:
         messages.error(request, exc.messages[0] if exc.messages else str(exc))
@@ -1871,18 +2194,25 @@ def get_specialities_by_program(request):
     Vue AJAX pour récupérer les spécialités d'un programme donné
     """
     program_id = request.GET.get('program_id')
-
-    if not program_id:
-        return JsonResponse({'specialities': []})
+    documents_mode = request.GET.get('documents_mode')
 
     try:
+        program = _get_program_from_value(program_id)
         # Récupérer les spécialités du programme
-        specialities = Speciality.objects.filter(program_id=program_id).values('id', 'name')
+        specialities = Speciality.objects.filter(program_id=program_id).values('id', 'name') if program_id else []
         specialities_list = list(specialities)
+        document_payload_kwargs = {}
+
+        if documents_mode == 'admin_only_optional':
+            document_payload_kwargs = {
+                'fallback_visible_fields': None,
+                'force_optional': True,
+            }
 
         return JsonResponse({
             'success': True,
-            'specialities': specialities_list
+            'specialities': specialities_list,
+            'documents': build_program_document_payload(program=program, **document_payload_kwargs),
         })
     except Exception as e:
         return JsonResponse({

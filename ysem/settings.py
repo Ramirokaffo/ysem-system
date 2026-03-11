@@ -13,34 +13,73 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
+import ssl
+import stat
+import subprocess
+import sys
 import environ
+from decouple import config
+
+
+PREMAILER_OPTIONS = dict(base_url='http://example.com',
+                         remove_classes=False)
+
+STAT_0o775 = ( stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+             | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
+             | stat.S_IROTH |                stat.S_IXOTH )
+
+
+def main():
+    openssl_dir, openssl_cafile = os.path.split(
+        ssl.get_default_verify_paths().openssl_cafile)
+
+    print(" -- pip install --upgrade certifi")
+    subprocess.check_call([sys.executable,
+        "-E", "-s", "-m", "pip", "install", "--upgrade", "certifi"])
+
+    import certifi
+
+    # change working directory to the default SSL directory
+    os.chdir(openssl_dir)
+    relpath_to_certifi_cafile = os.path.relpath(certifi.where())
+    print(" -- removing any existing file or link")
+    try:
+        os.remove(openssl_cafile)
+    except FileNotFoundError:
+        pass
+    print(" -- creating symlink to certifi certificate bundle")
+    os.symlink(relpath_to_certifi_cafile, openssl_cafile)
+    print(" -- setting permissions")
+    os.chmod(openssl_cafile, STAT_0o775)
+    print(" -- update complete")
+
+
+# main()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOGS_DIR = BASE_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
-env = environ.Env()
-environ.Env.read_env(env_file=str(BASE_DIR / ".env"))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG")
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
-CSRF_ALLOWED_ORIGINS = env.list('CSRF_ALLOWED_ORIGINS')
-CORS_ORIGINS_WHITELIST = env.list('CORS_ORIGINS_WHITELIST')
-CLAMD_ENABLED = env.bool("CLAMD_ENABLED")
+DEBUG = config("DEBUG", default=True, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[''], cast=lambda v: [s.strip() for s in v.split(',')])
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default=[], cast=lambda v: [s.strip() for s in v.split(',')])
+CSRF_ALLOWED_ORIGINS = config('CSRF_ALLOWED_ORIGINS', default=[], cast=lambda v: [s.strip() for s in v.split(',')])
+CORS_ORIGINS_WHITELIST = config('CORS_ORIGINS_WHITELIST', default=[], cast=lambda v: [s.strip() for s in v.split(',')])
+
+CLAMD_ENABLED = config("CLAMD_ENABLED")
 
 
-RECAPTCHA_PUBLIC_KEY = env("RECAPTCHA_PUBLIC_KEY")
-RECAPTCHA_PRIVATE_KEY = env("RECAPTCHA_PRIVATE_KEY")
+RECAPTCHA_PUBLIC_KEY = config("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = config("RECAPTCHA_PRIVATE_KEY")
 
 
 RECAPTCHA_REQUIRED_SCORE = 0.85  # Score élevé pour reCAPTCHA v3 (si utilisé)
@@ -111,6 +150,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "main.context_processors.institution_branding",
                 "academic.context_processors.active_academic_year",
                 "prospection.context_processors.prospection_context",
             ],
@@ -124,12 +164,21 @@ WSGI_APPLICATION = "ysem.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DB_NAME = env("DB_NAME")
-DB_USER = env("DB_USER")
-DB_PASSWORD = env("DB_PASSWORD")
-DB_HOST = env("DB_HOST")
-DB_PORT = env("DB_PORT")
-USE_SQLITE3 = env.bool("USE_SQLITE3")
+DB_NAME = config("DB_NAME")
+DB_USER = config("DB_USER")
+DB_PASSWORD = config("DB_PASSWORD")
+DB_HOST = config("DB_HOST")
+DB_PORT = config("DB_PORT")
+USE_SQLITE3 = config("USE_SQLITE3", cast=bool)
+
+
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='contact@esnrating.com')
 
 DATABASES = {}
 if USE_SQLITE3:
@@ -210,6 +259,8 @@ AUTH_USER_MODEL = 'accounts.BaseUser'
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
+
+
 
 # Configuration Django REST Framework
 REST_FRAMEWORK = {

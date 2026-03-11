@@ -1,11 +1,17 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
+from django.forms import formset_factory
 from students.models import Student, StudentMetaData, OfficialDocument, StudentLevel, PaymentStatus
 from accounts.models import BaseUser, Godfather
 from academic.models import Speciality, Program, Level, AcademicYear
-from schools.models import School
+from academic.document_requirements import (
+    PROGRAM_DOCUMENT_FIELD_NAMES,
+    PROGRAM_DOCUMENTS_BY_FIELD,
+)
+from schools.models import School, SecondaryDiploma, UniversityLevel
 from .models import SystemSettings
+from .program_documents import build_program_document_entries
 
 
 def validate_file_size(value):
@@ -52,6 +58,201 @@ class SchoolChoiceField(forms.ModelChoiceField):
         if obj.phone_number:
             parts.append(obj.phone_number)
         return " - ".join(parts)
+
+
+RELATIONSHIP_CHOICES = [
+    ('', 'Sélectionner un lien de parenté'),
+    ('pere', 'Père'),
+    ('mere', 'Mère'),
+    ('frere', 'Frère'),
+    ('soeur', 'Sœur'),
+    ('oncle', 'Oncle'),
+    ('tante', 'Tante'),
+    ('cousin', 'Cousin'),
+    ('cousine', 'Cousine'),
+    ('tuteur', 'Tuteur'),
+    ('tutrice', 'Tutrice'),
+    ('grand_parent', 'Grand-parent'),
+    ('autre', 'Autre'),
+]
+
+SECONDARY_DIPLOMA_CHOICES = [
+    ('', 'Sélectionner un diplôme'),
+    ('BEPC', 'BEPC'),
+    ('CAP', 'CAP'),
+    ('Probatoire', 'Probatoire'),
+    ('Baccalauréat', 'Baccalauréat'),
+    ('GCE O-Level', 'GCE O-Level'),
+    ('GCE A-Level', 'GCE A-Level'),
+    ('BT', 'BT'),
+    ('Autre', 'Autre'),
+]
+
+MENTION_CHOICES = [
+    ('', 'Sélectionner une mention'),
+    ('Passable', 'Passable'),
+    ('Assez bien', 'Assez bien'),
+    ('Bien', 'Bien'),
+    ('Très bien', 'Très bien'),
+    ('Excellent', 'Excellent'),
+]
+
+UNIVERSITY_LEVEL_CHOICES = [
+    ('', 'Sélectionner un niveau'),
+    ('Niveau 1', 'Niveau 1'),
+    ('Niveau 2', 'Niveau 2'),
+    ('Niveau 3', 'Niveau 3'),
+    ('Niveau 4', 'Niveau 4'),
+    ('Niveau 5', 'Niveau 5'),
+    ('Niveau 6', 'Niveau 6'),
+    ('Niveau 7', 'Niveau 7'),
+    ('Niveau 8', 'Niveau 8'),
+]
+
+UNIVERSITY_DIPLOMA_CHOICES = [
+    ('', 'Sélectionner un diplôme obtenu'),
+    ('BTS', 'BTS'),
+    ('HND', 'HND'),
+    ('DUT', 'DUT'),
+    ('Licence', 'Licence'),
+    ('Licence professionnelle', 'Licence professionnelle'),
+    ('Master', 'Master'),
+    ('Doctorat', 'Doctorat'),
+    ('Certification', 'Certification'),
+    ('Autres', 'Autres'),
+]
+
+
+class SecondaryDiplomaForm(forms.ModelForm):
+    """Bloc duplicable pour les diplômes du secondaire."""
+
+    name = forms.ChoiceField(
+        choices=SECONDARY_DIPLOMA_CHOICES,
+        label='Diplôme',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
+    mention = forms.ChoiceField(
+        choices=MENTION_CHOICES,
+        label='Mention',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
+    )
+
+    school_existant = SchoolChoiceField(
+        queryset=School.objects.none(),
+        label="Établissement existant",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Saisir manuellement un établissement",
+        required=False,
+    )
+    school_name = forms.CharField(
+        max_length=200,
+        label="Ou saisir un autre établissement",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nom de l\'établissement',
+        }),
+        required=False,
+    )
+
+    class Meta:
+        model = SecondaryDiploma
+        fields = ['name', 'serie', 'obtained_year', 'mention']
+        widgets = {
+            'serie': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: C, D, F2',
+            }),
+            'obtained_year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '2023',
+            }),
+        }
+        labels = {
+            'name': 'Diplôme',
+            'serie': 'Série / spécialité',
+            'obtained_year': "Année d'obtention",
+            'mention': 'Mention',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['school_existant'].queryset = School.objects.filter(level='secondary').order_by('name', 'phone_number')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        school_existant = cleaned_data.get('school_existant')
+        school_name = (cleaned_data.get('school_name') or '').strip()
+        cleaned_data['school_name'] = school_existant.name if school_existant else school_name
+        return cleaned_data
+
+
+class UniversityLevelForm(forms.ModelForm):
+    """Bloc duplicable pour le cursus universitaire."""
+
+    level_name = forms.ChoiceField(
+        choices=UNIVERSITY_LEVEL_CHOICES,
+        label='Niveau',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+    )
+    diploma_name = forms.ChoiceField(
+        choices=UNIVERSITY_DIPLOMA_CHOICES,
+        label='Diplôme obtenu',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
+    )
+
+    university_existant = SchoolChoiceField(
+        queryset=School.objects.none(),
+        label="Université existante",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Saisir manuellement une université",
+        required=False,
+    )
+    university_name = forms.CharField(
+        max_length=200,
+        label="Ou saisir une autre université",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nom de l\'université',
+        }),
+        required=False,
+    )
+
+    class Meta:
+        model = UniversityLevel
+        fields = ['level_name', 'diploma_name', 'speciality', 'academic_year']
+        widgets = {
+            'speciality': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Spécialité',
+            }),
+            'academic_year': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: 2022/2023',
+            }),
+        }
+        labels = {
+            'level_name': 'Niveau',
+            'diploma_name': 'Diplôme obtenu',
+            'speciality': 'Spécialité',
+            'academic_year': 'Année académique',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['university_existant'].queryset = School.objects.filter(level='higher').order_by('name', 'phone_number')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        university_existant = cleaned_data.get('university_existant')
+        university_name = (cleaned_data.get('university_name') or '').strip()
+        cleaned_data['university_name'] = university_existant.name if university_existant else university_name
+        return cleaned_data
+
+
+SecondaryDiplomaFormSet = formset_factory(SecondaryDiplomaForm, extra=0, can_delete=True)
+UniversityLevelFormSet = formset_factory(UniversityLevelForm, extra=0, can_delete=True)
 
 
 # Le formulaire InscriptionEtape1Form a été supprimé car il n'est plus nécessaire
@@ -424,105 +625,10 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
-    lien_parente_urgence = forms.CharField(
-        max_length=100,
+    lien_parente_urgence = forms.ChoiceField(
+        choices=RELATIONSHIP_CHOICES,
         label="Lien de parenté",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Relation avec l\'étudiant'
-        }),
-        required=False
-    )
-
-    # === SECTION 3: CURSUS SCOLAIRE ET UNIVERSITAIRE (ex-étape 4) ===
-    # Cursus scolaire
-    bepc_cap_serie = forms.CharField(
-        max_length=50,
-        label="BEPC / CAP - Série",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Série'
-        }),
-        required=False
-    )
-
-    bepc_cap_annee = forms.IntegerField(
-        label="BEPC / CAP - Année d'obtention",
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': '2020'
-        }),
-        required=False
-    )
-
-    bepc_cap_mention = forms.CharField(
-        max_length=50,
-        label="BEPC / CAP - Mention",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Mention'
-        }),
-        required=False
-    )
-
-    # Baccalauréat
-    bac_serie = forms.CharField(
-        max_length=50,
-        label="Baccalauréat - Série",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Série'
-        }),
-        required=False
-    )
-
-    bac_annee = forms.IntegerField(
-        label="Baccalauréat - Année d'obtention",
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': '2023'
-        }),
-        required=False
-    )
-
-    bac_mention = forms.CharField(
-        max_length=50,
-        label="Baccalauréat - Mention",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Mention'
-        }),
-        required=False
-    )
-
-    bac_etablissement_existant = SchoolChoiceField(
-        queryset=School.objects.none(),
-        label="Établissement existant",
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Saisir manuellement un établissement",
-        help_text="Choisissez un établissement déjà enregistré ou laissez vide pour une saisie manuelle.",
-        required=False
-    )
-
-    bac_etablissement = forms.CharField(
-        max_length=200,
-        label="Établissement d'obtention du Baccalauréat",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Nom de l\'établissement'
-        }),
-        required=False
-    )
-
-    # Études supérieures
-    etudes_superieures = forms.CharField(
-        max_length=500,
-        label="Études supérieures antérieures",
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 3,
-            'placeholder': 'Détaillez vos études supérieures précédentes'
-        }),
         required=False
     )
 
@@ -570,19 +676,34 @@ class InscriptionCompleteForm(forms.Form):
         self.fields['niveau'].queryset = Level.objects.all().order_by('name')
         self.fields['programme'].queryset = Program.objects.all().order_by('name')
         self.fields['parrain_existant'].queryset = Godfather.objects.all().order_by('full_name', 'phone_number', 'email')
-        self.fields['bac_etablissement_existant'].queryset = School.objects.filter(level='secondary').order_by('name', 'phone_number')
+
+        for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
+            if field_name not in self.fields:
+                continue
+
+            document_definition = PROGRAM_DOCUMENTS_BY_FIELD[field_name]
+            self.fields[field_name].label = document_definition['label']
+            self.fields[field_name].help_text = document_definition['help_text']
 
         # Si un programme est fourni dans les données initiales ou POST
-        program_id = None
+        selected_program = None
+        program_value = None
         if self.data:
-            program_id = self.data.get('programme')
+            program_value = self.data.get('programme')
         elif self.initial:
-            program_id = self.initial.get('programme')
+            program_value = self.initial.get('programme')
+
+        if isinstance(program_value, Program):
+            selected_program = program_value
+            program_id = program_value.pk
+        else:
+            program_id = program_value
 
         if program_id:
             try:
                 # Convertir en entier et filtrer les spécialités par programme
                 program_id = int(program_id)
+                selected_program = Program.objects.filter(pk=program_id).first()
                 specialities = Speciality.objects.filter(program_id=program_id).order_by('name')
                 for index, field_name in enumerate([
                     'specialite_souhaitee_1',
@@ -623,6 +744,16 @@ class InscriptionCompleteForm(forms.Form):
                 'Les originaux de ces documents seront demandés après l\'inscription'
             ]
         }
+        self.program_document_entries = [
+            {
+                **document_entry,
+                'field': self[document_entry['field_name']],
+            }
+            for document_entry in build_program_document_entries(
+                program=selected_program,
+                force_optional=True,
+            )
+        ]
 
     # === SECTION 4: DOCUMENTS REQUIS ===
     # Documents obligatoires
@@ -681,6 +812,17 @@ class InscriptionCompleteForm(forms.Form):
         required=False
     )
 
+    decharge_equivalence = forms.FileField(
+        label="Décharge de la demande d'équivalence",
+        validators=[validate_document_file],
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.png,.jpg,.jpeg,.pdf'
+        }),
+        help_text="Photocopie de la décharge de la demande d'équivalence. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo.",
+        required=False
+    )
+
     bulletins_terminale = forms.FileField(
         label="Photocopie des bulletins de la classe de terminale",
         validators=[validate_document_file],
@@ -689,6 +831,28 @@ class InscriptionCompleteForm(forms.Form):
             'accept': '.png,.jpg,.jpeg,.pdf'
         }),
         help_text="Photocopie des bulletins de notes de la classe de terminale. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo. Document lisible requis.",
+        required=False
+    )
+
+    releve_notes_master1 = forms.FileField(
+        label="Relevé de notes du Master 1",
+        validators=[validate_document_file],
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.png,.jpg,.jpeg,.pdf'
+        }),
+        help_text="Relevé de notes du Master 1. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo.",
+        required=False
+    )
+
+    photocopie_bts_hnd = forms.FileField(
+        label="Photocopie du BTS ou HND",
+        validators=[validate_document_file],
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': '.png,.jpg,.jpeg,.pdf'
+        }),
+        help_text="Photocopie du BTS, HND ou diplôme équivalent. Formats acceptés : PNG, JPG, PDF. Taille max : 5 Mo.",
         required=False
     )
 
@@ -722,12 +886,6 @@ class InscriptionCompleteForm(forms.Form):
     def clean(self):
         """Validation personnalisée du formulaire"""
         cleaned_data = super().clean()
-        bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
-        if bac_etablissement_existant:
-            cleaned_data['bac_etablissement'] = bac_etablissement_existant.name
-        else:
-            cleaned_data['bac_etablissement'] = (cleaned_data.get('bac_etablissement') or '').strip()
-        
         programme = cleaned_data.get('programme')
         selected_specialities = []
 
@@ -753,7 +911,7 @@ class InscriptionCompleteForm(forms.Form):
                 continue
 
             selected_specialities.append(specialite.pk)
-        
+
         return cleaned_data
 
 
@@ -1777,6 +1935,27 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'class': 'form-check-input'
         })
     )
+    remove_decharge_equivalence = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_releve_notes_master1 = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    remove_photocopie_bts_hnd = forms.BooleanField(
+        required=False,
+        label='Supprimer le document actuel',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
 
     removable_file_fields = [
         'preuve_baccalaureat',
@@ -1784,7 +1963,10 @@ class StudentMetaDataEditForm(forms.ModelForm):
         'certificat_nationalite',
         'releve_notes_last_class',
         'justificatif_dernier_diplome',
+        'decharge_equivalence',
         'bulletins_terminale',
+        'releve_notes_master1',
+        'photocopie_bts_hnd',
     ]
 
     class Meta:
@@ -1797,7 +1979,8 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'original_region', 'original_department', 'original_district',
             'residence_city', 'residence_quarter', 'is_complete',
             'preuve_baccalaureat', 'acte_naissance', 'certificat_nationalite', 'releve_notes_last_class',
-            'justificatif_dernier_diplome', 'bulletins_terminale'
+            'justificatif_dernier_diplome', 'decharge_equivalence', 'bulletins_terminale',
+            'releve_notes_master1', 'photocopie_bts_hnd'
         ]
         widgets = {
             'mother_full_name': forms.TextInput(attrs={
@@ -1887,7 +2070,19 @@ class StudentMetaDataEditForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': '.png,.jpg,.jpeg,.pdf'
             }),
+            'decharge_equivalence': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.png,.jpg,.jpeg,.pdf'
+            }),
             'bulletins_terminale': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.png,.jpg,.jpeg,.pdf'
+            }),
+            'releve_notes_master1': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.png,.jpg,.jpeg,.pdf'
+            }),
+            'photocopie_bts_hnd': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.png,.jpg,.jpeg,.pdf'
             }),
@@ -1915,7 +2110,10 @@ class StudentMetaDataEditForm(forms.ModelForm):
             'certificat_nationalite': 'Certificat de nationalité',
             'releve_notes_last_class': 'Relevé de notes de la dernière classe fréquentée',
             'justificatif_dernier_diplome': 'Justificatif du dernier diplôme obtenu',
+            'decharge_equivalence': 'Décharge de la demande d\'équivalence',
             'bulletins_terminale': 'Bulletins de la classe de terminale',
+            'releve_notes_master1': 'Relevé de notes du Master 1',
+            'photocopie_bts_hnd': 'Photocopie du BTS, HND ou diplôme équivalent',
         }
 
     def __init__(self, *args, **kwargs):
@@ -1924,6 +2122,14 @@ class StudentMetaDataEditForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name != 'original_country':
                 field.required = False
+
+        for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
+            if field_name not in self.fields:
+                continue
+
+            document_definition = PROGRAM_DOCUMENTS_BY_FIELD[field_name]
+            self.fields[field_name].label = document_definition['label']
+            self.fields[field_name].help_text = document_definition['help_text']
 
     def save(self, commit=True):
         previous_files = {}
@@ -2033,11 +2239,30 @@ class OfficialDocumentForm(forms.ModelForm):
         # Rendre la date de retrait optionnelle
         self.fields['withdrawn_date'].required = False
 
+        allowed_type_choices = [
+            choice
+            for choice in OfficialDocument._meta.get_field('type').choices
+            if choice[0] != OfficialDocument.TYPE_REGISTRATION_CERTIFICATE
+        ]
+
         # Si on modifie un document existant, pré-remplir les champs
         if self.instance and self.instance.pk and self.instance.student_level:
             self.fields['student'].initial = self.instance.student_level.student
             self.fields['level'].initial = self.instance.student_level.level
             self.fields['academic_year'].initial = self.instance.student_level.academic_year
+
+            if self.instance.type == OfficialDocument.TYPE_REGISTRATION_CERTIFICATE:
+                allowed_type_choices = [
+                    choice
+                    for choice in OfficialDocument._meta.get_field('type').choices
+                    if choice[0] == OfficialDocument.TYPE_REGISTRATION_CERTIFICATE
+                ]
+                self.fields['type'].disabled = True
+                self.fields['type'].help_text = (
+                    "Le certificat d'inscription est créé automatiquement lors de l'inscription définitive."
+                )
+
+        self.fields['type'].choices = allowed_type_choices
 
         # Personnaliser l'affichage des étudiants
         self.fields['student'].queryset = Student.objects.all().order_by('matricule')
@@ -2057,11 +2282,17 @@ class OfficialDocumentForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        document_type = cleaned_data.get('type') or getattr(self.instance, 'type', None)
         status = cleaned_data.get('status')
         withdrawn_date = cleaned_data.get('withdrawn_date')
         student = cleaned_data.get('student')
         level = cleaned_data.get('level')
         academic_year = cleaned_data.get('academic_year')
+
+        if document_type == OfficialDocument.TYPE_REGISTRATION_CERTIFICATE and not (self.instance and self.instance.pk):
+            raise forms.ValidationError(
+                "Le certificat d'inscription est créé automatiquement lors de l'inscription définitive."
+            )
 
         # Validation : si le statut est 'withdrawn', la date de retrait est obligatoire
         if status == 'withdrawn' and not withdrawn_date:
@@ -2086,12 +2317,13 @@ class OfficialDocumentForm(forms.ModelForm):
             if not self.instance.pk:  # Seulement pour la création, pas la modification
                 existing_doc = OfficialDocument.objects.filter(
                     student_level=student_level,
-                    type=cleaned_data.get('type')
+                    type=document_type
                 ).first()
 
                 if existing_doc:
+                    document_label = dict(OfficialDocument.TYPE_CHOICES).get(document_type, document_type)
                     raise forms.ValidationError(
-                        f"Un document de type '{cleaned_data.get('type')}' existe déjà pour "
+                        f"Un document de type '{document_label}' existe déjà pour "
                         f"{student.firstname} {student.lastname} en {level.name} "
                         f"({academic_year.name})."
                     )
@@ -2230,9 +2462,22 @@ class BulkDocumentCreationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ordonner les choix
+        self.fields['document_type'].choices = [
+            choice
+            for choice in OfficialDocument._meta.get_field('type').choices
+            if choice[0] != OfficialDocument.TYPE_REGISTRATION_CERTIFICATE
+        ]
         self.fields['academic_year'].queryset = AcademicYear.objects.all().order_by('-start_at')
         self.fields['level'].queryset = Level.objects.all().order_by('name')
         self.fields['program'].queryset = Program.objects.all().order_by('name')
+
+    def clean_document_type(self):
+        document_type = self.cleaned_data.get('document_type')
+        if document_type == OfficialDocument.TYPE_REGISTRATION_CERTIFICATE:
+            raise forms.ValidationError(
+                "Le certificat d'inscription est créé automatiquement lors de l'inscription définitive."
+            )
+        return document_type
 
     def get_matching_students(self):
         """Retourne les étudiants qui correspondent aux critères sélectionnés"""
@@ -2337,7 +2582,7 @@ class GeneralSettingsForm(forms.ModelForm):
         model = SystemSettings
         fields = [
             'institution_name', 'institution_code', 'address', 'phone',
-            'email', 'website', 'timezone', 'language'
+            'email', 'website', 'logo', 'timezone', 'language'
         ]
 
         widgets = {
@@ -2347,6 +2592,7 @@ class GeneralSettingsForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control', 'id': 'phone'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'id': 'email'}),
             'website': forms.URLInput(attrs={'class': 'form-control', 'id': 'website'}),
+            'logo': forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'logo', 'accept': 'image/*'}),
             'timezone': forms.Select(attrs={'class': 'form-select', 'id': 'timezone'}, choices=[
                 ('Africa/Douala', 'Africa/Douala (GMT+1)'),
                 ('UTC', 'UTC (GMT+0)'),

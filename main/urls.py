@@ -13,6 +13,7 @@ urlpatterns = [
     path('inscriptions/', views.PreInscriptionsView.as_view(), name='inscriptions'),
     path('inscriptions/imprimer-pdf/', views.pre_inscriptions_print_pdf, name='inscriptions_print_pdf'),
     path('inscription/<str:pk>/', views.pre_inscription_detail, name='inscription_detail'),
+    path('inscription/<str:pk>/marquer-complet/', views.pre_inscription_mark_complete, name='inscription_mark_complete'),
     path('inscription/<str:pk>/imprimer-pdf/', views.pre_inscription_print_pdf, name='inscription_print_pdf'),
     path('inscription/<str:pk>/modifier/', views.pre_inscription_edit, name='inscription_edit'),
     path('inscription/<str:pk>/approuver/', views.pre_inscription_approve, name='inscription_approve'),
@@ -33,6 +34,7 @@ urlpatterns = [
     path('document/<int:pk>/modifier/', views.document_edit, name='document_edit'),
     path('document/<int:pk>/supprimer/', views.document_delete, name='document_delete'),
     path('document/<int:pk>/toggle-status/', views.document_toggle_status, name='document_toggle_status'),
+    path('document/<int:pk>/telecharger-certificat-inscription/', views.registration_certificate_download, name='registration_certificate_download'),
     path('document/creation-masse/', views.document_bulk_create, name='document_bulk_create'),
     path('document/preview-masse/', views.document_bulk_preview, name='document_bulk_preview'),
 
