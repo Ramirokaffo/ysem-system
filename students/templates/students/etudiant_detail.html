@@ -6,6 +6,29 @@
 {% block page_title %}Détails de l'étudiant{% endblock %}
 
 {% block content %}
+
+<!-- Ligne d'entete -->
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                </div>
+                <div>
+                    <span class="badge bg-secondary text-white fs-6 p-2">
+                        {{ student.matricule }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-4 mb-4">
@@ -65,7 +88,7 @@
                             <div class="form-control shadow-inset border-light bg-primary">{% if student.program %}{{ student.program.name }}{% else %}<span class="text-muted">Non défini</span>{% endif %}</div>
                         </div>
                         <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">École</label>
+                            <label class="form-label text-muted font-weight-bold">Dernière école fréquentée</label>
                             <div class="form-control shadow-inset border-light bg-primary">{% if student.school %}{{ student.school.name }}{% else %}<span class="text-muted">Non définie</span>{% endif %}</div>
                         </div>
                         <div class="form-group mb-3">
@@ -114,7 +137,7 @@
             <div class="card-body">
                 <div class="row g-4">
                     <div class="col-md-6">
-                        <h6 class="text-primary mb-3"><span class="fas fa-map-marker-alt mr-2"></span>Informations géographiques</h6>
+                        <h6 class="text-secondary mb-3"><span class="fas fa-map-marker-alt mr-2"></span>Informations géographiques</h6>
                         <div class="form-group mb-3">
                             <label class="form-label text-muted font-weight-bold">Pays d'origine</label>
                             <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.original_country|default:"Non spécifié" }}</div>
@@ -141,7 +164,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-primary mb-3"><span class="fas fa-users mr-2"></span>Informations familiales</h6>
+                        <h6 class="text-secondary mb-3"><span class="fas fa-users mr-2"></span>Informations familiales</h6>
                         <div class="form-group mb-3">
                             <label class="form-label text-muted font-weight-bold">Nom de la mère</label>
                             <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_full_name|default:"Non spécifié" }}</div>
@@ -194,10 +217,41 @@
             </div>
             <div class="card-body">
                 <div class="row g-4">
+
+                    {% if student.program %}
+                    <div class="col-md-4">
+                        <div class="card bg-primary shadow-inset border-light p-3">
+                            <h6 class="text-secondary mb-3"><span class="fas fa-book mr-2"></span>Programme</h6>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Nom</label>
+                                <div class="text-dark">{{ student.program.name }}</div>
+                            </div>
+                            {% if student.program.description %}
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Description</label>
+                                <div class="text-dark">{{ student.program.description }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if student.start_level %}
+                    <div class="col-md-4">
+                        <div class="card bg-primary shadow-inset border-light p-3">
+                            <h6 class="text-secondary mb-3"><span class="fas fa-level-up-alt mr-2"></span>Niveau d'entrée</h6>
+                            <div class="form-group mb-2">
+                                <label class="form-label text-muted font-weight-bold">Nom</label>
+                                <div class="text-dark">{{ student.start_level.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% if student.school %}
                     <div class="col-md-4">
                         <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-school mr-2"></span>École</h6>
+                            <h6 class="text-secondary mb-3"><span class="fas fa-school mr-2"></span>Dernière École fréquentée</h6>
                             <div class="form-group mb-2">
                                 <label class="form-label text-muted font-weight-bold">Nom</label>
                                 <div class="text-dark">{{ student.school.name }}</div>
@@ -223,7 +277,6 @@
                     {% endif %}
 
                     
-
                     {% if student.godfather %}
                     <div class="col-md-4">
                         <div class="card bg-primary shadow-inset border-light p-3">
@@ -250,23 +303,9 @@
                     </div>
                     {% endif %}
 
-                    {% if student.program %}
-                    <div class="col-md-4">
-                        <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-book mr-2"></span>Programme</h6>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Nom</label>
-                                <div class="text-dark">{{ student.program.name }}</div>
-                            </div>
-                            {% if student.program.description %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Description</label>
-                                <div class="text-dark">{{ student.program.description }}</div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
+                    
+
+                    
                 </div>
             </div>
         </div>
@@ -495,14 +534,14 @@
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-3 mb-4">
             <div class="d-flex flex-wrap gap-4">
-                <a href="{% url 'main:etudiants' %}" class="btn btn-outline-secondary shadow-soft">
+                <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary shadow-soft">
                     <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
                 </a>
-                <a href="{% url 'main:etudiant_edit' pk=student.matricule %}" class="btn btn-warning shadow-soft mx-2">
+                <a href="{% url 'students:etudiant_edit' pk=student.matricule %}" class="btn btn-warning shadow-soft mx-2">
                     <span class="fas fa-edit mr-2"></span>Modifier
                 </a>
                 {% if user.is_scholar_admin %}
-                <form method="post" action="{% url 'main:generate_student_external_password' pk=student.matricule %}" style="display: inline;">
+                <form method="post" action="{% url 'students:generate_student_external_password' pk=student.matricule %}" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-info shadow-soft" onclick="return confirm('Êtes-vous sûr de vouloir {% if student.has_external_password %}réinitialiser{% else %}générer{% endif %} le mot de passe externe pour cet étudiant ?')">
                         <span class="fas fa-key mr-2"></span>{% if student.has_external_password %}Réinitialiser{% else %}Générer{% endif %} mot de passe externe

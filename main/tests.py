@@ -1,7 +1,9 @@
 import os
 from io import BytesIO
 from tempfile import TemporaryDirectory
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
+from urllib.parse import parse_qs, urlparse
 
 from django import forms
 from django.core import mail
@@ -9,6 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 from PIL import Image
 from pypdf import PdfReader
 from reportlab.pdfgen import canvas
@@ -20,9 +23,10 @@ from accounts.models import BaseUser, Godfather
 from audit.models import AuditLog
 from main.forms import InscriptionCompleteForm, SecondaryDiplomaForm, UniversityLevelForm
 from main.models import SystemSettings
+from payments.models import Payment, PaymentInstallment
 from prospection.models import Agent
 from schools.models import School, SecondaryDiploma, UniversityLevel
-from students.models import OfficialDocument, PaymentStatus, Student, StudentLevel, StudentMetaData
+from students.models import OfficialDocument, Student, StudentLevel, StudentMetaData
 
 
 def set_program_required_documents(program, required_fields):
@@ -243,6 +247,41 @@ class NouvelleInscriptionViewTests(TestCase):
         self.assertEqual(university_level.level_name, 'Niveau 1')
         self.assertEqual(university_level.diploma_name, 'Licence')
         self.assertEqual(university_level.speciality, 'Informatique')
+
+    def test_post_sets_student_school_from_highest_university_level(self):
+        payload = self._valid_payload()
+        payload.update({
+            'secondary_diplomas-TOTAL_FORMS': '1',
+            'secondary_diplomas-0-name': 'Baccalauréat',
+            'secondary_diplomas-0-serie': 'C',
+            'secondary_diplomas-0-obtained_year': '2023',
+            'secondary_diplomas-0-mention': 'Bien',
+            'secondary_diplomas-0-school_existant': self.existing_school.pk,
+            'secondary_diplomas-0-school_name': '',
+            'university_levels-TOTAL_FORMS': '2',
+            'university_levels-0-level_name': 'Niveau 1',
+            'university_levels-0-diploma_name': 'BTS',
+            'university_levels-0-speciality': 'Gestion',
+            'university_levels-0-academic_year': '2022/2023',
+            'university_levels-0-university_existant': self.existing_university.pk,
+            'university_levels-0-university_name': '',
+        })
+
+        higher_university = School.objects.create(name='Université de Douala', level='higher')
+        payload.update({
+            'university_levels-1-level_name': 'Niveau 5',
+            'university_levels-1-diploma_name': 'Master',
+            'university_levels-1-speciality': 'Informatique',
+            'university_levels-1-academic_year': '2024/2025',
+            'university_levels-1-university_existant': higher_university.pk,
+            'university_levels-1-university_name': '',
+        })
+
+        response = self.client.post(self.url, payload)
+
+        self.assertEqual(response.status_code, 302)
+        student = Student.objects.get()
+        self.assertEqual(student.school, higher_university)
 
     def test_post_creates_and_associates_manual_bac_school(self):
         payload = self._valid_payload()
@@ -991,9 +1030,35 @@ class PreInscriptionRegistrationTests(TestCase):
             academic_year=self.academic_year,
             is_active=True,
         )
-        self.payment_status = PaymentStatus.objects.create(
-            student=self.student,
+        self.first_installment = PaymentInstallment.objects.create(
+            program=self.program,
             academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche 1',
+            order_number=1,
+            amount=50000,
+            due_date=date(2025, 10, 15),
+        )
+        self.second_installment = PaymentInstallment.objects.create(
+            program=self.program,
+            academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche 2',
+            order_number=2,
+            amount=70000,
+            due_date=date(2025, 12, 15),
+        )
+        Payment.objects.create(
+            student=self.student,
+            installment=self.first_installment,
+            academic_year=self.academic_year,
+            category='frais_scolarite',
+            author=self.user,
+            amount_paid=50000,
+            payment_date=timezone.make_aware(datetime.combine(date(2025, 9, 10), datetime.min.time())),
+            receipt_number='REC-REG-001',
+            transaction_id='TX-REG-001',
+            source='cash',
         )
 
         self.detail_url = reverse('main:inscription_detail', kwargs={'pk': self.student.matricule})
@@ -1015,25 +1080,22 @@ class PreInscriptionRegistrationTests(TestCase):
             reverse('main:etudiant_detail', kwargs={'pk': self.expected_matricule}),
             fetch_redirect_response=False,
         )
-        self.assertFalse(Student.objects.filter(pk='INT_APPROVED_001').exists())
+        self.assertFalse(Student.objects.filter(matricule='INT_APPROVED_001').exists())
 
-        registered_student = Student.objects.get(pk=self.expected_matricule)
+        registered_student = Student.objects.get(matricule=self.expected_matricule)
         self.assertEqual(registered_student.status, 'registered')
         self.assertEqual(registered_student.dossier_number, 'L0165')
         self.assertEqual(registered_student.metadata.original_country, 'Cameroun')
 
         student_level = StudentLevel.objects.get(level=self.level, academic_year=self.academic_year)
-        self.assertEqual(student_level.student_id, self.expected_matricule)
-
-        self.payment_status.refresh_from_db()
-        self.assertEqual(self.payment_status.student_id, self.expected_matricule)
+        self.assertEqual(student_level.student.matricule, self.expected_matricule)
 
     def test_registering_approved_pre_inscription_sends_registration_email(self):
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post(self.register_url)
 
         self.assertEqual(response.status_code, 302)
-        registered_student = Student.objects.get(pk=self.expected_matricule)
+        registered_student = Student.objects.get(matricule=self.expected_matricule)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['cecilia@example.com'])
         self.assertIn('confirmation de votre inscription', mail.outbox[0].subject.lower())
@@ -1047,7 +1109,7 @@ class PreInscriptionRegistrationTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        registered_student = Student.objects.get(pk=self.expected_matricule)
+        registered_student = Student.objects.get(matricule=self.expected_matricule)
         student_level = StudentLevel.objects.get(
             student=registered_student,
             level=self.level,
@@ -1060,6 +1122,54 @@ class PreInscriptionRegistrationTests(TestCase):
 
         self.assertEqual(document.reference, 'CI-2025-251301659')
         self.assertEqual(document.status, 'available')
+
+    def test_registering_approved_pre_inscription_redirects_to_payment_when_first_installment_is_not_sold(self):
+        Payment.objects.all().delete()
+
+        response = self.client.post(self.register_url)
+
+        self.assertEqual(response.status_code, 302)
+        parsed_url = urlparse(response.url)
+        self.assertEqual(parsed_url.path, reverse('main:payments:payment_create'))
+
+        query = parse_qs(parsed_url.query)
+        self.assertEqual(query['student'], [self.student.pk])
+        self.assertEqual(query['academic_year'], [str(self.academic_year.pk)])
+        self.assertEqual(query['category'], ['frais_scolarite'])
+        self.assertEqual(query['installment'], [str(self.first_installment.pk)])
+        self.assertEqual(query['registration_flow'], ['1'])
+        self.assertEqual(query['registration_student_id'], [self.student.pk])
+
+    def test_registration_flow_completes_after_first_installment_payment(self):
+        Payment.objects.all().delete()
+
+        first_response = self.client.post(self.register_url)
+        self.assertEqual(first_response.status_code, 302)
+        self.assertEqual(urlparse(first_response.url).path, reverse('main:payments:payment_create'))
+
+        payment_response = self.client.post(reverse('main:payments:payment_create'), {
+            'student_search': f'{self.student.matricule} - {self.student.firstname} {self.student.lastname} - {self.program.name}',
+            'student': self.student.pk,
+            'installment': self.first_installment.pk,
+            'academic_year': self.academic_year.pk,
+            'payment_date': '2025-09-12',
+            'category': 'frais_scolarite',
+            'amount_paid': '50000',
+            'source': 'cash',
+            'receipt_number': 'REC-REG-002',
+            'registration_flow': '1',
+            'registration_student_id': self.student.pk,
+            'registration_academic_year_id': self.academic_year.pk,
+            'registration_installment_id': self.first_installment.pk,
+            'return_url': self.detail_url,
+        })
+
+        self.assertRedirects(
+            payment_response,
+            reverse('main:etudiant_detail', kwargs={'pk': self.expected_matricule}),
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(Student.objects.filter(matricule=self.expected_matricule).exists())
 
 
 class AuditLogIntegrationTests(TestCase):
@@ -1252,7 +1362,27 @@ class PreInscriptionRegistrationAuditTests(TestCase):
             academic_year=self.academic_year,
             is_active=True,
         )
-        PaymentStatus.objects.create(student=self.student, academic_year=self.academic_year)
+        self.first_installment = PaymentInstallment.objects.create(
+            program=self.program,
+            academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche 1',
+            order_number=1,
+            amount=50000,
+            due_date=date(2025, 10, 15),
+        )
+        Payment.objects.create(
+            student=self.student,
+            installment=self.first_installment,
+            academic_year=self.academic_year,
+            category='frais_scolarite',
+            author=self.user,
+            amount_paid=50000,
+            payment_date=timezone.make_aware(datetime.combine(date(2025, 9, 10), datetime.min.time())),
+            receipt_number='REC-REG-AUDIT-001',
+            transaction_id='TX-REG-AUDIT-001',
+            source='cash',
+        )
         self.register_url = reverse('main:inscription_register', kwargs={'pk': self.student.matricule})
 
     def test_registration_flow_creates_business_audit_entry(self):
@@ -1380,6 +1510,11 @@ class PreInscriptionPdfExportTests(TestCase):
         Image.new('RGB', (120, 120), color='white').save(buffer, format='PNG')
         return buffer.getvalue()
 
+    def _set_created_at(self, student, value):
+        aware_datetime = timezone.make_aware(datetime.combine(value, datetime.min.time()))
+        Student.objects.filter(pk=student.pk).update(created_at=aware_datetime)
+        student.refresh_from_db()
+
     def test_inscription_detail_displays_pdf_print_link(self):
         response = self.client.get(self.detail_url)
 
@@ -1457,6 +1592,48 @@ class PreInscriptionPdfExportTests(TestCase):
         self.assertContains(response, '2 pré-inscription(s) trouvée(s)')
         self.assertContains(response, f'name="program" value="{self.program.pk}"')
         self.assertContains(response, 'Vous allez générer un seul PDF combiné')
+
+    def test_inscriptions_list_can_filter_by_date_interval(self):
+        self._set_created_at(self.student, date(2024, 1, 10))
+        self._set_created_at(self.second_student, date(2024, 1, 20))
+        self._set_created_at(self.excluded_student, date(2024, 2, 5))
+
+        response = self.client.get(self.list_url, {
+            'date_from': '2024-01-15',
+            'date_to': '2024-01-31',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="date_from" value="2024-01-15"')
+        self.assertContains(response, 'name="date_to" value="2024-01-31"')
+        self.assertContains(response, '1 pré-inscription(s) trouvée(s)')
+        self.assertContains(response, 'Alice Ngono')
+        self.assertNotContains(response, 'Jean Dupont')
+        self.assertNotContains(response, 'Marc Essono')
+        self.assertContains(response, 'Du : 2024-01-15')
+        self.assertContains(response, 'Au : 2024-01-31')
+
+    def test_batch_pdf_export_can_filter_by_date_interval(self):
+        self._set_created_at(self.student, date(2024, 1, 10))
+        self._set_created_at(self.second_student, date(2024, 1, 20))
+        self._set_created_at(self.excluded_student, date(2024, 2, 5))
+
+        response = self.client.get(self.batch_print_url, {
+            'date_from': '2024-01-15',
+            'date_to': '2024-01-31',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+        reader = PdfReader(BytesIO(response.content))
+        full_text = '\n'.join(page.extract_text() or '' for page in reader.pages)
+        self.assertIn('Alice Ngono', full_text)
+        self.assertIn('PDF002', full_text)
+        self.assertNotIn('Jean Dupont', full_text)
+        self.assertNotIn('PDF001', full_text)
+        self.assertNotIn('Marc Essono', full_text)
+        self.assertNotIn('PDF003', full_text)
 
     def test_batch_pdf_export_returns_only_filtered_preinscriptions(self):
         response = self.client.get(self.batch_print_url, {'program': self.program.pk})
@@ -1887,6 +2064,84 @@ class RegistrationCertificateDownloadTests(TestCase):
         self.assertIn('contact@test-ysem.local', normalized_text)
 
 
+class DocumentWithdrawalRulesTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_document_rules',
+            password='testpass123',
+            role='scholar',
+        )
+        self.client.force_login(self.user)
+
+        today = timezone.localdate()
+        self.academic_year = AcademicYear.objects.create(
+            start_at=date(today.year, 9, 1),
+            end_at=date(today.year + 1, 6, 30),
+            is_active=True,
+        )
+        self.level = Level.objects.create(name='Licence 2', academic_order=2)
+        self.program = Program.objects.create(name='Finance')
+        self.student = Student.objects.create(
+            matricule='DOC-RULE-001',
+            firstname='Mireille',
+            lastname='Abena',
+            gender='F',
+            status='registered',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.student_level = StudentLevel.objects.create(
+            student=self.student,
+            level=self.level,
+            academic_year=self.academic_year,
+            is_active=True,
+            is_registered=True,
+        )
+        self.document = OfficialDocument.objects.create(
+            student_level=self.student_level,
+            type=OfficialDocument.TYPE_REGISTRATION_CERTIFICATE,
+            reference='CI-DOC-RULE-001',
+        )
+        self.installment = PaymentInstallment.objects.create(
+            program=self.program,
+            academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche échue',
+            order_number=1,
+            amount=50000,
+            due_date=today - timezone.timedelta(days=15),
+        )
+        self.toggle_url = reverse('main:document_toggle_status', kwargs={'pk': self.document.pk})
+
+    def test_document_toggle_status_blocks_withdraw_when_due_installments_are_unpaid(self):
+        response = self.client.post(self.toggle_url)
+
+        self.assertRedirects(response, reverse('main:documents'), fetch_redirect_response=False)
+        self.document.refresh_from_db()
+        self.assertEqual(self.document.status, 'available')
+        self.assertIsNone(self.document.withdrawn_date)
+
+    def test_document_toggle_status_allows_withdraw_when_due_installments_are_paid(self):
+        Payment.objects.create(
+            student=self.student,
+            installment=self.installment,
+            academic_year=self.academic_year,
+            category='frais_scolarite',
+            author=self.user,
+            amount_paid=50000,
+            payment_date=timezone.make_aware(datetime.combine(timezone.localdate(), datetime.min.time())),
+            receipt_number='REC-DOC-RULE-001',
+            source='cash',
+        )
+
+        response = self.client.post(self.toggle_url)
+
+        self.assertRedirects(response, reverse('main:documents'), fetch_redirect_response=False)
+        self.document.refresh_from_db()
+        self.assertEqual(self.document.status, 'withdrawn')
+        self.assertEqual(self.document.withdrawn_date, timezone.localdate())
+
+
 class PreInscriptionProfilePhotoTests(TestCase):
     def setUp(self):
         self.temporary_media = TemporaryDirectory()
@@ -1985,3 +2240,168 @@ class PreInscriptionProfilePhotoTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Photo')
         self.assertContains(response, self.student.profile_photo.url)
+
+    def test_preinscription_delete_soft_delete(self):
+        """Test que la suppression d'une pré-inscription marque deleted_at"""
+        # Créer un étudiant avec statut rejected
+        student = Student.objects.create(
+            matricule='TEST-DELETE-001',
+            firstname='Test',
+            lastname='Delete',
+            gender='M',
+            status='rejected'
+        )
+
+        # Vérifier que deleted_at est null
+        self.assertIsNone(student.deleted_at)
+
+        # Supprimer l'étudiant
+        delete_url = reverse('main:inscription_delete', kwargs={'pk': student.matricule})
+        response = self.client.post(delete_url)
+
+        # Vérifier la redirection
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('main:inscriptions'))
+
+        # Vérifier que deleted_at est maintenant défini
+        student.refresh_from_db()
+        self.assertIsNotNone(student.deleted_at)
+
+    def test_preinscription_deleted_not_in_list(self):
+        """Test que les étudiants supprimés n'apparaissent pas dans la liste"""
+        # Créer deux étudiants
+        student1 = Student.objects.create(
+            matricule='TEST-LIST-001',
+            firstname='Test1',
+            lastname='List1',
+            gender='M',
+            status='rejected'
+        )
+        student2 = Student.objects.create(
+            matricule='TEST-LIST-002',
+            firstname='Test2',
+            lastname='List2',
+            gender='M',
+            status='rejected'
+        )
+
+        # Supprimer le premier étudiant
+        from django.utils import timezone
+        student1.deleted_at = timezone.now()
+        student1.save()
+
+        # Vérifier que seul student2 apparaît dans la liste
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, student2.firstname)
+        self.assertNotContains(response, student1.firstname)
+
+
+class PaymentStatusViewTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_payment_status',
+            password='testpass123',
+            role='scholar',
+        )
+        self.client.force_login(self.user)
+
+        today = timezone.localdate()
+        self.academic_year = AcademicYear.objects.create(
+            start_at=date(today.year, 9, 1),
+            end_at=date(today.year + 1, 6, 30),
+            is_active=True,
+        )
+        self.program = Program.objects.create(name='Informatique')
+        self.level = Level.objects.create(name='Licence 1', academic_order=1)
+
+        self.student_up_to_date = Student.objects.create(
+            matricule='PAY-STATUS-001',
+            firstname='Jean',
+            lastname='Dupont',
+            gender='M',
+            status='registered',
+            program=self.program,
+        )
+        self.student_overdue = Student.objects.create(
+            matricule='PAY-STATUS-002',
+            firstname='Alice',
+            lastname='Ngono',
+            gender='F',
+            status='registered',
+            program=self.program,
+        )
+
+        StudentLevel.objects.create(
+            student=self.student_up_to_date,
+            level=self.level,
+            academic_year=self.academic_year,
+            is_active=True,
+            is_registered=True,
+        )
+        StudentLevel.objects.create(
+            student=self.student_overdue,
+            level=self.level,
+            academic_year=self.academic_year,
+            is_active=True,
+            is_registered=True,
+        )
+
+        self.first_installment = PaymentInstallment.objects.create(
+            program=self.program,
+            academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche 1',
+            order_number=1,
+            amount=50000,
+            due_date=today - timezone.timedelta(days=30),
+        )
+        self.second_installment = PaymentInstallment.objects.create(
+            program=self.program,
+            academic_year=self.academic_year,
+            level=self.level,
+            name='Tranche 2',
+            order_number=2,
+            amount=70000,
+            due_date=today + timezone.timedelta(days=30),
+        )
+
+        Payment.objects.create(
+            student=self.student_up_to_date,
+            installment=self.first_installment,
+            academic_year=self.academic_year,
+            category='frais_scolarite',
+            author=self.user,
+            amount_paid=50000,
+            payment_date=timezone.make_aware(datetime.combine(today, datetime.min.time())),
+            receipt_number='REC-STATUS-001',
+            source='cash',
+        )
+
+        self.url = reverse('main:payment_status')
+
+    def test_payment_status_view_uses_dynamic_payment_data(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['selected_academic_year'], self.academic_year)
+        self.assertEqual(response.context['filtered_students_count'], 2)
+        self.assertContains(response, 'Suivi des frais de scolarité')
+        self.assertContains(response, 'Jean Dupont')
+        self.assertContains(response, 'Alice Ngono')
+        self.assertContains(response, 'Ajouter un paiement')
+
+        rows = {row['student'].pk: row for row in response.context['page_obj'].object_list}
+        self.assertEqual(rows[self.student_up_to_date.pk]['total_amount_due'], Decimal('120000.00'))
+        self.assertEqual(rows[self.student_up_to_date.pk]['amount_paid'], Decimal('50000.00'))
+        self.assertEqual(rows[self.student_up_to_date.pk]['remaining_amount'], Decimal('70000.00'))
+        self.assertEqual(rows[self.student_up_to_date.pk]['status'], 'up_to_date')
+        self.assertEqual(rows[self.student_overdue.pk]['status'], 'overdue')
+
+    def test_payment_status_view_can_filter_on_computed_status(self):
+        response = self.client.get(self.url, {'status': 'overdue'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['filtered_students_count'], 1)
+        self.assertContains(response, 'Alice Ngono')
+        self.assertNotContains(response, 'Jean Dupont')

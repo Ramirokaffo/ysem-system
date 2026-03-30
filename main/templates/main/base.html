@@ -21,7 +21,100 @@
 </head>
 
 <body>
-    <!-- Header -->
+
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Toggle Button -->
+        <div class="div-sidebar-toggle-btn">
+            <button class="btn sidebar-toggle-btn" id="sidebarToggleBtn" title="Plier/Déplier la barre latérale">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="sidebar-content">
+            <!-- Logo YSEM -->
+            <div class="sidebar-logo">
+                <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
+            </div>
+
+            <!-- Divider -->
+            <div class="sidebar-divider"></div>
+
+            <!-- Navigation Menu -->
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'main:dashboard' %}">
+                        <i class="fas fa-home"></i>
+                        <span>Accueil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'inscriptions' %}active{% endif %}" href="{% url 'main:inscriptions' %}">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Pré-Inscriptions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'etudiants' %}active{% endif %}" href="{% url 'students:etudiants' %}">
+                        <i class="fas fa-users"></i>
+                        <span>Étudiants</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'main:documents' %}">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Documents</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'payments_list' or request.resolver_match.url_name == 'payment_create' %}active{% endif %}" href="{% url 'payments:payments_list' %}">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Paiements</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'payment_status' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'payments:payment_status' %}">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Statut de paiement</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}" href="{% url 'main:statistiques' %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Statistiques</span>
+                    </a>
+                </li>
+                {% if prospection_active %}
+                <li class="nav-item">
+                    <a class="nav-link {% if 'prospection' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'prospection:dashboard' %}">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Prospection</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parametres' %}active{% endif %}" href="{% url 'main:parametres' %}">
+                        <i class="fas fa-cog"></i>
+                        <span>Paramètres</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-danger logout-btn" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+            <!-- Header -->
     <header class="header card-neumorphic d-flex justify-content-between align-items-center p-3 ml-4 mr-4 mb-2 rounded-top rounded-bottom-0">
         <div class="d-flex align-items-center">
             <!-- Mobile Menu Toggle -->
@@ -67,86 +160,6 @@
             </div>
         </div>
     </header>
-
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <!-- Sidebar Content -->
-        <div class="sidebar-content">
-            <!-- Logo YSEM -->
-            <div class="sidebar-logo">
-                <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
-                <!-- <div class="sidebar-logo-text">YSEM</div> -->
-            </div>
-
-            <!-- Divider -->
-            <div class="sidebar-divider"></div>
-
-            <!-- Navigation Menu -->
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'main:dashboard' %}">
-                        <i class="fas fa-home me-2"></i>
-                        Accueil
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'inscriptions' %}active{% endif %}" href="{% url 'main:inscriptions' %}">
-                        <i class="fas fa-user-plus me-2"></i>
-                        Pré-Inscriptions
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'etudiants' %}active{% endif %}" href="{% url 'main:etudiants' %}">
-                        <i class="fas fa-users me-2"></i>
-                        Étudiants
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'main:documents' %}">
-                        <i class="fas fa-file-alt me-2"></i>
-                        Documents
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if 'payment_status' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'main:payment_status' %}">
-                        <i class="fas fa-credit-card me-2"></i>
-                        Statut de paiement
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'statistiques' %}active{% endif %}" href="{% url 'main:statistiques' %}">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Statistiques
-                    </a>
-                </li>
-                {% if prospection_active %}
-                <li class="nav-item">
-                    <a class="nav-link {% if 'prospection' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'prospection:dashboard' %}">
-                        <i class="fas fa-bullhorn me-2"></i>
-                        Prospection
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'parametres' %}active{% endif %}" href="{% url 'main:parametres' %}">
-                        <i class="fas fa-cog me-2"></i>
-                        Paramètres
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Sidebar Footer -->
-        <div class="sidebar-footer">
-            <button class="btn btn-outline-danger logout-btn" data-toggle="modal" data-target="#logoutModal">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content">
         <!-- Messages -->
         {% include 'components/messages.html' with auto_dismiss=True %}
 
@@ -161,6 +174,40 @@
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
 
     <script>
+        // Sidebar collapse/expand functionality
+        function initSidebarToggle() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const mainContent = document.querySelector('.main-content');
+            const header = document.querySelector('.header');
+
+            // Restore sidebar state from localStorage
+            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                updateToggleIcon();
+            }
+
+            // Toggle sidebar on button click
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                updateToggleIcon();
+            });
+
+            function updateToggleIcon() {
+                const icon = toggleBtn.querySelector('i');
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-left');
+                }
+            }
+        }
+
         // Update current date
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
@@ -173,6 +220,9 @@
                     day: 'numeric'
                 });
             }
+
+            // Initialize sidebar toggle
+            initSidebarToggle();
         });
 
         // Mobile Sidebar Toggle

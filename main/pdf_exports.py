@@ -1,8 +1,10 @@
 from io import BytesIO
 import os
+from urllib import request
 from xml.sax.saxutils import escape
 
 from django.utils import timezone
+from django.conf import settings as django_settings
 from PIL import Image, UnidentifiedImageError
 from pypdf import PdfReader, PdfWriter
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
@@ -199,7 +201,7 @@ def _build_summary_pdf(student, annex_entries):
         ('Email', student.email),
         ('Langue', getattr(student, 'get_lang_display', lambda: 'Non renseigné')()),
         ('Statut', student.get_status_display()),
-        ('Date d\'inscription', _format_datetime(student.created_at)),
+        ('Date de pré-inscription', _format_datetime(student.created_at)),
         ('Dernière modification', _format_datetime(student.last_updated)),
     ], styles))
 
@@ -284,12 +286,22 @@ def _build_summary_pdf(student, annex_entries):
 
 
 def _build_summary_header(student, styles):
+    settings = SystemSettings.get_settings()
+    logo_image = _build_logo_flowable(settings)
+
+    header_elements = []
+    if logo_image:
+        header_elements.append(logo_image)
+        header_elements.append(Spacer(1, 0.2 * cm))
+
+    header_elements.extend([
+        Paragraph('Fiche administrative de pré-inscription', styles['title']),
+        Paragraph(f"Candidat : {escape(f'{student.firstname} {student.lastname}')}", styles['subtitle']),
+    ])
+
     header_table = Table(
         [[
-            [
-                Paragraph('Fiche administrative de pré-inscription', styles['title']),
-                Paragraph(f"Candidat : {escape(f'{student.firstname} {student.lastname}')}", styles['subtitle']),
-            ],
+            header_elements,
             _build_profile_photo_cell(student, styles),
         ]],
         colWidths=[12.2 * cm, 4.2 * cm],
@@ -353,6 +365,47 @@ def _build_profile_photo_flowable(student, max_width, max_height):
             rendered.seek(0)
             return PlatypusImage(rendered, width=width * scale, height=height * scale)
     except (UnidentifiedImageError, OSError):
+        return None
+
+
+def _build_logo_flowable(settings, max_width=3.5 * cm, max_height=2.0 * cm):
+    """Charge et redimensionne le logo de l'école pour le PDF."""
+    try:
+        logo_url = settings.get_logo_url()
+        if not logo_url:
+            return None
+
+        # Télécharger l'image depuis l'URL
+        if logo_url.startswith('http'):
+            response = request.get(logo_url, timeout=5)
+            response.raise_for_status()
+            image_bytes = response.content
+        else:
+            # Si c'est un chemin local, le lire depuis le système de fichiers
+            if hasattr(settings.logo, 'open'):
+                with settings.logo.open('rb') as image_file:
+                    image_bytes = image_file.read()
+            else:
+                return None
+
+        with Image.open(BytesIO(image_bytes)) as image:
+            # Convertir en RGB si nécessaire
+            if image.mode in ('RGBA', 'LA', 'P'):
+                image = image.convert('RGB')
+            elif image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            width, height = image.size
+            if not width or not height:
+                return None
+
+            # Redimensionner en respectant les proportions
+            scale = min(max_width / width, max_height / height)
+            rendered = BytesIO()
+            image.save(rendered, format='JPEG', quality=90)
+            rendered.seek(0)
+            return PlatypusImage(rendered, width=width * scale, height=height * scale)
+    except (UnidentifiedImageError, OSError, request.RequestException, Exception):
         return None
 
 

@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
+
+from payments.models import PaymentInstallment
 from .models import Speciality, Department, Level, Course, Program, AcademicYear, ProgramDocumentRequirement
 
 
@@ -30,6 +32,7 @@ class SpecialityAdmin(admin.ModelAdmin):
     ordering = ['name']
     list_per_page = 25
     date_hierarchy = 'created_at'
+    save_on_top = True
 
     fieldsets = (
         ('Informations générales', {
@@ -60,6 +63,7 @@ class DepartmentAdmin(admin.ModelAdmin):
     ordering = ['label']
     list_per_page = 25
     date_hierarchy = 'created_at'
+    save_on_top = True
 
     fieldsets = (
         ('Informations générales', {
@@ -77,15 +81,16 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
     """Administration des niveaux"""
-    list_display = ['name', 'courses_count', 'created_at']
+    list_display = ['name', 'courses_count', "academic_order", 'created_at']
     search_fields = ['name']
-    ordering = ['name']
+    ordering = ['academic_order', 'name']
     list_per_page = 25
     date_hierarchy = 'created_at'
+    save_on_top = True
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('name',)
+            'fields': ('name', 'academic_order')
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),
@@ -112,6 +117,7 @@ class CourseAdmin(admin.ModelAdmin):
     ordering = ['level__name', 'course_code']
     list_per_page = 25
     date_hierarchy = 'created_at'
+    save_on_top = True
 
     fieldsets = (
         ('Informations générales', {
@@ -129,14 +135,26 @@ class CourseAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at', 'last_updated']
 
 
+class PaymentInstallmentInline(admin.TabularInline):
+    model = PaymentInstallment
+    # extra = 0
+    fields = ('name', 'academic_year', 'program', 'level', 'order_number', 'amount', 'due_date')
+    readonly_fields = ('created_at', 'updated_at')
+    can_delete = True
+    show_change_link = True
+    verbose_name_plural = 'Tranches de paiement'
+
+
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
     """Administration des programmes"""
+    
     list_display = ['name', 'created_at']
     search_fields = ['name']
     ordering = ['name']
     list_per_page = 25
     date_hierarchy = 'created_at'
+    save_on_top = True
 
     fieldsets = (
         ('Informations générales', {
@@ -149,7 +167,7 @@ class ProgramAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = ['created_at', 'last_updated']
-    inlines = [ProgramDocumentRequirementInline]
+    inlines = [ProgramDocumentRequirementInline, PaymentInstallmentInline]
 
 
 @admin.register(AcademicYear)
@@ -161,6 +179,9 @@ class AcademicYearAdmin(admin.ModelAdmin):
     ordering = ['-start_at']
     list_per_page = 25
     list_editable = ['is_active']
+    save_on_top = True
+    inlines = [PaymentInstallmentInline]
+
 
     fieldsets = (
         ('Période académique', {

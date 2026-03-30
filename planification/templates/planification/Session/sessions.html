@@ -60,7 +60,7 @@
                             <select class="form-control" id="academic_year" name="academic_year">
                                 <option value="">Toutes</option>
                                 {% for year in academic_years %}
-                                    <option value="{{ year.id }}" {% if academic_year == year.id|stringformat:"s" %}selected{% endif %}>{{ year.name }}</option>
+                                    <option value="{{ year.id }}" {% if selected_academic_year and selected_academic_year.pk == year.pk %}selected{% endif %}>{{ year.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>

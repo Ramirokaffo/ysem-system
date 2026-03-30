@@ -1,18 +1,5 @@
 """
 URL configuration for ysem project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
 from django.contrib import admin
@@ -20,11 +7,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-# Configuration du site d'administration
-from main import views
+from main.views import *
+from main.custom_views.pre_inscriptions_views import *
 
 urlpatterns = [
-    path('', views.HomeView.as_view(), name='home'),
+    path('', HomeView.as_view(), name='home'),
     path("admin/", admin.site.urls),
     path("auth/", include("authentication.urls")),
     path("scholar/", include("main.urls")),
@@ -32,16 +19,19 @@ urlpatterns = [
     path("planning/", include("planification.urls")),
     path("prospection/", include("prospection.urls")),
     path("portail-etudiant/", include("student_portal.urls")),
+    path("etudiants/", include("students.urls")),
 
+    # URLs pour la gestion des paiements
+    path('paiements/', include('payments.urls')),
     # API pour l'application mobile
     path("api/v1/", include("prospection.api_urls")),
 
     # URLs publiques pour l'inscription externe
-    path('inscription-externe/', views.PreInscriptionExterneView.as_view(), name='inscription_externe'),
-    path('inscription-externe/etape/<int:step>/', views.PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
-    path('inscription-externe/confirmation/', views.PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
-    path('nouvelle_inscription/', views.NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
-    path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
+    path('inscription-externe/', PreInscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/', NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
+    path('ajax/specialities-by-program/', get_specialities_by_program, name='get_specialities_by_program'),
 ]
 
 # Serve static files during development

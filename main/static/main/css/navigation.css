@@ -7,7 +7,8 @@
     text-align: center;
     transition: all 0.3s ease;
     box-sizing: border-box;
-    overflow: hidden;
+    /* overflow: hidden; */
+    padding: 15px;
 }
 
 .sidebar-logo:hover {
@@ -17,11 +18,21 @@
 
 .sidebar-logo img {
     /* max-width: 100%; */
-    /* height: auto; */
+    /* height: 60px; */
     /* max-height: 60px; */
     object-fit: fill;
     box-sizing: border-box;
+    max-height: 60px;
+    width: auto;
+}
 
+.sidebar.collapsed .sidebar-logo {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.sidebar.collapsed .sidebar-logo img {
+    max-height: 40px;
 }
 
 .sidebar-logo-text {
@@ -30,6 +41,61 @@
     font-weight: 700;
     color: var(--text-color);
     letter-spacing: 0.5px;
+}
+
+.div-sidebar-toggle-btn {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px;
+    padding-top: 10px;
+}
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* position: absolute; */
+    /* right: 0px; */
+    /* width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: absolute;
+    right: -20px;
+    top: 20px;
+    z-index: 1001; */
+}
+
+.sidebar-toggle-btn:hover {
+    background: var(--primary-color);
+    box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+}
+
+.sidebar-toggle-btn i {
+    font-size: 1.2rem;
+}
+
+/* Navigation Menu */
+.nav {
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .nav {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Navigation sidebar */
@@ -42,6 +108,20 @@
     background: transparent;
     border: none;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.nav-link i {
+    flex-shrink: 0;
+    min-width: 20px;
+    text-align: center;
+}
+
+.nav-link span {
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
@@ -60,6 +140,27 @@
     box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
 }
 
+/* Collapsed sidebar styles */
+.sidebar.collapsed .nav-link {
+    padding: 12px;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 5px auto;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-link span {
+    display: none;
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-link i {
+    margin: 0;
+    flex-shrink: 0;
+}
+
 /* Section titles in navigation */
 .nav-section-title {
     color: var(--text-color);
@@ -71,11 +172,40 @@
     margin: 10px 0 5px 0;
     opacity: 0.7;
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .nav-section-title {
+    display: none;
 }
 
 /* Bouton de déconnexion */
 .logout-btn {
     width: 100%;
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .logout-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.sidebar.collapsed .logout-btn span {
+    display: none;
+}
+
+/* Sidebar divider */
+.sidebar-divider {
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-divider {
+    margin: 10px 0;
 }
 
 
@@ -93,5 +223,10 @@
     .sidebar-logo-text {
         font-size: 1rem;
         margin-top: 8px;
+    }
+
+    /* Hide toggle button on mobile */
+    .sidebar-toggle-btn {
+        display: none;
     }
 }

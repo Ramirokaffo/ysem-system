@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     "planification",
     "prospection",
     "audit",
+    "payments",
 ]
 
 MIDDLEWARE = [

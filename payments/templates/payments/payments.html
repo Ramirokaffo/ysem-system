@@ -1,0 +1,283 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Paiements - YSEM{% endblock %}
+
+{% block page_title %}Paiements{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <div id="filtersAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="filtersHeading">
+                        <button id="filtersToggle" class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="filtersCollapse">
+                            <i class="fas fa-filter me-2"></i>Filtres
+                        </button>
+                    </h2>
+                    <div id="filtersCollapse" hidden>
+                        <div class="accordion-body p-0">
+                            <form method="get" class="mb-0">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="search">Recherche :</label>
+                                        <input type="text" class="form-control" id="search" name="search" value="{{ request.GET.search }}" placeholder="Matricule, nom, reçu, transaction...">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="academic_year">Année académique :</label>
+                                        <select class="form-control" id="academic_year" name="academic_year">
+                                            <option value="">Toutes</option>
+                                            {% for academic_year in academic_years %}
+                                            <option value="{{ academic_year.pk }}" {% if selected_academic_year and selected_academic_year.pk == academic_year.pk %}selected{% endif %}>{{ academic_year.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="program">Programme :</label>
+                                        <select class="form-control" id="program" name="program">
+                                            <option value="">Tous</option>
+                                            {% for program in programs %}
+                                            <option value="{{ program.pk }}" {% if request.GET.program == program.pk|stringformat:'s' %}selected{% endif %}>{{ program.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="installment">Tranche :</label>
+                                        <select class="form-control" id="installment" name="installment">
+                                            <option value="">Toutes</option>
+                                            {% for installment in installments %}
+                                            <option value="{{ installment.pk }}" {% if request.GET.installment == installment.pk|stringformat:'s' %}selected{% endif %}>{{ installment.program.name }} - {{ installment.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-3">
+                                        <label for="category">Catégorie :</label>
+                                        <select class="form-control" id="category" name="category">
+                                            <option value="">Toutes</option>
+                                            {% for value, label in payment_categories %}
+                                            <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="source">Source :</label>
+                                        <select class="form-control" id="source" name="source">
+                                            <option value="">Toutes</option>
+                                            {% for value, label in payment_sources %}
+                                            <option value="{{ value }}" {% if request.GET.source == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="date_from">Date de début :</label>
+                                        <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request.GET.date_from }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="date_to">Date de fin :</label>
+                                        <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request.GET.date_to }}">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
+                                        <button type="submit" class="btn btn-primary px-5">Appliquer les filtres</button>
+                                        <a href="?" class="btn btn-outline-danger px-4 ml-3">Réinitialiser les filtres</a>
+                                    </div>
+                                </div>
+                            </form>
+                            {% if has_filter and request.GET %}
+                            <div class="mt-3 pt-2 border-top">
+                                <strong>Filtres appliqués :</strong>
+                                <ul class="list-inline mb-0">
+                                    {% if request.GET.search %}<li class="list-inline-item"><span class="badge badge-info">Recherche : {{ request.GET.search }}</span></li>{% endif %}
+                                    {% if selected_academic_year %}<li class="list-inline-item"><span class="badge badge-secondary">Année : {{ selected_academic_year.name }}</span></li>{% endif %}
+                                    {% if request.GET.program %}<li class="list-inline-item"><span class="badge badge-dark">Programme : {% for program in programs %}{% if program.pk|stringformat:'s' == request.GET.program %}{{ program.name }}{% endif %}{% endfor %}</span></li>{% endif %}
+                                    {% if request.GET.installment %}<li class="list-inline-item"><span class="badge badge-primary">Tranche : {% for installment in installments %}{% if installment.pk|stringformat:'s' == request.GET.installment %}{{ installment.name }}{% endif %}{% endfor %}</span></li>{% endif %}
+                                    {% if request.GET.category %}<li class="list-inline-item"><span class="badge badge-success">Catégorie : {% for value, label in payment_categories %}{% if value == request.GET.category %}{{ label }}{% endif %}{% endfor %}</span></li>{% endif %}
+                                    {% if request.GET.source %}<li class="list-inline-item"><span class="badge badge-warning">Source : {% for value, label in payment_sources %}{% if value == request.GET.source %}{{ label }}{% endif %}{% endfor %}</span></li>{% endif %}
+                                    {% if request.GET.date_from %}<li class="list-inline-item"><span class="badge badge-light">Du : {{ request.GET.date_from }}</span></li>{% endif %}
+                                    {% if request.GET.date_to %}<li class="list-inline-item"><span class="badge badge-light">Au : {{ request.GET.date_to }}</span></li>{% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1"><i class="fas fa-list me-2 mr-2"></i>Liste des paiements</h5>
+                    <small class="text-muted">{{ filtered_payments_count }} paiement(s) trouvé(s)</small>
+                </div>
+                <div>
+                    <a href="{% url 'payments:payment_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2 mr-1"></i>Ajouter un paiement
+                    </a>
+                </div>
+            </div>
+
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Date</th>
+                            <th>Matricule</th>
+                            <th>Nom</th>
+                            <th>Programme</th>
+                            <th>Tranche</th>
+                            <th>Année</th>
+                            <th>Catégorie</th>
+                            <th>Source</th>
+                            <th>Montant</th>
+                            <!-- <th>Références</th> -->
+                            <!-- <th>Auteur</th> -->
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>
+                                {% if payment.student.profile_photo %}
+                                <img src="{{ payment.student.profile_photo.url }}" alt="{{ payment.student.full_name }}" class="student-avatar">
+                                {% else %}
+                                <div class="student-avatar student-avatar-placeholder">
+                                    {{ payment.student.firstname|slice:":1" }}{{ payment.student.lastname|slice:":1" }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ payment.payment_date|date:"d/m/Y H:i" }}</td>
+                            <td><strong>{{ payment.student.matricule }}</strong></td>
+                            <td>{{ payment.student.firstname }} {{ payment.student.lastname }}</td>
+                            <td>{% if payment.installment_id %}{{ payment.installment.program.name }}{% else %}{{ payment.student.program.name|default:'-' }}{% endif %}</td>
+                            <td>{{ payment.installment.name|default:'-' }}</td>
+                            <td>{{ payment.academic_year.name|default:'-' }}</td>
+                            <td>{{ payment.get_category_display }}</td>
+                            <td>{{ payment.get_source_display }}</td>
+                            <td>{{ payment.amount_paid|floatformat:0 }} FCFA</td>
+                            <!-- <td>
+                                <div><strong>Reçu :</strong> {{ payment.receipt_number|default:'-' }}</div>
+                                <div><strong>Txn :</strong> {{ payment.transaction_id|default:'-' }}</div>
+                            </td> -->
+                            <!-- <td>{{ payment.author|default:'-' }}</td> -->
+                            <td class="text-center">
+                                <a href="{% url 'payments:payment_detail' payment.pk %}" class="btn btn-sm btn-primary" title="Voir les détails du paiement">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pt-3 border-top mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <form method="get" class="d-flex align-items-center">
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'per_page' and key != 'page' %}
+                                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                            <label for="per_page" class="me-2 mb-0">Éléments par page :</label>
+                            <select class="form-control w-auto" id="per_page" name="per_page" onchange="this.form.submit()">
+                                {% for n in per_page_choices %}
+                                    <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Navigation des pages">
+                            <ul class="pagination justify-content-md-end mb-0">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ num }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&per_page={{ per_page }}{% for key, value in request.GET.items %}{% if key != 'page' and key != 'per_page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Aucun paiement trouvé</h5>
+                <p class="text-muted">Aucun paiement ne correspond aux filtres sélectionnés.</p>
+                <a href="{% url 'payments:payment_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ajouter un paiement
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    #filtersAccordion .accordion-button { background: var(--primary-color); color: var(--text-color); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; padding: 1rem 1.5rem; font-weight: 500; transition: all 0.3s ease; width: 100%; text-align: left; display: flex; align-items: center; }
+    #filtersAccordion .accordion-button:hover { background: var(--primary-color); color: var(--text-color); }
+    #filtersAccordion .accordion-button:not(.collapsed) { background: var(--primary-color); color: var(--text-color); box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; border-color: var(--accent-color); }
+    #filtersAccordion .accordion-button:focus { border-color: var(--accent-color); box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25); outline: none; }
+    #filtersAccordion .accordion-button::after { content: ''; display: inline-block; width: 1.25rem; height: 1.25rem; margin-left: auto; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23262833'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-size: 1.25rem; transition: transform 0.2s ease-in-out; }
+    #filtersAccordion .accordion-button:not(.collapsed)::after { transform: rotate(-180deg); }
+    #filtersCollapse[hidden] { display: none !important; }
+    #filtersCollapse .accordion-body { padding: 1.5rem; background: transparent; border-top: 1px solid rgba(0,0,0,0.05); }
+    .student-avatar { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; }
+    .student-avatar-placeholder { display: inline-flex; align-items: center; justify-content: center; background: #e6e7ee; color: #4b5563; font-weight: 700; }
+</style>
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtersToggle = document.getElementById('filtersToggle');
+        const filtersCollapse = document.getElementById('filtersCollapse');
+
+        if (!filtersToggle || !filtersCollapse) {
+            return;
+        }
+
+        filtersToggle.addEventListener('click', function() {
+            const isExpanded = filtersToggle.getAttribute('aria-expanded') === 'true';
+            filtersToggle.setAttribute('aria-expanded', String(!isExpanded));
+            filtersToggle.classList.toggle('collapsed', isExpanded);
+            filtersCollapse.hidden = isExpanded;
+        });
+    });
+</script>
+{% endblock %}

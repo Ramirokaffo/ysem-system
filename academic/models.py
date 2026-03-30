@@ -1,4 +1,3 @@
-# from django.db.models import Count
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
@@ -34,6 +33,7 @@ class Level(models.Model):
     """
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    academic_order = models.IntegerField(null=True, blank=False, verbose_name="Numero d'ordre académique")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
     def __str__(self):
@@ -42,7 +42,7 @@ class Level(models.Model):
     class Meta:
         verbose_name = "Niveau"
         verbose_name_plural = "Niveaux"
-
+        ordering = ['academic_order', 'name']
 
 
 class Program(models.Model):
@@ -51,6 +51,7 @@ class Program(models.Model):
     """
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
+    
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 

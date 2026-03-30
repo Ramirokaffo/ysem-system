@@ -38,7 +38,7 @@
                 </div>
                 <div class="flex-grow-1 ms-3 mx-1">
                     <h5 class="mb-0">{{ new_enrollments|default:0 }}</h5>
-                    <p class="text-muted mb-0">Nouvelles inscriptions</p>
+                    <p class="text-muted mb-0">Nouvelles Pré-inscriptions</p>
                     <small class="text-muted">Derniers 30 jours</small>
                 </div>
             </div>
@@ -174,12 +174,12 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Inscription en attente</h6>
+                                <h6 class="mb-1">Pré-Inscription en attente</h6>
                                 <p class="mb-1 text-muted">{{ student.firstname }} {{ student.lastname }} - {{ student.program.name|default:"Programme non spécifié" }}</p>
-                                <small class="text-muted">{{ student.created_at|timesince }} ago</small>
+                                <small class="text-muted">Il y a {{ student.created_at|timesince }}</small>
                             </div>
                             <div class="flex-shrink-0">
-                                <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'main:inscription_detail' student.matricule %}" class="btn btn-sm btn-outline-primary">
                                     Voir
                                 </a>
                             </div>
@@ -197,12 +197,12 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Inscription approuvée</h6>
+                                <h6 class="mb-1">Inscription récente</h6>
                                 <p class="mb-1 text-muted">{{ student.firstname }} {{ student.lastname }} - {{ student.program.name|default:"Programme non spécifié" }}</p>
-                                <small class="text-muted">{{ student.created_at|timesince }} ago</small>
+                                <small class="text-muted">Il y a {{ student.last_registration_date|timesince }}</small>
                             </div>
                             <div class="flex-shrink-0">
-                                <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-sm btn-outline-primary">
+                                <a href="{% url 'students:etudiant_detail' student.matricule %}" class="btn btn-sm btn-outline-primary">
                                     Voir
                                 </a>
                             </div>
@@ -224,7 +224,7 @@
                                 <p class="mb-1 text-muted">
                                     {{ doc.get_type_display }} pour {{ doc.student_level.student.firstname }} {{ doc.student_level.student.lastname }}
                                 </p>
-                                <small class="text-muted">{{ doc.created_at|timesince }} ago</small>
+                                <small class="text-muted">{{ doc.created_at|timesince }}</small>
                             </div>
                             <div class="flex-shrink-0">
                                 <span class="badge bg-{{ doc.status|yesno:'success,warning,danger' }} text-primary">
@@ -256,9 +256,9 @@
             <div class="d-grid gap-2">
                 <a href="{% url 'main:inscriptions' %}" class="btn btn-primary">
                     <i class="fas fa-user-plus me-2"></i>
-                    Nouvelle inscription
+                    Nouvelle pré-inscription
                 </a>
-                <a href="{% url 'main:etudiants' %}" class="btn btn-primary">
+                <a href="{% url 'students:etudiants' %}" class="btn btn-primary">
                     <i class="fas fa-search me-2"></i>
                     Rechercher étudiant
                 </a>
@@ -370,47 +370,6 @@
         </div>
     </div>
 
-    <!-- System Status -->
-    <div class="col-lg-4 mb-4">
-        <div class="card-neumorphic">
-            <h5 class="mb-4 border-bottom pb-2">
-                <i class="fas fa-info-circle me-2"></i>
-                État du système
-            </h5>
-            <div class="list-group list-group-flush">
-                <div class="list-group-item border-0 bg-transparent d-flex justify-content-between align-items-center">
-                    <span>
-                        <i class="fas fa-database text-danger me-2"></i>
-                        Base de données
-                    </span>
-                    <span class="badge bg-success text-primary">Opérationnelle</span>
-                </div>
-                <div class="list-group-item border-0 bg-transparent d-flex justify-content-between align-items-center">
-                    <span>
-                        <i class="fas fa-users text-info me-2"></i>
-                        Étudiants
-                    </span>
-                    <span class="badge bg-primary">{{ total_students }} actifs</span>
-                </div>
-                <div class="list-group-item border-0 bg-transparent d-flex justify-content-between align-items-center">
-                    <span>
-                        <i class="fas fa-graduation-cap text-success me-2"></i>
-                        Programmes
-                    </span>
-                    <span class="badge bg-success text-primary">{{ total_programs }} disponibles</span>
-                </div>
-                {% if pending_students > 0 %}
-                    <div class="list-group-item border-0 bg-transparent d-flex justify-content-between align-items-center">
-                        <span>
-                            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                            Attention
-                        </span>
-                        <span class="badge bg-warning">{{ pending_students }} en attente</span>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 

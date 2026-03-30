@@ -1,0 +1,93 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Détails du paiement - YSEM{% endblock %}
+
+{% block page_title %}Détails du paiement{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 flex-wrap gap-3">
+                <h5 class="mb-0"><i class="fas fa-money-check-alt me-2 mr-2"></i>Détails du paiement</h5>
+                <a href="{% url 'payments:payments_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-receipt me-2 mr-1"></i>Informations du paiement</h6>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Date de paiement :</strong> {{ payment.payment_date|date:"d/m/Y H:i" }}</div>
+                    <div class="mb-3"><strong>Montant payé :</strong> {{ payment.amount_paid|floatformat:0 }} FCFA</div>
+                    <div class="mb-3"><strong>Catégorie :</strong> {{ payment.get_category_display }}</div>
+                    <div class="mb-3"><strong>Source :</strong> {{ payment.get_source_display }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Numéro de reçu :</strong> {{ payment.receipt_number|default:"Non renseigné" }}</div>
+                    <div class="mb-3"><strong>ID de transaction :</strong> {{ payment.transaction_id|default:"Non renseigné" }}</div>
+                    <div class="mb-3"><strong>Année académique :</strong> {{ payment.academic_year.name|default:"Non renseignée" }}</div>
+                    <div class="mb-3"><strong>Enregistré par :</strong> {{ payment.author|default:"Non renseigné" }}</div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-user me-2 mr-1"></i>Étudiant concerné</h6>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Matricule :</strong> {{ payment.student.matricule }}</div>
+                    <div class="mb-3"><strong>Nom complet :</strong> {{ payment.student.firstname }} {{ payment.student.lastname }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Programme :</strong> {{ payment.student.program.name|default:"Non défini" }}</div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-layer-group me-2 mr-1"></i>Tranche de paiement associée</h6>
+                </div>
+                {% if payment.installment_id %}
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Nom de la tranche :</strong> {{ payment.installment.name }}</div>
+                    <div class="mb-3"><strong>Ordre :</strong> {{ payment.installment.order_number }}</div>
+                    <div class="mb-3"><strong>Programme :</strong> {{ payment.installment.program.name }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3"><strong>Montant de la tranche :</strong> {{ payment.installment.amount|floatformat:0 }} FCFA</div>
+                    <div class="mb-3"><strong>Total payé sur la tranche :</strong> {{ installment_total_paid|floatformat:0 }} FCFA</div>
+                    <div class="mb-3"><strong>Reste dû :</strong> {{ installment_remaining_amount|floatformat:0 }} FCFA</div>
+                    <div class="mb-3"><strong>Date d'échéance :</strong> {{ payment.installment.due_date|date:"d/m/Y"|default:"Non définie" }}</div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        Ce paiement n'est rattaché à aucune tranche de paiement.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-neumorphic p-4 mb-4">
+            <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-info-circle me-2 mr-1"></i>Traçabilité</h6>
+            <div class="mb-3"><strong>Créé le :</strong> {{ payment.created_at|date:"d/m/Y H:i" }}</div>
+            <div class="mb-3"><strong>Dernière mise à jour :</strong> {{ payment.updated_at|date:"d/m/Y H:i" }}</div>
+            <div class="mb-0"><strong>Identifiant interne :</strong> #{{ payment.pk }}</div>
+        </div>
+
+        <div class="card-neumorphic p-4">
+            <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-bolt me-2"></i>Actions</h6>
+            <a href="{% url 'payments:payments_list' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-list me-2 mr-1"></i>Retour à la liste des paiements
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

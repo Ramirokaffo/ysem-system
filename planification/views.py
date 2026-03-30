@@ -471,9 +471,17 @@ class SessionsView(LoginRequiredMixin, ListView):
         context['level'] = self.request.GET.get('level', '')
         context['academic_year'] = self.request.GET.get('academic_year', '')
 
+        # Déterminer l'année académique sélectionnée
+        academic_year_id = self.request.GET.get('academic_year')
+        if academic_year_id:
+            selected_academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
+        else:
+            selected_academic_year = AcademicYear.objects.filter(is_active=True).first()
+
         # Données pour les filtres
         context['levels'] = Level.objects.all().order_by('name')
         context['academic_years'] = AcademicYear.objects.all().order_by('-start_at')
+        context['selected_academic_year'] = selected_academic_year
         context['session_statuses'] = CourseSession.SESSION_STATUS
 
         return context
@@ -908,6 +916,10 @@ class SchedulesView(LoginRequiredMixin, ListView):
         academic_year = self.request.GET.get('academic_year')
         if academic_year:
             queryset = queryset.filter(academic_year_id=academic_year)
+        else:
+            current_year = AcademicYear.objects.filter(is_active=True).first()
+            if current_year:
+                queryset = queryset.filter(academic_year=current_year)
 
         return queryset
 
@@ -915,9 +927,17 @@ class SchedulesView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Emplois du temps'
 
+        # Déterminer l'année académique sélectionnée
+        academic_year_id = self.request.GET.get('academic_year')
+        if academic_year_id:
+            selected_academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
+        else:
+            selected_academic_year = AcademicYear.objects.filter(is_active=True).first()
+
         # Données pour les filtres
         context['levels'] = Level.objects.all().order_by('name')
         context['academic_years'] = AcademicYear.objects.all().order_by('-start_at')
+        context['selected_academic_year'] = selected_academic_year
         context['status_choices'] = Schedule.STATUS_CHOICES
 
         # Conserver les filtres dans le contexte
@@ -1108,6 +1128,10 @@ class LecturerAvailabilitiesView(LoginRequiredMixin, ListView):
         academic_year = self.request.GET.get('academic_year')
         if academic_year:
             queryset = queryset.filter(academic_year_id=academic_year)
+        else:
+            current_year = AcademicYear.objects.filter(is_active=True).first()
+            if current_year:
+                queryset = queryset.filter(academic_year=current_year)
 
         return queryset
 
@@ -1115,9 +1139,17 @@ class LecturerAvailabilitiesView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Disponibilités des enseignants'
 
+        # Déterminer l'année académique sélectionnée
+        academic_year_id = self.request.GET.get('academic_year')
+        if academic_year_id:
+            selected_academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
+        else:
+            selected_academic_year = AcademicYear.objects.filter(is_active=True).first()
+
         # Données pour les filtres
         context['lecturers'] = Lecturer.objects.all().order_by('lastname', 'firstname')
         context['academic_years'] = AcademicYear.objects.all().order_by('-start_at')
+        context['selected_academic_year'] = selected_academic_year
         context['status_choices'] = LecturerAvailability.AVAILABILITY_STATUS
 
         # Conserver les filtres dans le contexte

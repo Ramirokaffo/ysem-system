@@ -138,7 +138,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Date d'inscription</label>
+                    <label class="form-label fw-bold">Date de pré-inscription</label>
                     <div class="p-2 bg-light rounded">
                         <i class="fas fa-calendar me-1"></i> {{ student.created_at|date:"d/m/Y à H:i" }}
                     </div>
@@ -155,12 +155,12 @@
                 Actions
             </h5>
 
-            <a href="{% url 'main:inscription_edit' student.matricule %}" class="btn btn-warning w-100 mb-3">
+            <a href="{% url 'main:inscription_edit' student.matricule %}" class="btn text-warning w-100 mb-3 text-left">
                 <i class="fas fa-edit me-2"></i>
                 Modifier la pré-inscription
             </a>
 
-	            <a href="{% url 'main:inscription_print_pdf' student.matricule %}" class="btn btn-info w-100 mb-3" target="_blank" rel="noopener">
+	            <a href="{% url 'main:inscription_print_pdf' student.matricule %}" class="btn text-info w-100 mb-3 text-left" target="_blank" rel="noopener">
 	                <i class="fas fa-print me-2"></i>
 	                Imprimer le dossier PDF complet
 	            </a>
@@ -168,7 +168,7 @@
             {% if student.metadata and not student.metadata.is_complete %}
                 <form id="mark-complete-form" method="post" action="{% url 'main:inscription_mark_complete' student.matricule %}" class="mb-3">
                     {% csrf_token %}
-                    <button type="button" class="btn btn-outline-success w-100" data-toggle="modal" data-target="#markCompleteModal">
+                    <button type="button" class="btn text-success w-100 text-left" data-toggle="modal" data-target="#markCompleteModal">
                         <i class="fas fa-check-circle me-2"></i>
                         Marquer ce dossier complet
                     </button>
@@ -179,7 +179,7 @@
                 <div class="d-grid gap-2">
                     <form id="approve-form" method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="button" class="btn btn-success w-100 mb-2" data-toggle="modal" data-target="#approveInscriptionModal">
+                        <button type="button" class="btn text-success w-100 mb-2 text-left" data-toggle="modal" data-target="#approveInscriptionModal">
                             <i class="fas fa-check me-2"></i>
                             Approuver la pré-inscription
                         </button>
@@ -187,7 +187,7 @@
                     
                     <form id="reject-form" method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="button" class="btn btn-danger w-100" data-toggle="modal" data-target="#rejectInscriptionModal">
+                        <button type="button" class="btn text-danger w-100 text-left" data-toggle="modal" data-target="#rejectInscriptionModal">
                             <i class="fas fa-times me-2"></i>
                             Rejeter la pré-inscription
                         </button>
@@ -201,12 +201,12 @@
                 <div class="d-grid gap-2">
                     <form id="register-form" method="post" action="{% url 'main:inscription_register' student.matricule %}">
                         {% csrf_token %}
-                        <button type="button" class="btn btn-success w-100 my-2" data-toggle="modal" data-target="#registerStudentModal">
+                        <button type="button" class="btn text-success w-100 my-2 text-left" data-toggle="modal" data-target="#registerStudentModal">
                             <i class="fas fa-user-graduate me-2"></i>
                             Inscrire l'étudiant
                         </button>
                     </form>
-                    <a href="{% url 'main:etudiant_detail' student.matricule %}" class="btn btn-primary w-100">
+                    <a href="{% url 'students:etudiant_detail' student.matricule %}" class="btn btn-primary w-100 text-left">
                         <i class="fas fa-user me-2"></i>
                         Voir le profil étudiant
                     </a>
@@ -218,7 +218,7 @@
                 </div>
                 <form id="reactivate-form" method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="button" class="btn btn-success w-100" data-toggle="modal" data-target="#reactivateInscriptionModal">
+                    <button type="button" class="btn text-success w-100 text-left" data-toggle="modal" data-target="#reactivateInscriptionModal">
                         <i class="fas fa-redo me-2 mr-1"></i>
                         Réactiver la pré-inscription
                     </button>
@@ -281,7 +281,7 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">École d'origine</label>
+                    <label class="form-label fw-bold">Dernière école fréquentée</label>
                     <div class="p-3 bg-light rounded">
                         {% if student.school %}
                             <i class="fas fa-school mr-2"></i>{{ student.school.name }}
@@ -291,6 +291,16 @@
                     </div>
                 </div>
 
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Niveau d'entrée</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.start_level %}
+                            {{ student.start_level.name }}
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Spécialités choisies</label>
@@ -298,17 +308,17 @@
                         {% if student.specialite_souhaitee_1 or student.specialite_souhaitee_2 or student.specialite_souhaitee_3 %}
                             {% if student.specialite_souhaitee_1 %}
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary text-white me-2">Choix 1</span>{{ student.specialite_souhaitee_1 }}
+                                    <span class="badge bg-secondary text-white me-2 mr-2">Choix 1</span>{{ student.specialite_souhaitee_1 }}
                                 </div>
                             {% endif %}
                             {% if student.specialite_souhaitee_2 %}
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary text-white me-2">Choix 2</span>{{ student.specialite_souhaitee_2 }}
+                                    <span class="badge bg-secondary text-white me-2 mr-2">Choix 2</span>{{ student.specialite_souhaitee_2 }}
                                 </div>
                             {% endif %}
                             {% if student.specialite_souhaitee_3 %}
                                 <div>
-                                    <span class="badge bg-secondary text-white me-2">Choix 3</span>{{ student.specialite_souhaitee_3 }}
+                                    <span class="badge bg-secondary text-white me-2 mr-2">Choix 3</span>{{ student.specialite_souhaitee_3 }}
                                 </div>
                             {% endif %}
                         {% else %}
@@ -350,6 +360,18 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- Niveau d'entrée -->
+                <!-- <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Niveau d'entrée</label>
+                    <div class="p-3 bg-light rounded">
+                        {% if student.start_level %}
+                            {{ student.start_level.name }}
+                        {% else %}
+                            <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -663,13 +685,13 @@
     </div>
 </div>
 
-<!-- Documents d'inscription -->
+<!-- Documents de pré-inscription -->
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
             <h4 class="mb-4 border-bottom pb-2">
                 <i class="fas fa-folder-open me-2"></i>
-                Documents d'inscription
+                Documents de pré-inscription
             </h4>
 
             <div class="row">

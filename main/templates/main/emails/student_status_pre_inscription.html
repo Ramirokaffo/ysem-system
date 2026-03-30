@@ -27,8 +27,10 @@ L'équipe {{ institution_name }}
         <p>Bonjour {{ student_name }},</p>
         <p>Nous confirmons la réception de votre pré-inscription à <strong>{{ institution_name }}</strong>. Votre
             dossier est désormais en attente de validation par l'administration.</p>
-        <p style="background:#f9fafb;border-radius:12px;padding:16px;"><strong>Référence de votre dossier :</strong> {{
-            student.matricule }}</p>
+        <p style="background:#f9fafb;border-radius:12px;padding:16px;">
+            <strong>Référence de votre dossier :
+
+        </strong> {{ student.matricule }}</p>
         <p><strong>Email de contact :</strong> {{ contact_email }}<br><strong>Site web :</strong> {{ website }}</p>
         <p style="margin-top:24px;">Cordialement,<br>L'équipe {{ institution_name }}</p>
     </div>

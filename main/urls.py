@@ -1,6 +1,9 @@
-from django.urls import path
-from . import views
-from django.conf import settings
+from django.urls import path, include
+
+from main.custom_views.documents_views import *
+from main.custom_views.pre_inscriptions_views import *
+from main.views import *
+from .custom_views import *
 from django.views.generic.base import RedirectView
 from django.urls import re_path
 favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
@@ -9,51 +12,41 @@ app_name = 'main'
 
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='main:dashboard', permanent=False)),
-    path('dashboard', views.DashboardView.as_view(), name='dashboard'),
-    path('inscriptions/', views.PreInscriptionsView.as_view(), name='inscriptions'),
-    path('inscriptions/imprimer-pdf/', views.pre_inscriptions_print_pdf, name='inscriptions_print_pdf'),
-    path('inscription/<str:pk>/', views.pre_inscription_detail, name='inscription_detail'),
-    path('inscription/<str:pk>/marquer-complet/', views.pre_inscription_mark_complete, name='inscription_mark_complete'),
-    path('inscription/<str:pk>/imprimer-pdf/', views.pre_inscription_print_pdf, name='inscription_print_pdf'),
-    path('inscription/<str:pk>/modifier/', views.pre_inscription_edit, name='inscription_edit'),
-    path('inscription/<str:pk>/approuver/', views.pre_inscription_approve, name='inscription_approve'),
-    path('inscription/<str:pk>/inscrire/', views.pre_inscription_register, name='inscription_register'),
-    path('inscription/<str:pk>/rejeter/', views.pre_inscription_reject, name='inscription_reject'),
-    path('etudiants/', views.EtudiantsView.as_view(), name='etudiants'),
-    path('documents/', views.DocumentsView.as_view(), name='documents'),
-    path('statistiques/', views.StatistiquesView.as_view(), name='statistiques'),
-    path('parametres/', views.ParametresView.as_view(), name='parametres'),
-    path('toggle-prospection/', views.toggle_prospection, name='toggle_prospection'),
-    path('profil/', views.ProfilView.as_view(), name='profil'),
-    path('etudiant/<str:pk>/', views.etudiant_detail, name='etudiant_detail'),
-    path('etudiant/<str:pk>/modifier/', views.etudiant_edit, name='etudiant_edit'),
-    path('etudiant/<str:pk>/generer-mot-de-passe/', views.generate_student_external_password, name='generate_student_external_password'),
+    path('dashboard', DashboardView.as_view(), name='dashboard'),
+    path('inscriptions/', PreInscriptionsView.as_view(), name='inscriptions'),
+    path('inscriptions/imprimer-pdf/', pre_inscriptions_print_pdf, name='inscriptions_print_pdf'),
+    path('inscription/<str:pk>/', pre_inscription_detail, name='inscription_detail'),
+    path('inscription/<str:pk>/marquer-complet/', pre_inscription_mark_complete, name='inscription_mark_complete'),
+    path('inscription/<str:pk>/imprimer-pdf/', pre_inscription_print_pdf, name='inscription_print_pdf'),
+    path('inscription/<str:pk>/modifier/', pre_inscription_edit, name='inscription_edit'),
+    path('inscription/<str:pk>/approuver/', pre_inscription_approve, name='inscription_approve'),
+    path('inscription/<str:pk>/inscrire/', pre_inscription_register, name='inscription_register'),
+    path('inscription/<str:pk>/rejeter/', pre_inscription_reject, name='inscription_reject'),
+    path('inscription/<str:pk>/supprimer/', pre_inscription_delete, name='inscription_delete'),
+    path('documents/', DocumentsView.as_view(), name='documents'),
+    path('statistiques/', StatistiquesView.as_view(), name='statistiques'),
+    path('parametres/', ParametresView.as_view(), name='parametres'),
+    path('toggle-prospection/', toggle_prospection, name='toggle_prospection'),
+    path('profil/', ProfilView.as_view(), name='profil'),
 
     # Gestion des documents officiels
-    path('document/nouveau/', views.document_create, name='document_create'),
-    path('document/<int:pk>/modifier/', views.document_edit, name='document_edit'),
-    path('document/<int:pk>/supprimer/', views.document_delete, name='document_delete'),
-    path('document/<int:pk>/toggle-status/', views.document_toggle_status, name='document_toggle_status'),
-    path('document/<int:pk>/telecharger-certificat-inscription/', views.registration_certificate_download, name='registration_certificate_download'),
-    path('document/creation-masse/', views.document_bulk_create, name='document_bulk_create'),
-    path('document/preview-masse/', views.document_bulk_preview, name='document_bulk_preview'),
+    path('document/nouveau/', document_create, name='document_create'),
+    path('document/<int:pk>/modifier/', document_edit, name='document_edit'),
+    path('document/<int:pk>/supprimer/', document_delete, name='document_delete'),
+    path('document/<int:pk>/toggle-status/', document_toggle_status, name='document_toggle_status'),
+    path('document/<int:pk>/telecharger-certificat-inscription/', registration_certificate_download, name='registration_certificate_download'),
+    path('document/creation-masse/', document_bulk_create, name='document_bulk_create'),
+    path('document/preview-masse/', document_bulk_preview, name='document_bulk_preview'),
 
     # Formulaire d'inscription public
-    path('inscription-externe/', views.PreInscriptionExterneView.as_view(), name='inscription_externe'),
-    path('inscription-externe/etape/<int:step>/', views.PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
-    path('inscription-externe/confirmation/', views.PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
-    path('nouvelle_inscription/', views.NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
+    path('inscription-externe/', PreInscriptionExterneView.as_view(), name='inscription_externe'),
+    path('inscription-externe/etape/<int:step>/', PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
+    path('inscription-externe/confirmation/', PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    path('nouvelle_inscription/', NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
 
-    # URLs pour la gestion des statuts de paiement
-    path('statut-paiement/', views.PaymentStatusView.as_view(), name='payment_status'),
-    path('statut-paiement/creer/', views.payment_status_create, name='payment_status_create'),
-    path('statut-paiement/<int:pk>/', views.payment_status_detail, name='payment_status_detail'),
-    path('statut-paiement/<int:pk>/modifier/', views.payment_status_edit, name='payment_status_edit'),
-    path('statut-paiement/<int:pk>/supprimer/', views.payment_status_delete, name='payment_status_delete'),
-    path('statut-paiement/<int:pk>/basculer-blocage/', views.payment_status_toggle_block, name='payment_status_toggle_block'),
-
+    
     # AJAX endpoints
-    path('ajax/specialities-by-program/', views.get_specialities_by_program, name='get_specialities_by_program'),
+    path('ajax/specialities-by-program/', get_specialities_by_program, name='get_specialities_by_program'),
 
     re_path(r'^favicon\.ico$', favicon_view),
 ]

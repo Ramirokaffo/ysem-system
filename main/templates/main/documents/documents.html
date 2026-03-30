@@ -9,86 +9,99 @@
 <div class="row">
     <div class="col-12">
         <div class="card-neumorphic p-4 mb-4">
-            <h5 class="mb-3 border-bottom pb-2"><i class="fas fa-filter me-2"></i>Filtres</h5>
-            <form method="get" class="mb-0">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="document_type">Type de document:</label>
-                        <select class="form-control" id="document_type" name="document_type">
-                            <option value="">Tous</option>
-                            <option value="student_card" {% if request.GET.document_type == 'student_card' %}selected{% endif %}>Carte d'étudiant</option>
-                            <option value="transcript" {% if request.GET.document_type == 'transcript' %}selected{% endif %}>Relevé de notes</option>
-                            <option value="diploma" {% if request.GET.document_type == 'diploma' %}selected{% endif %}>Diplôme</option>
-                            <option value="certificate" {% if request.GET.document_type == 'certificate' %}selected{% endif %}>Certificat de scolarité</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="status">Status:</label>
-                        <select class="form-control" id="status" name="status">
-                            <option value="">Tous</option>
-                            <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Non déchargé</option>
-                            <option value="withdrawn" {% if request.GET.status == 'withdrawn' %}selected{% endif %}>Déchargé</option>
-                            <option value="returned" {% if request.GET.status == 'returned' %}selected{% endif %}>Retourné</option>
-                            <option value="lost" {% if request.GET.status == 'lost' %}selected{% endif %}>Perdu</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="level">Niveau:</label>
-                        <select class="form-control" id="level" name="level">
-                            <option value="">Tous</option>
-                            {% for level in levels %}
-                                <option value="{{ level.pk }}" {% if request.GET.level == level.pk|stringformat:'s' %}selected{% endif %}>{{ level.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="academic_year">Année Académique:</label>
-                        <select class="form-control" id="academic_year" name="academic_year">
-                            <option value="">Tous</option>
-                            {% for academic_year in academic_years %}
-                                <option value="{{ academic_year.pk }}" {% if request.GET.academic_year == academic_year.pk|stringformat:'s' %}selected{% endif %}>{{ academic_year.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="student">Étudiant :</label>
-                        <select class="form-control" id="student" name="student">
-                            <option value="">Tous</option>
-                            {% for student in students %}
-                                <option value="{{ student.matricule }}" {% if request.GET.student == student.matricule|stringformat:'s' %}selected{% endif %}>{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}</option>
-                            {% endfor %}
-                        </select>
+            <div id="filtersAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="filtersHeading">
+                        <button id="filtersToggle" class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="filtersCollapse">
+                            <i class="fas fa-filter me-2"></i>Filtres
+                        </button>
+                    </h2>
+                    <div id="filtersCollapse" hidden>
+                        <div class="accordion-body p-0">
+                            <form method="get" class="mb-0">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label for="document_type">Type de document:</label>
+                                        <select class="form-control" id="document_type" name="document_type">
+                                            <option value="">Tous</option>
+                                            <option value="student_card" {% if request.GET.document_type == 'student_card' %}selected{% endif %}>Carte d'étudiant</option>
+                                            <option value="transcript" {% if request.GET.document_type == 'transcript' %}selected{% endif %}>Relevé de notes</option>
+                                            <option value="diploma" {% if request.GET.document_type == 'diploma' %}selected{% endif %}>Diplôme</option>
+                                            <option value="certificate" {% if request.GET.document_type == 'certificate' %}selected{% endif %}>Certificat de scolarité</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="status">Status:</label>
+                                        <select class="form-control" id="status" name="status">
+                                            <option value="">Tous</option>
+                                            <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Non déchargé</option>
+                                            <option value="withdrawn" {% if request.GET.status == 'withdrawn' %}selected{% endif %}>Déchargé</option>
+                                            <option value="returned" {% if request.GET.status == 'returned' %}selected{% endif %}>Retourné</option>
+                                            <option value="lost" {% if request.GET.status == 'lost' %}selected{% endif %}>Perdu</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="level">Niveau:</label>
+                                        <select class="form-control" id="level" name="level">
+                                            <option value="">Tous</option>
+                                            {% for level in levels %}
+                                                <option value="{{ level.pk }}" {% if request.GET.level == level.pk|stringformat:'s' %}selected{% endif %}>{{ level.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="academic_year">Année Académique:</label>
+                                        <select class="form-control" id="academic_year" name="academic_year">
+                                            <option value="">Tous</option>
+                                            {% for academic_year in academic_years %}
+                                                <option value="{{ academic_year.pk }}"
+                                                {% if selected_academic_year and selected_academic_year.pk == academic_year.pk %}selected{% endif %}>{{ academic_year.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="student">Étudiant :</label>
+                                        <select class="form-control" id="student" name="student">
+                                            <option value="">Tous</option>
+                                            {% for student in students %}
+                                                <option value="{{ student.matricule }}" {% if request.GET.student == student.matricule|stringformat:'s' %}selected{% endif %}>{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
+                                        <button type="submit" class="btn btn-primary px-5">Appliquer les filtres</button>
+                                        <a href="?" class="btn btn-outline-danger px-4 ml-3">Réinitialiser les filtres</a>
+                                    </div>
+                                </div>
+                            </form>
+                            {% if request.GET %}
+                            <div class="mt-3 pt-2 border-top">
+                                <strong>Filtres appliqués :</strong>
+                                <ul class="list-inline mb-0">
+                                    {% if request.GET.document_type %}
+                                        <li class="list-inline-item"><span class="badge badge-info text-uppercase">Type : {{ request.GET.document_type }}</span></li>
+                                    {% endif %}
+                                    {% if request.GET.status %}
+                                        <li class="list-inline-item"><span class="badge badge-success text-uppercase">Statut : {{ request.GET.status }}</span></li>
+                                    {% endif %}
+                                    {% if request.GET.level %}
+                                        <li class="list-inline-item"><span class="badge badge-secondary text-uppercase">Niveau : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.level %}{{ level.name }}{% endif %}{% endfor %}</span></li>
+                                    {% endif %}
+                                    {% if request.GET.academic_year %}
+                                        <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Année : {% for academic_year in academic_years %}{% if academic_year.pk|stringformat:'s' == request.GET.academic_year %}{{ academic_year.name }}{% endif %}{% endfor %}</span></li>
+                                    {% endif %}
+                                    {% if request.GET.student %}
+                                        <li class="list-inline-item"><span class="badge badge-danger text-uppercase">Étudiant : {% for student in students %}{% if student.matricule|stringformat:'s' == request.GET.student %}{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}{% endif %}{% endfor %}</span></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
-                        <button type="submit" class="btn btn-primary px-5">Appliquer les filtres</button>
-                        <a href="?" class="btn btn-outline-danger px-4 ml-3">Réinitialiser les filtres</a>
-                    </div>
-                </div>
-            </form>
-            {% if request.GET %}
-            <div class="mt-3 pt-2 border-top">
-                <strong>Filtres appliqués :</strong>
-                <ul class="list-inline mb-0">
-                    {% if request.GET.document_type %}
-                        <li class="list-inline-item"><span class="badge badge-info text-uppercase">Type : {{ request.GET.document_type }}</span></li>
-                    {% endif %}
-                    {% if request.GET.status %}
-                        <li class="list-inline-item"><span class="badge badge-success text-uppercase">Statut : {{ request.GET.status }}</span></li>
-                    {% endif %}
-                    {% if request.GET.level %}
-                        <li class="list-inline-item"><span class="badge badge-secondary text-uppercase">Niveau : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.level %}{{ level.name }}{% endif %}{% endfor %}</span></li>
-                    {% endif %}
-                    {% if request.GET.academic_year %}
-                        <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Année : {% for academic_year in academic_years %}{% if academic_year.pk|stringformat:'s' == request.GET.academic_year %}{{ academic_year.name }}{% endif %}{% endfor %}</span></li>
-                    {% endif %}
-                    {% if request.GET.student %}
-                        <li class="list-inline-item"><span class="badge badge-danger text-uppercase">Étudiant : {% for student in students %}{% if student.matricule|stringformat:'s' == request.GET.student %}{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}{% endif %}{% endfor %}</span></li>
-                    {% endif %}
-                </ul>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -124,6 +137,15 @@
                     <tbody>
                         {% for document in documents %}
                         <tr>
+                            <!-- <td>
+                                {% if document.student_level.student.profile_photo %}
+                                <img src="{{ document.student_level.student.profile_photo.url }}" alt="{{ document.student_level.student.full_name }}" class="student-avatar">
+                                {% else %}
+                                <div class="student-avatar student-avatar-placeholder">
+                                    {{ document.student_level.student.firstname|slice:":1" }}{{ document.student_level.student.lastname|slice:":1" }}
+                                </div>
+                                {% endif %}
+                            </td> -->
                             <td><strong>{{ document.student_level.student.matricule }}</strong></td>
                             <td>{{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}</td>
                             <td>{{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})</td>
@@ -268,6 +290,113 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    #filtersAccordion {
+        border: none;
+        background: transparent;
+    }
+
+    #filtersAccordion .accordion-item {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        margin-bottom: 0;
+    }
+
+    #filtersAccordion .accordion-header {
+        padding: 0;
+        margin: 0;
+        border: none;
+        background: transparent;
+    }
+
+    #filtersAccordion .accordion-button {
+        background: var(--primary-color);
+        color: var(--text-color);
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        align-items: center;
+    }
+
+    #filtersAccordion .accordion-button:hover {
+        background: var(--primary-color);
+        color: var(--text-color);
+    }
+
+    #filtersAccordion .accordion-button:not(.collapsed) {
+        background: var(--primary-color);
+        color: var(--text-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        border-color: var(--accent-color);
+    }
+
+    #filtersAccordion .accordion-button:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25);
+        outline: none;
+    }
+
+    #filtersAccordion .accordion-button::after {
+        content: '';
+        display: inline-block;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-left: auto;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23262833'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-size: 1.25rem;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    #filtersAccordion .accordion-button:not(.collapsed)::after {
+        transform: rotate(-180deg);
+    }
+
+    #filtersCollapse {
+        border: none;
+    }
+
+    #filtersCollapse[hidden] {
+        display: none !important;
+    }
+
+    #filtersCollapse .accordion-body {
+        padding: 1.5rem;
+        background: transparent;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtersToggle = document.getElementById('filtersToggle');
+        const filtersCollapse = document.getElementById('filtersCollapse');
+
+        if (!filtersToggle || !filtersCollapse) {
+            return;
+        }
+
+        filtersToggle.addEventListener('click', function() {
+            const isExpanded = filtersToggle.getAttribute('aria-expanded') === 'true';
+
+            filtersToggle.setAttribute('aria-expanded', String(!isExpanded));
+            filtersToggle.classList.toggle('collapsed', isExpanded);
+            filtersCollapse.hidden = isExpanded;
+        });
+    });
+</script>
 {% endblock %}
 
 

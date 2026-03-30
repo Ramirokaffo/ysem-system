@@ -1,7 +1,12 @@
+# from datetime import timezone
+
+from decimal import Decimal
+
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
-from accounts.models import BaseUser, Godfather
-from academic.models import AcademicYear, Level, Program
+from accounts.models import Godfather
+from academic.models import AcademicYear, Level, Program, Speciality
 from schools.models import School
 import secrets
 import string
@@ -31,6 +36,7 @@ class StudentMetaData(models.Model):
     residence_quarter = models.CharField(max_length=100, blank=True, null=True, verbose_name="Quartier de résidence")
     
     is_complete = models.BooleanField(default=False, verbose_name="Dossier complet")
+    is_online_registration = models.BooleanField(default=False, verbose_name="Inscription en ligne")
 
     # Documents d'inscription obligatoires
     preuve_baccalaureat = models.FileField(
@@ -118,12 +124,12 @@ class Student(models.Model):
     """
     Modèle principal pour les étudiants
     """
-    matricule = models.CharField(max_length=50, primary_key=True, verbose_name="Matricule")
+    matricule = models.CharField(max_length=50, unique=True, verbose_name="Matricule")
     dossier_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de dossier")
     firstname = models.CharField(max_length=100, verbose_name="Prénom")
     lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
-    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Examinée & Approuvée'), ('abandoned', 'abandonné'), ('rejected', 'Rejetée'), ("registered", "Inscrit")], verbose_name="Statut de pré-inscription", default='pending')
+    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Examinée & Approuvée'), ('abandoned', 'Abandonné'), ('rejected', 'Rejetée'), ("registered", "Inscrit")], verbose_name="Statut de pré-inscription", default='pending')
     gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
     lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr', verbose_name="Langue")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
@@ -135,8 +141,11 @@ class Student(models.Model):
     metadata = models.OneToOneField('StudentMetaData', on_delete=models.CASCADE, null=True, blank=True, related_name='student', verbose_name="Métadonnées")
     school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="École fréquentée")
     program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True, related_name='students', verbose_name="Programme")
+    start_level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, blank=True, related_name='students_start_level', verbose_name="Niveau d'entrée")
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add=True, verbose_name="Date d'inscription")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+    deleted_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de suppression")
+    last_registration_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière inscription")
 
     specialite_souhaitee_1 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 1")
     specialite_souhaitee_2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 2")
@@ -182,26 +191,79 @@ class Student(models.Model):
         """
         return bool(self.external_password_hash)
 
+    def get_financial_status(self, academic_year=None, as_of_date=None):
+        """Calcule dynamiquement le statut financier de l'étudiant."""
+        if not academic_year:
+            academic_year = AcademicYear.objects.filter(is_active=True).first()
+
+        if not academic_year:
+            return None
+
+        from payments.models import Payment, PaymentInstallment
+
+        current_level = self.student_levels.filter(
+            academic_year=academic_year,
+        ).select_related('level').order_by(
+            '-is_active', 'level__academic_order', 'level__name'
+        ).first()
+
+        level_id = current_level.level_id if current_level else None
+        base_installments = PaymentInstallment.objects.filter(
+            deleted_at__isnull=True,
+            academic_year=academic_year,
+            program=self.program,
+        ).order_by('order_number', 'name', 'pk')
+
+        installments = list(base_installments.filter(level_id=level_id)) if level_id else []
+        if not installments:
+            installments = list(base_installments.filter(level__isnull=True))
+
+        as_of_date = as_of_date or timezone.localdate()
+        amount_paid = Payment.objects.filter(
+            student=self,
+            academic_year=academic_year,
+            category='frais_scolarite',
+        ).aggregate(total=models.Sum('amount_paid'))['total'] or Decimal('0.00')
+
+        total_due = sum((installment.amount or Decimal('0.00')) for installment in installments)
+        due_amount = sum(
+            (installment.amount or Decimal('0.00'))
+            for installment in installments
+            if installment.due_date and installment.due_date <= as_of_date
+        )
+
+        remaining_amount = total_due - amount_paid
+        if remaining_amount < Decimal('0.00'):
+            remaining_amount = Decimal('0.00')
+
+        overdue_amount = due_amount - amount_paid
+        if overdue_amount < Decimal('0.00'):
+            overdue_amount = Decimal('0.00')
+
+        return {
+            'academic_year': academic_year,
+            'current_level': current_level,
+            'total_amount_due': total_due,
+            'amount_paid': amount_paid,
+            'remaining_amount': remaining_amount,
+            'due_amount': due_amount,
+            'overdue_amount': overdue_amount,
+            'status': 'overdue' if overdue_amount > Decimal('0.00') else 'up_to_date',
+        }
+
     def can_withdraw_documents(self, academic_year=None):
         """
         Vérifie si l'étudiant peut retirer des documents selon son statut de paiement
         """
-        if not academic_year:
-            # Utiliser l'année académique active par défaut
-            academic_year = AcademicYear.objects.filter(is_active=True).first()
+        financial_status = self.get_financial_status(academic_year=academic_year)
 
-        if not academic_year:
+        if not financial_status:
             return False, "Aucune année académique active trouvée"
 
-        try:
-            payment_status = self.payment_statuses.get(academic_year=academic_year)
-            if payment_status.documents_blocked:
-                reason = payment_status.blocking_reason or "Situation financière non régularisée"
-                return False, reason
-            return True, "Autorisation accordée"
-        except PaymentStatus.DoesNotExist:
-            # Si aucun statut de paiement n'existe, autoriser par défaut
-            return True, "Aucun statut de paiement défini"
+        if financial_status['overdue_amount'] > Decimal('0.00'):
+            return False, "Situation financière non régularisée"
+
+        return True, "Autorisation accordée"
 
     def get_active_level(self):
         """
@@ -209,10 +271,15 @@ class Student(models.Model):
         """
         active_level = self.student_levels.filter(is_active=True).first()
         return active_level
-    
+
+    def mark_last_registration_date(self):
+        self.last_registration_date = timezone.now()
+        self.save()
+
     class Meta:
         verbose_name = "Étudiant"
         verbose_name_plural = "Étudiants"
+        ordering = ['-created_at', 'lastname', 'firstname']
 
 
 class StudentLevel(models.Model):
@@ -220,108 +287,35 @@ class StudentLevel(models.Model):
     Modèle pour associer les étudiants aux niveaux (relation many-to-many avec attributs)
     """
     name = models.CharField(max_length=100, blank=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_levels')
-    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='student_levels')
-    academic_year = models.ForeignKey(AcademicYear, null=True, on_delete=models.CASCADE, related_name='student_levels')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_levels', verbose_name="Étudiant")
+    level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name='student_levels', verbose_name="Niveau")
+    academic_year = models.ForeignKey(AcademicYear, null=True, on_delete=models.CASCADE, related_name='student_levels', verbose_name="Année académique")
+    speciality = models.ForeignKey(Speciality, null=True, blank=True, on_delete=models.SET_NULL, related_name='student_levels', verbose_name="Spécialité de l'étudiant")
     is_active = models.BooleanField(default=False, verbose_name="Niveau actuel de l'étudiant?")
     is_registered = models.BooleanField(default=False, verbose_name="L'étudiant est-il officiellement inscrit à ce niveau?")
+    registered_at = models.DateTimeField(blank=True, null=True, verbose_name="Date d'inscription")
 
     def save(self, *args, **kwargs):
         # Met à jour le champ name avant de sauvegarder
         level_name = self.level.name if self.level else ''
         year_name = self.academic_year.name if self.academic_year else ''
-        self.name = f"{level_name} - {year_name}"
+        self.name = f"{level_name} - {year_name} - {self.speciality}"
         super().save(*args, **kwargs)
 
     def mark_as_registered(self):
         self.is_registered = True
+        self.registered_at = timezone.now()
+        self.student.mark_last_registration_date()
         self.save()
 
     def __str__(self):
-        return f"{self.student.matricule} - {self.level.name} - {self.academic_year.name}"
+        return f"{self.student.matricule} - {self.level.name} - {self.academic_year.name} - {self.speciality}"
 
     class Meta:
         verbose_name = "Niveau Étudiant"
         verbose_name_plural = "Niveaux Étudiants"
         unique_together = ['student', 'level', 'academic_year']
-
-
-
-class PaymentStatus(models.Model):
-    """
-    Modèle pour gérer le statut financier des étudiants
-    """
-    PAYMENT_STATUS_CHOICES = [
-        ('up_to_date', 'À jour'),
-        ('partial', 'Paiement partiel'),
-        ('overdue', 'En retard'),
-        ('blocked', 'Bloqué'),
-    ]
-
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='payment_statuses')
-    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE, related_name='payment_statuses')
-
-    # Montants financiers
-    total_amount_due = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant total dû")
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant payé")
-    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant restant")
-
-    # Statut et dates
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='up_to_date', verbose_name="Statut de paiement")
-    due_date = models.DateField(null=True, blank=True, verbose_name="Date d'échéance")
-    last_payment_date = models.DateField(null=True, blank=True, verbose_name="Dernière date de paiement")
-
-    # Blocage des documents
-    documents_blocked = models.BooleanField(default=False, verbose_name="Documents bloqués")
-    blocking_reason = models.TextField(blank=True, null=True, verbose_name="Raison du blocage")
-
-    # Échéancier personnalisé
-    has_payment_plan = models.BooleanField(default=False, verbose_name="Échéancier personnalisé")
-    payment_plan_details = models.TextField(blank=True, null=True, verbose_name="Détails de l'échéancier")
-
-    # Métadonnées
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière mise à jour")
-    created_by = models.ForeignKey('accounts.BaseUser', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Créé par")
-
-    class Meta:
-        verbose_name = "Statut de paiement"
-        verbose_name_plural = "Statuts de paiement"
-        unique_together = ['student', 'academic_year']
-        ordering = ['-academic_year__start_at', 'student__lastname', 'student__firstname']
-
-    def __str__(self):
-        return f"{self.student} - {self.academic_year} - {self.get_status_display()}"
-
-    @property
-    def payment_percentage(self):
-        """Calcule le pourcentage de paiement"""
-        if self.total_amount_due > 0:
-            return (self.amount_paid / self.total_amount_due) * 100
-        return 0
-
-    @property
-    def is_overdue(self):
-        """Vérifie si le paiement est en retard"""
-        from django.utils import timezone
-        if self.due_date and self.remaining_amount > 0:
-            return timezone.now().date() > self.due_date
-        return False
-
-    def save(self, *args, **kwargs):
-        """Override save pour calculer automatiquement le montant restant"""
-        self.remaining_amount = self.total_amount_due - self.amount_paid
-
-        # Mise à jour automatique du statut selon les montants
-        if self.remaining_amount <= 0:
-            self.status = 'up_to_date'
-            self.documents_blocked = False
-        elif self.amount_paid > 0:
-            self.status = 'partial'
-        elif self.is_overdue:
-            self.status = 'overdue'
-
-        super().save(*args, **kwargs)
+        ordering = ['student__lastname', 'student__firstname']
 
 
 class OfficialDocument(models.Model):
@@ -358,3 +352,4 @@ class OfficialDocument(models.Model):
     class Meta:
         verbose_name = "documents officiel"
         verbose_name_plural = "documents officiels"
+        ordering = ['-created_at', 'student_level__student__lastname', 'student_level__student__firstname']

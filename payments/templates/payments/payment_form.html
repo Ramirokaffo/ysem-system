@@ -1,0 +1,597 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Créer un paiement - YSEM{% endblock %}
+
+{% block page_title %}Créer un paiement{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-autocomplete-results{position:absolute;top:calc(100% + .35rem);left:0;right:0;z-index:1050;max-height:280px;overflow-y:auto;background:#e6e7ee;border-radius:1rem;box-shadow:8px 8px 16px #c5c7d0,-8px -8px 16px #fff;padding:.5rem}.payment-autocomplete-item{display:block;width:100%;padding:.75rem 1rem;border:0;background:transparent;text-align:left;border-radius:.75rem}.payment-autocomplete-item:hover,.payment-autocomplete-item.active{background:rgba(49,91,255,.08)}.payment-autocomplete-meta{display:block;font-size:.8rem;color:#6c757d}.payment-installment-table th,.payment-installment-table td{vertical-align:middle}.payment-summary-totals{background:rgba(255,255,255,.35);border-radius:1rem}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic p-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="mb-1"><i class="fas fa-plus-circle me-2 mr-1"></i>Nouveau paiement</h4>
+                <p class="text-muted mb-0">Commencez par choisir l'étudiant, l'année académique et la catégorie de paiement.</p>
+            </div>
+            <a href="{% url 'payments:payments_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+
+        <div class="card-neumorphic p-4">
+
+            {% if registration_flow and registration_student and registration_academic_year %}
+            <div class="alert alert-warning mb-4">
+                <div class="fw-bold mr-2">
+                    <i class="fas fa-route me-2 mr-1"></i>Flux d'inscription définitive en cours.
+                </div>
+                <div>
+                    Vous enregistrez le paiement de <strong>{{ registration_student.firstname }} {{ registration_student.lastname }}</strong>
+                    pour finaliser son inscription. Veuillez solder au minimum la première tranche de scolarité du niveau actif
+                    <strong>{{ registration_academic_year.name }}</strong>{% if registration_installment and registration_installment.level %} · <strong>{{ registration_installment.level.name }}</strong>{% endif %}.
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.student }}
+                {% if registration_flow %}
+                <input type="hidden" name="registration_flow" value="1">
+                <input type="hidden" name="registration_student_id" value="{{ registration_student.pk|default:'' }}">
+                <input type="hidden" name="registration_academic_year_id" value="{{ registration_academic_year.pk|default:'' }}">
+                <input type="hidden" name="registration_installment_id" value="{{ registration_installment.pk|default:'' }}">
+                <input type="hidden" name="return_url" value="{{ registration_return_url }}">
+                {% endif %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4">
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.student_search.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.student_search.label }}</label>
+                            <div class="position-relative">
+                                {{ form.student_search }}
+                                <div id="payment-student-results" class="payment-autocomplete-results d-none" role="listbox" aria-label="Résultats de recherche étudiant"></div>
+                            </div>
+                            <!-- <small class="form-text text-muted">Tapez un mot-clé puis choisissez l'étudiant dans la liste proposée.</small> -->
+                            {% if form.student.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.student.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.academic_year.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.academic_year.label }}</label>
+                            {{ form.academic_year }}
+                            {% if form.academic_year.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.academic_year.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.category.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.category.label }}</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.category.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-2" id="installment-field-wrapper">
+                        <div>
+                            <div class="row align-items-end g-3">
+                                <div class="col-lg-6">
+                                    <div class="form-group mb-0">
+                                        <label for="{{ form.installment.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.installment.label }}</label>
+                                        {{ form.installment }}
+                                        <small class="form-text text-muted mb-2" id="installment-help-text">Les tranches sont filtrées selon le programme de l'étudiant et l'année choisie.</small>
+                                        {% if form.installment.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.installment.errors %}
+                                            <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group mb-0 pt-lg-4">
+                                        <div class="form-check mt-2">
+                                            {{ form.settle_remaining_balance }}
+                                            <label for="{{ form.settle_remaining_balance.id_for_label }}" class="form-check-label">
+                                                {{ form.settle_remaining_balance.label }}
+                                            </label>
+                                        </div>
+                                        <small class="form-text text-muted" id="settle-remaining-help-text">
+                                            Cochez cette option pour répartir automatiquement le paiement sur toutes les tranches restantes.
+                                        </small>
+                                        {% if form.settle_remaining_balance.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.settle_remaining_balance.errors %}
+                                            <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12" id="installment-summary-wrapper">
+                        <div class="card-neumorphic p-4 shadow-inset">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-table me-2 mr-1"></i>Liste des tranches</h6>
+                                    <p class="text-muted mb-0 small">Montants attendus, échéances et niveau de règlement par tranche.</p>
+                                </div>
+                                <div class="payment-summary-totals px-3 py-2 small shadow-inset" id="installment-summary-totals">
+                                    <div><strong>Total :</strong> <span data-total-amount>0 FCFA</span></div>
+                                    <div><strong>Déjà soldé :</strong> <span data-total-paid>0 FCFA</span></div>
+                                    <div><strong>Reste :</strong> <span data-total-remaining>0 FCFA</span></div>
+                                </div>
+                            </div>
+                            <div id="installment-summary-message" class="text-muted small">Sélectionnez un étudiant, une année académique et la catégorie frais de scolarité.</div>
+                            <div class="table-responsive d-none border-top pt-1" id="installment-summary-table-wrapper">
+                                <table class="table table-borderless payment-installment-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Libellé</th>
+                                            <th>Montant</th>
+                                            <th>Échéance</th>
+                                            <th>Montant déjà soldé</th>
+                                            <th>Reste</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="installment-summary-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.payment_date.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.payment_date.label }}</label>
+                            {{ form.payment_date }}
+                            {% if form.payment_date.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.payment_date.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.amount_paid.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.amount_paid.label }}</label>
+                            {{ form.amount_paid }}
+                            {% if form.amount_paid.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.amount_paid.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.source.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.source.label }}</label>
+                            {{ form.source }}
+                            {% if form.source.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.source.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="{{ form.receipt_number.id_for_label }}" class="form-label text-muted font-weight-bold">{{ form.receipt_number.label }}</label>
+                            {{ form.receipt_number }}
+                            {% if form.receipt_number.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.receipt_number.errors %}
+                                <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top flex-wrap">
+                    <a href="{% if registration_flow and registration_return_url %}{{ registration_return_url }}{% else %}{% url 'payments:payments_list' %}{% endif %}" class="btn btn-outline-secondary mx-2">Annuler</a>
+                    {% if not registration_flow %}
+                    <button type="submit" name="save_and_add" value="1" class="btn btn-outline-dark mr-2">
+                        <i class="fas fa-plus me-2 mr-1"></i>Enregistrer et ajouter
+                    </button>
+                    {% endif %}
+                    <button type="submit" class="btn btn-outline-success">
+                        <i class="fas fa-save me-2 mr-1"></i>{% if registration_flow %}Payer et finaliser l'inscription{% else %}Enregistrer le paiement{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const studentInput = document.getElementById('{{ form.student_search.id_for_label }}');
+    const studentHiddenInput = document.getElementById('{{ form.student.id_for_label }}');
+    const studentResults = document.getElementById('payment-student-results');
+    // const selectedStudentSummary = document.getElementById('selected-student-summary');
+    const categorySelect = document.getElementById('{{ form.category.id_for_label }}');
+    const academicYearSelect = document.getElementById('{{ form.academic_year.id_for_label }}');
+    const installmentSelect = document.getElementById('{{ form.installment.id_for_label }}');
+    const settleRemainingCheckbox = document.getElementById('{{ form.settle_remaining_balance.id_for_label }}');
+    const settleRemainingHelpText = document.getElementById('settle-remaining-help-text');
+    const installmentWrapper = document.getElementById('installment-field-wrapper');
+    const installmentSummaryWrapper = document.getElementById('installment-summary-wrapper');
+    const installmentHelpText = document.getElementById('installment-help-text');
+    const installmentSummaryMessage = document.getElementById('installment-summary-message');
+    const installmentSummaryTableWrapper = document.getElementById('installment-summary-table-wrapper');
+    const installmentSummaryBody = document.getElementById('installment-summary-body');
+    const amountPaidInput = document.getElementById('{{ form.amount_paid.id_for_label }}');
+    const totalAmountElement = document.querySelector('[data-total-amount]');
+    const totalPaidElement = document.querySelector('[data-total-paid]');
+    const totalRemainingElement = document.querySelector('[data-total-remaining]');
+    const studentSearchUrl = '{% url "payments:payment_student_search" %}';
+    const installmentSummaryUrl = '{% url "payments:payment_installment_summary" %}';
+    const initialInstallmentValue = installmentSelect.value;
+    let activeSearchToken = 0;
+    let debounceTimer = null;
+    let lastKnownRemainingTotal = '0.00';
+    let lastInstallmentHelpMessage = 'Les tranches sont filtrées selon le programme de l\'étudiant et l\'année choisie.';
+    let manualAmountBeforeSettle = '';
+    let selectedStudent = studentHiddenInput.value ? {
+        id: studentHiddenInput.value,
+        text: studentInput.value.trim(),
+        program_id: studentInput.dataset.selectedProgramId || '',
+        program_name: studentInput.dataset.selectedProgramName || ''
+    } : null;
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function closeResults() {
+        studentResults.classList.add('d-none');
+        studentResults.innerHTML = '';
+    }
+
+    // function updateSelectedStudentSummary() {
+    //     if (!selectedStudent) {
+    //         selectedStudentSummary.textContent = 'Aucun étudiant sélectionné.';
+    //         return;
+    //     }
+
+    //     selectedStudentSummary.innerHTML = '<strong>Étudiant sélectionné :</strong> ' + escapeHtml(selectedStudent.text);
+    // }
+
+    function resetInstallmentSummary(message) {
+        installmentSummaryMessage.textContent = message;
+        installmentSummaryTableWrapper.classList.add('d-none');
+        installmentSummaryBody.innerHTML = '';
+        totalAmountElement.textContent = '0 FCFA';
+        totalPaidElement.textContent = '0 FCFA';
+        totalRemainingElement.textContent = '0 FCFA';
+        updateSettleRemainingState({
+            totals: {
+                remaining_amount: '0.00',
+                remaining_amount_display: '0 FCFA'
+            }
+        });
+    }
+
+    function updateSettleRemainingState(data) {
+        const totals = data && data.totals ? data.totals : null;
+        const remainingAmount = totals && totals.remaining_amount ? totals.remaining_amount : '0.00';
+        const remainingAmountDisplay = totals && totals.remaining_amount_display ? totals.remaining_amount_display : '0 FCFA';
+        const hasRemainingBalance = Number.parseFloat(remainingAmount || '0') > 0;
+
+        lastKnownRemainingTotal = remainingAmount;
+        settleRemainingCheckbox.disabled = !hasRemainingBalance;
+
+        if (!hasRemainingBalance) {
+            settleRemainingCheckbox.checked = false;
+            installmentSelect.removeAttribute('disabled');
+            amountPaidInput.readOnly = false;
+            installmentHelpText.textContent = lastInstallmentHelpMessage;
+            settleRemainingHelpText.textContent = 'Aucun reste dû global n’est disponible à solder pour la sélection courante.';
+            return;
+        }
+
+        settleRemainingHelpText.textContent = 'Cochez cette option pour solder automatiquement le reste total dû (' + remainingAmountDisplay + ') sur toutes les tranches restantes.';
+
+        if (settleRemainingCheckbox.checked) {
+            installmentSelect.value = '';
+            installmentSelect.setAttribute('disabled', 'disabled');
+            amountPaidInput.value = remainingAmount;
+            amountPaidInput.readOnly = true;
+            installmentHelpText.textContent = 'Le montant sera réparti automatiquement sur toutes les tranches restantes.';
+            return;
+        }
+
+        installmentSelect.removeAttribute('disabled');
+        amountPaidInput.readOnly = false;
+        installmentHelpText.textContent = lastInstallmentHelpMessage;
+    }
+
+    function populateInstallmentSelect(installments, preferredValue) {
+        const currentValue = preferredValue || installmentSelect.value || initialInstallmentValue || '';
+        installmentSelect.innerHTML = '<option value="">Sélectionner une tranche</option>';
+
+        installments.forEach((installment) => {
+            const option = document.createElement('option');
+            option.value = installment.id;
+            option.textContent = installment.label;
+            installmentSelect.appendChild(option);
+        });
+
+        const canRestore = installments.some((installment) => String(installment.id) === String(currentValue));
+        installmentSelect.value = canRestore ? currentValue : '';
+    }
+
+    function renderInstallmentSummary(data) {
+        const installments = Array.isArray(data.installments) ? data.installments : [];
+        const selectableInstallments = installments.filter((installment) => installment.is_selectable);
+        populateInstallmentSelect(selectableInstallments, installmentSelect.value);
+
+        totalAmountElement.textContent = data.totals ? data.totals.amount_display : '0 FCFA';
+        totalPaidElement.textContent = data.totals ? data.totals.amount_paid_display : '0 FCFA';
+        totalRemainingElement.textContent = data.totals ? data.totals.remaining_amount_display : '0 FCFA';
+        updateSettleRemainingState(data);
+
+        if (!installments.length) {
+            installmentHelpText.textContent = data.message || 'Aucune tranche disponible.';
+            lastInstallmentHelpMessage = installmentHelpText.textContent;
+            resetInstallmentSummary(data.message || 'Aucune tranche disponible.');
+            return;
+        }
+
+        installmentHelpText.textContent = selectableInstallments.length
+            ? 'Les tranches proposées correspondent au programme de l\'étudiant, à l\'année choisie et ne sont pas encore soldées.'
+            : 'Toutes les tranches de cet étudiant pour cette année sont déjà soldées.';
+        lastInstallmentHelpMessage = installmentHelpText.textContent;
+        installmentSummaryMessage.textContent = data.program_name
+            ? 'Programme : ' + data.program_name + ' · Année : ' + (data.academic_year_name || '—')
+            : 'Synthèse des tranches disponibles.';
+        installmentSummaryBody.innerHTML = installments.map((installment) => `
+            <tr>
+                <td><strong>${escapeHtml(installment.name)}</strong></td>
+                <td>${escapeHtml(installment.amount_display)}</td>
+                <td>${escapeHtml(installment.due_date_display)}</td>
+                <td>${escapeHtml(installment.amount_paid_display)}</td>
+                <td>${escapeHtml(installment.remaining_amount_display)}</td>
+                <td><span class="badge text-white ${escapeHtml(installment.status_badge_class)}">${escapeHtml(installment.status_label)}</span></td>
+            </tr>
+        `).join('');
+        installmentSummaryTableWrapper.classList.remove('d-none');
+    }
+
+    function setSelectedStudent(student) {
+        selectedStudent = student;
+        studentHiddenInput.value = student ? student.id : '';
+        studentInput.value = student ? student.text : studentInput.value;
+        // updateSelectedStudentSummary();
+        closeResults();
+    }
+
+    function clearSelectedStudent(preserveText) {
+        selectedStudent = null;
+        studentHiddenInput.value = '';
+        if (!preserveText) {
+            studentInput.value = '';
+        }
+        // updateSelectedStudentSummary();
+    }
+
+    function renderStudentResults(results) {
+        if (!results.length) {
+            studentResults.innerHTML = '<div class="small text-muted px-3 py-2">Aucun étudiant trouvé.</div>';
+            studentResults.classList.remove('d-none');
+            return;
+        }
+
+        studentResults.innerHTML = results.map((student) => `
+            <button type="button" class="payment-autocomplete-item" data-student-id="${escapeHtml(student.id)}" data-program-id="${escapeHtml(student.program_id || '')}" data-program-name="${escapeHtml(student.program_name || '')}" data-label="${escapeHtml(student.text)}">
+                <strong>${escapeHtml(student.matricule)}</strong> - ${escapeHtml(student.firstname)} ${escapeHtml(student.lastname)}
+                <span class="payment-autocomplete-meta">${escapeHtml(student.program_name || 'Programme non défini')}</span>
+            </button>
+        `).join('');
+        studentResults.classList.remove('d-none');
+    }
+
+    function fetchStudents(query) {
+        const token = ++activeSearchToken;
+        fetch(studentSearchUrl + '?q=' + encodeURIComponent(query), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (token !== activeSearchToken) {
+                    return;
+                }
+                renderStudentResults(data.results || []);
+            })
+            .catch(() => {
+                if (token !== activeSearchToken) {
+                    return;
+                }
+                studentResults.innerHTML = '<div class="small text-danger px-3 py-2">Erreur lors de la recherche.</div>';
+                studentResults.classList.remove('d-none');
+            });
+    }
+
+    function loadInstallmentSummary() {
+        const isTuitionPayment = categorySelect.value === 'frais_scolarite';
+        const studentId = studentHiddenInput.value;
+        const academicYearId = academicYearSelect.value;
+
+        installmentWrapper.style.display = isTuitionPayment ? '' : 'none';
+        installmentSummaryWrapper.style.display = isTuitionPayment ? '' : 'none';
+
+        if (!isTuitionPayment) {
+            installmentSelect.innerHTML = '<option value="">Sélectionner une tranche</option>';
+            installmentHelpText.textContent = 'Ce champ s\'affiche uniquement pour les frais de scolarité.';
+            lastInstallmentHelpMessage = installmentHelpText.textContent;
+            settleRemainingCheckbox.checked = false;
+            resetInstallmentSummary('Sélectionnez la catégorie frais de scolarité pour afficher les tranches.');
+            return;
+        }
+
+        if (!studentId) {
+            installmentSelect.innerHTML = '<option value="">Sélectionner une tranche</option>';
+            installmentHelpText.textContent = 'Sélectionnez d\'abord un étudiant avec un programme pour afficher les tranches disponibles.';
+            lastInstallmentHelpMessage = installmentHelpText.textContent;
+            settleRemainingCheckbox.checked = false;
+            resetInstallmentSummary('Sélectionnez d\'abord un étudiant.');
+            return;
+        }
+
+        if (!academicYearId) {
+            installmentSelect.innerHTML = '<option value="">Sélectionner une tranche</option>';
+            installmentHelpText.textContent = 'Sélectionnez l\'année académique pour afficher les tranches disponibles.';
+            lastInstallmentHelpMessage = installmentHelpText.textContent;
+            settleRemainingCheckbox.checked = false;
+            resetInstallmentSummary('Sélectionnez l\'année académique.');
+            return;
+        }
+
+        installmentHelpText.textContent = 'Chargement des tranches disponibles...';
+        installmentSummaryMessage.textContent = 'Chargement des informations de paiement...';
+
+        fetch(installmentSummaryUrl + '?student_id=' + encodeURIComponent(studentId) + '&academic_year_id=' + encodeURIComponent(academicYearId), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            })
+            .then((data) => {
+                renderInstallmentSummary(data);
+            })
+            .catch((error) => {
+                installmentSelect.innerHTML = '<option value="">Sélectionner une tranche</option>';
+                installmentHelpText.textContent = (error && error.message) ? error.message : 'Impossible de charger les tranches.';
+                resetInstallmentSummary((error && error.message) ? error.message : 'Impossible de charger les tranches.');
+            });
+    }
+
+    studentInput.addEventListener('input', function () {
+        const query = studentInput.value.trim();
+        if (!selectedStudent || query !== selectedStudent.text) {
+            clearSelectedStudent(true);
+            loadInstallmentSummary();
+        }
+
+        clearTimeout(debounceTimer);
+        if (query.length < 2) {
+            closeResults();
+            return;
+        }
+
+        debounceTimer = setTimeout(function () {
+            fetchStudents(query);
+        }, 250);
+    });
+
+    studentInput.addEventListener('focus', function () {
+        const query = studentInput.value.trim();
+        if (query.length >= 2 && studentResults.innerHTML.trim()) {
+            studentResults.classList.remove('d-none');
+        }
+    });
+
+    studentInput.addEventListener('blur', function () {
+        window.setTimeout(function () {
+            closeResults();
+        }, 150);
+    });
+
+    studentResults.addEventListener('click', function (event) {
+        const option = event.target.closest('[data-student-id]');
+        if (!option) {
+            return;
+        }
+
+        setSelectedStudent({
+            id: option.dataset.studentId,
+            text: option.dataset.label,
+            program_id: option.dataset.programId || '',
+            program_name: option.dataset.programName || ''
+        });
+        loadInstallmentSummary();
+    });
+
+    settleRemainingCheckbox.addEventListener('change', function () {
+        if (settleRemainingCheckbox.checked) {
+            manualAmountBeforeSettle = amountPaidInput.value;
+        } else if (amountPaidInput.value === lastKnownRemainingTotal && manualAmountBeforeSettle) {
+            amountPaidInput.value = manualAmountBeforeSettle;
+        }
+
+        updateSettleRemainingState({
+            totals: {
+                remaining_amount: lastKnownRemainingTotal,
+                remaining_amount_display: totalRemainingElement.textContent || '0 FCFA'
+            }
+        });
+    });
+
+    academicYearSelect.addEventListener('change', loadInstallmentSummary);
+    categorySelect.addEventListener('change', loadInstallmentSummary);
+
+    // updateSelectedStudentSummary();
+    loadInstallmentSummary();
+});
+</script>
+{% endblock %}
