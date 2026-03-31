@@ -16,7 +16,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 
 from academic.document_requirements import DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS, PROGRAM_DOCUMENT_FIELD_NAMES
-from academic.models import AcademicYear, Program
+from academic.models import AcademicYear, Program, Speciality
 from audit.utils import log_audit_event
 
 from accounts.models import Godfather
@@ -52,7 +52,7 @@ class PreInscriptionsView(LoginRequiredMixin, TemplateView):
 
         students = get_filtered_pre_inscriptions_queryset(
             params,
-            queryset=Student.objects.select_related('school', 'program', 'godfather', 'start_level').filter(deleted_at__isnull=True)
+            queryset=Student.objects.select_related('school', 'program', 'godfather', 'start_level').prefetch_related('program__specialities').filter(deleted_at__isnull=True)
         )
         filtered_students_count = students.count()
 
@@ -568,15 +568,24 @@ def pre_inscription_detail(request, pk):
             'secondary_diplomas__school',
             'student_levels__level',
             'student_levels__academic_year',
+            'student_levels__speciality',
             'university_levels__university',
+            'program__specialities',
         ),
         matricule=pk
     )
+
+    active_student_level = student.student_levels.select_related('speciality').filter(is_active=True).first()
+    program_specialities = []
+    if student.program_id:
+        program_specialities = sorted(student.program.specialities.all(), key=lambda speciality: speciality.name.lower())
 
     # _send_student_status_email(student, "pre_inscription")
 
     context = {
         'student': student,
+        'active_student_level': active_student_level,
+        'program_specialities': program_specialities,
         'page_title': f'Pré-Inscription - {student.firstname} {student.lastname}',
         'document_entries': build_program_document_entries(
             program=student.program,
@@ -659,16 +668,48 @@ def pre_inscription_approve(request, pk):
     """
     Vue pour approuver une inscription
     """
-    if request.method == 'POST':
-        student = get_object_or_404(Student, matricule=pk)
-        student.status = 'approved'
-        student.save()
-        queue_student_status_email(student, 'pre_inscription_approved')
+    if request.method != 'POST':
+        return redirect('main:inscriptions')
 
-        messages.success(request, f'Pré-inscription de {student.firstname} {student.lastname} approuvée avec succès.')
+    student = get_object_or_404(Student.objects.select_related('program'), matricule=pk)
+    student_level = student.get_active_level()
+
+    if not student_level:
+        messages.error(request, "Impossible d'approuver cette pré-inscription : aucun niveau actif n'est défini.")
         return redirect('main:inscription_detail', pk=pk)
 
-    return redirect('main:inscriptions')
+    speciality_id = request.POST.get('speciality')
+    program_specialities = Speciality.objects.filter(program_id=student.program_id).order_by('name') if student.program_id else Speciality.objects.none()
+    requires_speciality = program_specialities.exists()
+
+    selected_speciality = None
+    if requires_speciality:
+        if not speciality_id:
+            messages.error(request, "Veuillez sélectionner une spécialité avant d'approuver la pré-inscription.")
+            return redirect('main:inscription_detail', pk=pk)
+
+        selected_speciality = program_specialities.filter(pk=speciality_id).first()
+        if not selected_speciality:
+            messages.error(request, "La spécialité sélectionnée ne correspond pas au programme de l'étudiant.")
+            return redirect('main:inscription_detail', pk=pk)
+    elif speciality_id:
+        selected_speciality = Speciality.objects.filter(pk=speciality_id, program_id=student.program_id).first()
+        if not selected_speciality:
+            messages.error(request, "La spécialité sélectionnée ne correspond pas au programme de l'étudiant.")
+            return redirect('main:inscription_detail', pk=pk)
+
+    with transaction.atomic():
+        if selected_speciality:
+            student_level.speciality = selected_speciality
+            student_level.save()
+
+        student.status = 'approved'
+        student.save(update_fields=['status'])
+
+    queue_student_status_email(student, 'pre_inscription_approved')
+
+    messages.success(request, f'Pré-inscription de {student.firstname} {student.lastname} approuvée avec succès.')
+    return redirect('main:inscription_detail', pk=pk)
 
 
 @login_required

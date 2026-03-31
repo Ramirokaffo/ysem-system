@@ -289,12 +289,9 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         {% if student.status == 'pending' %}
-                                            <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline" id="approve-form-{{ student.matricule }}">
-                                                {% csrf_token %}
-                                                <button type="button" class="btn btn-sm btn-outline-success" title="Approuver" data-toggle="modal" data-target="#approveModal-{{ student.matricule }}">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-success" title="Approuver" data-toggle="modal" data-target="#approveModal-{{ student.matricule }}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
                                             <form method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline" id="reject-form-{{ student.matricule }}">
                                                 {% csrf_token %}
                                                 <button type="button" class="btn btn-sm btn-outline-danger" title="Rejeter" data-toggle="modal" data-target="#rejectModal-{{ student.matricule }}">
@@ -448,7 +445,8 @@
         <!-- Modal d'approbation -->
         <div class="modal fade" id="approveModal-{{ student.matricule }}" tabindex="-1" role="dialog" aria-labelledby="approveModal-{{ student.matricule }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
+                <form method="post" action="{% url 'main:inscription_approve' student.matricule %}" id="approve-form-{{ student.matricule }}" class="modal-content">
+                    {% csrf_token %}
                     <div class="modal-header">
                         <h2 class="h6 modal-title mb-0" id="modal-title-approve-{{ student.matricule }}">Confirmer l'approbation</h2>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
@@ -460,18 +458,41 @@
                             <span class="modal-icon display-1-lg">
                                 <span class="fas fa-check-circle text-success"></span>
                             </span>
-                            <div class="mt-4">
-                                <p>Êtes-vous sûr de vouloir approuver la pré-inscription de <strong>{{ student.firstname }} {{ student.lastname }}</strong> ?</p>
+                            <div class="mt-4 text-start">
+                                <p class="text-center">Veuillez confirmer l'approbation de <strong>{{ student.firstname }} {{ student.lastname }}</strong>.</p>
+                                <label for="approve-speciality-{{ student.matricule }}" class="form-label fw-bold">Spécialité retenue</label>
+                                {% if student.program %}
+                                    {% with specialities=student.program.specialities.all %}
+                                        <select id="approve-speciality-{{ student.matricule }}" name="speciality" class="form-control" {% if specialities %}required{% endif %}>
+                                            <option value="">Sélectionner la spécialité</option>
+                                            {% for speciality in specialities %}
+                                                <option value="{{ speciality.pk }}">{{ speciality.name }}</option>
+                                            {% empty %}
+                                                <option value="">Aucune spécialité disponible pour ce programme</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if specialities %}
+                                            <small class="text-muted d-block mt-2">Spécialités filtrées pour le programme {{ student.program.name }}.</small>
+                                        {% else %}
+                                            <small class="text-muted d-block mt-2">Aucune spécialité n'est encore configurée pour le programme {{ student.program.name }}.</small>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <select id="approve-speciality-{{ student.matricule }}" name="speciality" class="form-control" disabled>
+                                        <option value="">Aucun programme renseigné</option>
+                                    </select>
+                                    <small class="text-muted d-block mt-2">Aucun programme n'est renseigné pour cet étudiant.</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-sm btn-success" onclick="document.getElementById('approve-form-{{ student.matricule }}').submit();" data-dismiss="modal">
+                        <button type="submit" class="btn btn-sm btn-success">
                             Approuver
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 

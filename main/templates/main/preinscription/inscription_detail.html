@@ -177,13 +177,10 @@
             
             {% if student.status == 'pending' %}
                 <div class="d-grid gap-2">
-                    <form id="approve-form" method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="button" class="btn text-success w-100 mb-2 text-left" data-toggle="modal" data-target="#approveInscriptionModal">
-                            <i class="fas fa-check me-2"></i>
-                            Approuver la pré-inscription
-                        </button>
-                    </form>
+                    <button type="button" class="btn text-success w-100 mb-2 text-left" data-toggle="modal" data-target="#approveInscriptionModal">
+                        <i class="fas fa-check me-2"></i>
+                        Approuver la pré-inscription
+                    </button>
                     
                     <form id="reject-form" method="post" action="{% url 'main:inscription_reject' student.matricule %}" class="d-inline">
                         {% csrf_token %}
@@ -745,7 +742,54 @@
 {% endif %}
 
 {% if student.status == 'pending' %}
-    {% include 'components/modal_confirm.html' with modal_id="approveInscriptionModal" modal_title="Confirmer l'approbation" modal_message="Êtes-vous sûr de vouloir approuver cette pré-inscription ?" confirm_text="Approuver" cancel_text="Annuler" confirm_action="submitActionForm('approve-form')" modal_icon="fas fa-check" %}
+    <div class="modal fade" id="approveInscriptionModal" tabindex="-1" role="dialog" aria-labelledby="approveInscriptionModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <form id="approve-form" method="post" action="{% url 'main:inscription_approve' student.matricule %}" class="modal-content">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h2 class="h6 modal-title mb-0" id="modal-title-approveInscriptionModal">Confirmer l'approbation</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="py-3 text-center">
+                        <span class="modal-icon display-1-lg">
+                            <span class="fas fa-check text-success"></span>
+                        </span>
+                        <div class="mt-4 text-start">
+                            <p class="text-center">Veuillez sélectionner la spécialité retenue avant d'approuver cette pré-inscription.</p>
+                            <label for="approve-speciality" class="form-label fw-bold">Spécialité retenue</label>
+                            {% if student.program %}
+                                <select id="approve-speciality" name="speciality" class="form-control" {% if program_specialities %}required{% endif %}>
+                                    <option value="">Sélectionner la spécialité</option>
+                                    {% for speciality in program_specialities %}
+                                        <option value="{{ speciality.pk }}" {% if active_student_level and active_student_level.speciality_id == speciality.pk %}selected{% endif %}>{{ speciality.name }}</option>
+                                    {% empty %}
+                                        <option value="">Aucune spécialité disponible pour ce programme</option>
+                                    {% endfor %}
+                                </select>
+                                {% if program_specialities %}
+                                    <small class="text-muted d-block mt-2">Spécialités filtrées pour le programme {{ student.program.name }}.</small>
+                                {% else %}
+                                    <small class="text-muted d-block mt-2">Aucune spécialité n'est encore configurée pour le programme {{ student.program.name }}.</small>
+                                {% endif %}
+                            {% else %}
+                                <select id="approve-speciality" name="speciality" class="form-control" disabled>
+                                    <option value="">Aucun programme renseigné</option>
+                                </select>
+                                <small class="text-muted d-block mt-2">Aucun programme n'est renseigné pour cet étudiant.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-sm btn-success">Approuver</button>
+                </div>
+            </form>
+        </div>
+    </div>
     {% include 'components/modal_confirm.html' with modal_id="rejectInscriptionModal" modal_title="Confirmer le rejet" modal_message="Êtes-vous sûr de vouloir rejeter cette pré-inscription ?" confirm_text="Rejeter" cancel_text="Annuler" confirm_action="submitActionForm('reject-form')" modal_icon="fas fa-times" %}
 {% elif student.status == 'approved' %}
     {% include 'components/modal_confirm.html' with modal_id="registerStudentModal" modal_title="Confirmer l'inscription définitive" modal_message="Êtes-vous sûr de vouloir inscrire définitivement cet étudiant ?" confirm_text="Inscrire l'étudiant" cancel_text="Annuler" confirm_action="submitActionForm('register-form')" modal_icon="fas fa-user-graduate" %}

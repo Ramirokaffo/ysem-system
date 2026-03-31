@@ -913,6 +913,16 @@ class PreInscriptionApprovalNotificationTests(TestCase):
             role='scholar'
         )
         self.client.force_login(self.user)
+        self.academic_year = AcademicYear.objects.create(
+            start_at=date(2024, 9, 1),
+            end_at=date(2025, 6, 30),
+            is_active=True,
+        )
+        self.level = Level.objects.create(name='Licence 1')
+        self.program = Program.objects.create(name='Informatique')
+        self.speciality = Speciality.objects.create(name='Génie logiciel', program=self.program)
+        self.other_program = Program.objects.create(name='Gestion')
+        self.other_speciality = Speciality.objects.create(name='Finance', program=self.other_program)
         self.student = Student.objects.create(
             matricule='INT_PENDING_001',
             firstname='Merveille',
@@ -922,17 +932,54 @@ class PreInscriptionApprovalNotificationTests(TestCase):
             email='merveille@example.com',
             status='pending',
             metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+            program=self.program,
+        )
+        self.student_level = StudentLevel.objects.create(
+            student=self.student,
+            level=self.level,
+            academic_year=self.academic_year,
+            is_active=True,
         )
         self.approve_url = reverse('main:inscription_approve', kwargs={'pk': self.student.matricule})
         self.detail_url = reverse('main:inscription_detail', kwargs={'pk': self.student.matricule})
 
-    def test_approving_pre_inscription_sends_validation_email(self):
-        with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.post(self.approve_url)
+    def test_inscription_detail_displays_speciality_selector_in_approval_modal(self):
+        response = self.client.get(self.detail_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="speciality"')
+        self.assertContains(response, 'Sélectionner la spécialité')
+        self.assertContains(response, self.speciality.name)
+
+    def test_approving_pre_inscription_requires_program_speciality(self):
+        response = self.client.post(self.approve_url)
 
         self.assertRedirects(response, self.detail_url, fetch_redirect_response=False)
         self.student.refresh_from_db()
+        self.student_level.refresh_from_db()
+        self.assertEqual(self.student.status, 'pending')
+        self.assertIsNone(self.student_level.speciality)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_approving_pre_inscription_rejects_speciality_from_another_program(self):
+        response = self.client.post(self.approve_url, {'speciality': self.other_speciality.pk})
+
+        self.assertRedirects(response, self.detail_url, fetch_redirect_response=False)
+        self.student.refresh_from_db()
+        self.student_level.refresh_from_db()
+        self.assertEqual(self.student.status, 'pending')
+        self.assertIsNone(self.student_level.speciality)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_approving_pre_inscription_saves_speciality_and_sends_validation_email(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(self.approve_url, {'speciality': self.speciality.pk})
+
+        self.assertRedirects(response, self.detail_url, fetch_redirect_response=False)
+        self.student.refresh_from_db()
+        self.student_level.refresh_from_db()
         self.assertEqual(self.student.status, 'approved')
+        self.assertEqual(self.student_level.speciality, self.speciality)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['merveille@example.com'])
         self.assertIn('validation', mail.outbox[0].subject.lower())
@@ -2405,3 +2452,150 @@ class PaymentStatusViewTests(TestCase):
         self.assertEqual(response.context['filtered_students_count'], 1)
         self.assertContains(response, 'Alice Ngono')
         self.assertNotContains(response, 'Jean Dupont')
+
+
+class StatistiquesViewTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_stats',
+            password='testpass123',
+            role='scholar',
+        )
+        self.client.force_login(self.user)
+
+        self.old_year = AcademicYear.objects.create(
+            start_at=date(2024, 9, 1),
+            end_at=date(2025, 6, 30),
+            is_active=False,
+        )
+        self.active_year = AcademicYear.objects.create(
+            start_at=date(2025, 9, 1),
+            end_at=date(2026, 6, 30),
+            is_active=True,
+        )
+        self.level_1 = Level.objects.create(name='Licence 1', academic_order=1)
+        self.level_2 = Level.objects.create(name='Licence 2', academic_order=2)
+        self.program_1 = Program.objects.create(name='Informatique')
+        self.program_2 = Program.objects.create(name='Gestion')
+        self.speciality_1 = Speciality.objects.create(name='Data', program=self.program_1)
+        self.speciality_2 = Speciality.objects.create(name='Finance', program=self.program_2)
+        self.school_1 = School.objects.create(
+            name='Lycée de Yaoundé',
+            phone_number='+237600000001',
+            level='secondary',
+        )
+        self.school_2 = School.objects.create(
+            name='Université de Douala',
+            phone_number='+237600000002',
+            level='higher',
+        )
+
+        self.student_active = Student.objects.create(
+            matricule='STAT-001',
+            firstname='Alice',
+            lastname='Nanga',
+            gender='F',
+            lang='fr',
+            status='registered',
+            program=self.program_1,
+            school=self.school_1,
+            start_level=self.level_1,
+        )
+        self.student_old = Student.objects.create(
+            matricule='STAT-002',
+            firstname='Brice',
+            lastname='Essomba',
+            gender='M',
+            lang='en',
+            status='registered',
+            program=self.program_2,
+            school=self.school_2,
+            start_level=self.level_2,
+        )
+
+        self.student_level_active = StudentLevel.objects.create(
+            student=self.student_active,
+            level=self.level_1,
+            academic_year=self.active_year,
+            speciality=self.speciality_1,
+            is_active=True,
+            is_registered=True,
+        )
+        self.student_level_old = StudentLevel.objects.create(
+            student=self.student_old,
+            level=self.level_2,
+            academic_year=self.old_year,
+            speciality=self.speciality_2,
+            is_active=True,
+            is_registered=True,
+        )
+
+        OfficialDocument.objects.create(
+            student_level=self.student_level_active,
+            type=OfficialDocument.TYPE_TRANSCRIPT,
+            status='available',
+        )
+        OfficialDocument.objects.create(
+            student_level=self.student_level_active,
+            type=OfficialDocument.TYPE_CERTIFICATE,
+            status='withdrawn',
+        )
+        OfficialDocument.objects.create(
+            student_level=self.student_level_old,
+            type=OfficialDocument.TYPE_DIPLOMA,
+            status='lost',
+        )
+
+        self.url = reverse('main:statistiques')
+
+    def test_statistics_view_defaults_to_active_year_and_renders_all_filters(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['current_year'], self.active_year)
+        self.assertEqual(response.context['selected_year'], str(self.active_year.id))
+        self.assertEqual(response.context['total_students'], 1)
+        self.assertEqual(response.context['total_documents'], 2)
+        self.assertContains(response, 'Filtres avancés')
+        self.assertContains(response, 'École d’origine')
+        self.assertContains(response, 'Statut document')
+        self.assertContains(response, 'Type de document')
+        self.assertContains(response, 'Toutes les années')
+
+    def test_statistics_view_can_aggregate_all_years(self):
+        response = self.client.get(self.url, {'year': 'all'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context['current_year'])
+        self.assertEqual(response.context['selected_year'], 'all')
+        self.assertEqual(response.context['current_period_label'], 'Toutes les années')
+        self.assertEqual(response.context['total_students'], 2)
+        self.assertEqual(response.context['total_documents'], 3)
+        self.assertCountEqual(
+            [stat['label'] for stat in response.context['level_stats']],
+            [self.level_1.name, self.level_2.name],
+        )
+
+    def test_statistics_view_applies_combined_student_and_document_filters(self):
+        response = self.client.get(self.url, {
+            'year': 'all',
+            'program': str(self.program_1.id),
+            'gender': 'F',
+            'document_status': 'withdrawn',
+            'document_type': OfficialDocument.TYPE_CERTIFICATE,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['filters_expanded'])
+        self.assertEqual(response.context['total_students'], 1)
+        self.assertEqual(response.context['total_documents'], 1)
+        self.assertEqual(response.context['withdrawn_documents'], 1)
+        self.assertEqual(response.context['available_documents'], 0)
+        self.assertEqual(response.context['program_stats'][0]['label'], self.program_1.name)
+        self.assertEqual(response.context['document_type_stats'][0]['label'], 'Certificat de scolarité')
+
+        applied_filters = {item['label']: item['value'] for item in response.context['applied_filters']}
+        self.assertEqual(applied_filters['Année académique'], 'Toutes les années')
+        self.assertEqual(applied_filters['Programme'], self.program_1.name)
+        self.assertEqual(applied_filters['Genre'], 'Féminin')
+        self.assertEqual(applied_filters['Statut document'], 'Déchargé')

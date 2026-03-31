@@ -1,0 +1,137 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-neumorphic p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center mb-3">
+                <div>
+                    <h4 class="mb-1"><i class="fas fa-chart-bar me-2 mr-2"></i>Tableau de bord scolarité</h4>
+                    <p class="text-muted mb-0">Analysez les inscriptions, les profils académiques et le suivi des documents officiels.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="summary-badge mx-2"><i class="fas fa-calendar-alt me-1"></i>{{ current_period_label }}</span>
+                    <span class="summary-badge mx-2"><i class="fas fa-filter me-1"></i>{{ applied_filters|length }} filtre{{ applied_filters|length|pluralize }} actif{{ applied_filters|length|pluralize }}</span>
+                </div>
+            </div>
+
+            <div id="filtersAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="filtersHeading">
+                        <button id="filtersToggle" class="accordion-button {% if not filters_expanded %}collapsed{% endif %}" type="button" aria-expanded="{% if filters_expanded %}true{% else %}false{% endif %}" aria-controls="filtersCollapse">
+                            <i class="fas fa-sliders-h me-2 mr-2"></i>Filtres avancés
+                        </button>
+                    </h2>
+                    <div id="filtersCollapse" {% if not filters_expanded %}hidden{% endif %}>
+                        <div class="accordion-body p-0 pt-4">
+                            <form method="get" class="mb-0">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label for="year">Année académique</label>
+                                        <select class="form-control" id="year" name="year">
+                                            <option value="all" {% if selected_year == 'all' %}selected{% endif %}>Toutes les années</option>
+                                            {% for year in academic_years %}
+                                            <option value="{{ year.id }}" {% if selected_year == year.id|stringformat:'s' %}selected{% endif %}>{{ year.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="program">Programme</label>
+                                        <select class="form-control" id="program" name="program">
+                                            <option value="">Tous les programmes</option>
+                                            {% for program in programs %}
+                                            <option value="{{ program.id }}" {% if selected_program == program.id|stringformat:'s' %}selected{% endif %}>{{ program.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="school">École d’origine</label>
+                                        <select class="form-control" id="school" name="school">
+                                            <option value="">Toutes les écoles</option>
+                                            {% for school in schools %}
+                                            <option value="{{ school.id }}" {% if selected_school == school.id|stringformat:'s' %}selected{% endif %}>{{ school.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="speciality">Spécialité</label>
+                                        <select class="form-control" id="speciality" name="speciality">
+                                            <option value="">Toutes les spécialités</option>
+                                            {% for speciality in specialities %}
+                                            <option value="{{ speciality.id }}" {% if selected_speciality == speciality.id|stringformat:'s' %}selected{% endif %}>{{ speciality.name }}{% if speciality.program %} — {{ speciality.program.name }}{% endif %}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="start_level">Niveau d’entrée</label>
+                                        <select class="form-control" id="start_level" name="start_level">
+                                            <option value="">Tous les niveaux</option>
+                                            {% for level in levels %}
+                                            <option value="{{ level.id }}" {% if selected_start_level == level.id|stringformat:'s' %}selected{% endif %}>{{ level.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="current_level">Niveau actuel</label>
+                                        <select class="form-control" id="current_level" name="current_level">
+                                            <option value="">Tous les niveaux</option>
+                                            {% for level in levels %}
+                                            <option value="{{ level.id }}" {% if selected_current_level == level.id|stringformat:'s' %}selected{% endif %}>{{ level.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="gender">Genre</label>
+                                        <select class="form-control" id="gender" name="gender">
+                                            <option value="">Tous</option>
+                                            {% for value, label in gender_choices %}
+                                            <option value="{{ value }}" {% if selected_gender == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="lang">Langue</label>
+                                        <select class="form-control" id="lang" name="lang">
+                                            <option value="">Toutes</option>
+                                            {% for value, label in language_choices %}
+                                            <option value="{{ value }}" {% if selected_lang == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="document_status">Statut document</label>
+                                        <select class="form-control" id="document_status" name="document_status">
+                                            <option value="">Tous les statuts</option>
+                                            {% for value, label in document_status_choices %}
+                                            <option value="{{ value }}" {% if selected_document_status == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="document_type">Type de document</label>
+                                        <select class="form-control" id="document_type" name="document_type">
+                                            <option value="">Tous les types</option>
+                                            {% for value, label in document_type_choices %}
+                                            <option value="{{ value }}" {% if selected_document_type == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-wrap justify-content-end gap-2 mt-1">
+                                    <button type="submit" class="btn btn-primary mx-2"><i class="fas fa-search me-1 mr-1"></i>Appliquer</button>
+                                    <a href="{% url 'main:statistiques' %}" class="btn btn-outline-danger"><i class="fas fa-undo me-1 mr-1"></i>Réinitialiser</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if applied_filters %}
+            <div class="filters-summary mt-4">
+                {% for filter in applied_filters %}
+                <span class="filter-chip"><strong>{{ filter.label }} :</strong> {{ filter.value }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('filtersToggle');
+    const collapse = document.getElementById('filtersCollapse');
+    if (toggle && collapse) {
+        toggle.addEventListener('click', function () {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            toggle.classList.toggle('collapsed', expanded);
+            collapse.hidden = expanded;
+        });
+    }
+
+    const parseStats = (id) => {
+        const element = document.getElementById(id);
+        return element ? JSON.parse(element.textContent) : [];
+    };
+    const commonOptions = (legend = false) => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: legend, position: 'bottom' } },
+    });
+
+    const makeBarChart = (id, stats, horizontal = false) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !stats.length) return;
+        new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: stats.map((stat) => stat.label),
+                datasets: [{
+                    data: stats.map((stat) => stat.count),
+                    backgroundColor: stats.map((stat) => stat.color || '#4e73df'),
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }],
+            },
+            options: {
+                ...commonOptions(false),
+                indexAxis: horizontal ? 'y' : 'x',
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { precision: 0 } } },
+            },
+        });
+    };
+
+    const makeCircularChart = (id, stats, type = 'doughnut') => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !stats.length) return;
+        new Chart(canvas.getContext('2d'), {
+            type,
+            data: {
+                labels: stats.map((stat) => stat.label),
+                datasets: [{
+                    data: stats.map((stat) => stat.count),
+                    backgroundColor: stats.map((stat) => stat.color || '#4e73df'),
+                    borderColor: '#fff',
+                    borderWidth: 2,
+                }],
+            },
+            options: { ...commonOptions(true), cutout: type === 'doughnut' ? '58%' : undefined },
+        });
+    };
+
+    makeBarChart('levelChart', parseStats('level-stats-data'));
+    makeCircularChart('programChart', parseStats('program-stats-data'));
+    makeBarChart('schoolChart', parseStats('school-stats-data'), true);
+    makeCircularChart('documentTypeChart', parseStats('document-type-stats-data'));
+    makeCircularChart('genderChart', parseStats('gender-stats-data'), 'pie');
+    makeCircularChart('documentChart', parseStats('document-stats-data'));
+});
+</script>

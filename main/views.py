@@ -128,91 +128,297 @@ class StatistiquesView(LoginRequiredMixin, TemplateView):
     """Vue pour les statistiques"""
     template_name = 'main/statistiques.html'
 
+    @staticmethod
+    def _compute_percentage(count, total):
+        return round((count / total) * 100, 1) if total else 0
+
+    def _decorate_stats(self, stats, label_key, total, colors):
+        for index, stat in enumerate(stats):
+            stat['label'] = stat.get(label_key) or 'Non spécifié'
+            stat['percentage'] = self._compute_percentage(stat['count'], total)
+            stat['color'] = colors[index % len(colors)]
+        return stats
+
     def get_context_data(self, **kwargs):
         from django.db.models import Count
-        from academic.models import Program
+        from schools.models import School
 
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Statistiques'
 
-        # Récupération des paramètres de filtrage
+        # Paramètres de filtrage
         selected_year = self.request.GET.get('year')
         selected_program = self.request.GET.get('program')
+        selected_school = self.request.GET.get('school')
+        selected_gender = self.request.GET.get('gender')
+        selected_lang = self.request.GET.get('lang')
+        selected_start_level = self.request.GET.get('start_level')
+        selected_current_level = self.request.GET.get('current_level')
+        selected_speciality = self.request.GET.get('speciality')
+        selected_document_status = self.request.GET.get('document_status')
+        selected_document_type = self.request.GET.get('document_type')
 
-        # Années académiques disponibles
+        # Données de référence pour les filtres
         academic_years = AcademicYear.objects.all().order_by('-start_at')
-        context['academic_years'] = academic_years
+        programs = Program.objects.all().order_by('name')
+        schools = School.objects.all().order_by('name')
+        levels = Level.objects.all().order_by('academic_order', 'name')
+        specialities = Speciality.objects.select_related('program').order_by('name')
 
-        # Programmes disponibles
-        programs = Program.objects.all()
-        context['programs'] = programs
-
-        # Année académique active ou sélectionnée
-        if selected_year:
-            try:
-                current_year = AcademicYear.objects.get(id=selected_year)
-            except AcademicYear.DoesNotExist:
-                current_year = AcademicYear.objects.filter(is_active=True).first()
+        active_year = AcademicYear.get_active_year()
+        if selected_year == 'all':
+            current_year = None
+            selected_year_value = 'all'
+        elif selected_year:
+            current_year = AcademicYear.objects.filter(id=selected_year).first() or active_year
+            selected_year_value = str(current_year.id) if current_year else ''
         else:
-            current_year = AcademicYear.objects.filter(is_active=True).first()
+            current_year = active_year
+            selected_year_value = str(current_year.id) if current_year else ''
 
-        context['current_year'] = current_year
-        context['selected_year'] = selected_year
-        context['selected_program'] = selected_program
+        colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9', '#17a2b8', '#fd7e14']
+        gender_labels = dict(Student._meta.get_field('gender').choices)
+        language_choices = list(Student._meta.get_field('lang').choices)
+        document_status_labels = dict(OfficialDocument._meta.get_field('status').choices)
+        document_type_labels = dict(OfficialDocument.TYPE_CHOICES)
+        document_status_colors = {
+            'available': '#1cc88a',
+            'withdrawn': '#f6c23e',
+            'returned': '#36b9cc',
+            'lost': '#e74a3b',
+        }
+        document_type_colors = {
+            OfficialDocument.TYPE_STUDENT_CARD: '#4e73df',
+            OfficialDocument.TYPE_TRANSCRIPT: '#36b9cc',
+            OfficialDocument.TYPE_DIPLOMA: '#f6c23e',
+            OfficialDocument.TYPE_CERTIFICATE: '#1cc88a',
+            OfficialDocument.TYPE_REGISTRATION_CERTIFICATE: '#e74a3b',
+        }
+        gender_colors = {'M': '#4e73df', 'F': '#e74a3b'}
 
-        # Filtrage des étudiants
-        students_query = Student.objects.filter(status='registered')
+        # Jeu de données de base pour la scolarité
+        base_student_levels = StudentLevel.objects.filter(
+            student__status='registered'
+        ).select_related(
+            'student',
+            'student__program',
+            'student__school',
+            'student__start_level',
+            'level',
+            'academic_year',
+            'speciality',
+        )
+
+        if current_year:
+            base_student_levels = base_student_levels.filter(academic_year=current_year)
         if selected_program:
-            students_query = students_query.filter(program_id=selected_program)
+            base_student_levels = base_student_levels.filter(student__program_id=selected_program)
+        if selected_school:
+            base_student_levels = base_student_levels.filter(student__school_id=selected_school)
+        if selected_gender:
+            base_student_levels = base_student_levels.filter(student__gender=selected_gender)
+        if selected_lang:
+            base_student_levels = base_student_levels.filter(student__lang=selected_lang)
+        if selected_start_level:
+            base_student_levels = base_student_levels.filter(student__start_level_id=selected_start_level)
+        if selected_current_level:
+            base_student_levels = base_student_levels.filter(level_id=selected_current_level)
+        if selected_speciality:
+            base_student_levels = base_student_levels.filter(speciality_id=selected_speciality)
 
-        # Statistiques générales
+        documents_query = OfficialDocument.objects.filter(student_level__in=base_student_levels)
+        if selected_document_status:
+            documents_query = documents_query.filter(status=selected_document_status)
+        if selected_document_type:
+            documents_query = documents_query.filter(type=selected_document_type)
+
+        filtered_student_levels = base_student_levels
+        if selected_document_status or selected_document_type:
+            matching_level_ids = documents_query.values_list('student_level_id', flat=True)
+            filtered_student_levels = base_student_levels.filter(id__in=matching_level_ids).distinct()
+
+        students_query = Student.objects.filter(
+            status='registered',
+            student_levels__in=filtered_student_levels,
+        ).distinct()
+
+        documents_query = OfficialDocument.objects.filter(student_level__in=filtered_student_levels)
+        if selected_document_status:
+            documents_query = documents_query.filter(status=selected_document_status)
+        if selected_document_type:
+            documents_query = documents_query.filter(type=selected_document_type)
+
+        # KPI principaux
         total_students = students_query.count()
+        total_documents = documents_query.count()
+        withdrawn_documents = documents_query.filter(status='withdrawn').count()
+        available_documents = documents_query.filter(status='available').count()
+        levels_count = filtered_student_levels.values('level_id').distinct().count()
+        represented_schools_count = students_query.exclude(school__isnull=True).values('school_id').distinct().count()
+        active_specialities_count = filtered_student_levels.exclude(speciality__isnull=True).values('speciality_id').distinct().count()
+        documents_per_student = round(total_documents / total_students, 1) if total_students else 0
+        document_withdrawal_rate = self._compute_percentage(withdrawn_documents, total_documents)
 
-        # Nouvelles inscriptions (étudiants créés cette année)
         if current_year:
             new_enrollments = students_query.filter(
-                created_at__gte=current_year.start_at,
-                created_at__lte=current_year.end_at
+                created_at__date__gte=current_year.start_at,
+                created_at__date__lte=current_year.end_at,
             ).count()
         else:
-            new_enrollments = 0
+            new_enrollments = students_query.count()
 
-        # Étudiants par genre
-        gender_stats = students_query.values('gender').annotate(count=Count('gender'))
+        # Répartitions
+        gender_stats = list(
+            students_query.values('gender').annotate(count=Count('id')).order_by('gender')
+        )
+        for stat in gender_stats:
+            stat['label'] = gender_labels.get(stat['gender'], 'Non spécifié')
+            stat['percentage'] = self._compute_percentage(stat['count'], total_students)
+            stat['color'] = gender_colors.get(stat['gender'], '#858796')
 
-        # Étudiants par niveau (basé sur StudentLevel actif)
-        level_stats = StudentLevel.objects.filter(
-            is_active=True,
-            student__status='registered'
-        ).values('level__name').annotate(count=Count('student')).order_by('level__name')
+        level_stats = self._decorate_stats(
+            list(
+                filtered_student_levels.values('level__name').annotate(
+                    count=Count('student_id', distinct=True)
+                ).order_by('level__academic_order', 'level__name')
+            ),
+            'level__name',
+            total_students,
+            colors,
+        )
 
-        if selected_program:
-            level_stats = level_stats.filter(student__program_id=selected_program)
+        program_stats = self._decorate_stats(
+            list(
+                students_query.values('program__name').annotate(
+                    count=Count('id')
+                ).order_by('-count', 'program__name')
+            ),
+            'program__name',
+            total_students,
+            colors,
+        )
 
-        # Statistiques des documents
-        document_stats = OfficialDocument.objects.values('status').annotate(count=Count('status'))
-        total_documents = sum([stat['count'] for stat in document_stats])
+        school_stats = self._decorate_stats(
+            list(
+                students_query.values('school__name').annotate(
+                    count=Count('id')
+                ).order_by('-count', 'school__name')[:8]
+            ),
+            'school__name',
+            total_students,
+            colors,
+        )
 
-        # Répartition par programme
-        program_stats = students_query.values('program__name').annotate(count=Count('program')).order_by('-count')
+        speciality_stats = self._decorate_stats(
+            list(
+                filtered_student_levels.exclude(speciality__isnull=True).values('speciality__name').annotate(
+                    count=Count('student_id', distinct=True)
+                ).order_by('-count', 'speciality__name')[:8]
+            ),
+            'speciality__name',
+            total_students,
+            colors,
+        )
 
-        # Calcul des pourcentages pour les programmes
-        colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9', '#17a2b8', '#fd7e14']
-        for i, stat in enumerate(program_stats):
-            if total_students > 0:
-                stat['percentage'] = round((stat['count'] / total_students) * 100, 1)
-            else:
-                stat['percentage'] = 0
-            stat['color'] = colors[i % len(colors)]
+        document_stats = list(
+            documents_query.values('status').annotate(count=Count('id')).order_by('status')
+        )
+        for stat in document_stats:
+            stat['label'] = document_status_labels.get(stat['status'], stat['status'])
+            stat['percentage'] = self._compute_percentage(stat['count'], total_documents)
+            stat['color'] = document_status_colors.get(stat['status'], '#858796')
+
+        document_type_stats = list(
+            documents_query.values('type').annotate(count=Count('id')).order_by('-count', 'type')
+        )
+        for stat in document_type_stats:
+            stat['label'] = document_type_labels.get(stat['type'], stat['type'])
+            stat['percentage'] = self._compute_percentage(stat['count'], total_documents)
+            stat['color'] = document_type_colors.get(stat['type'], '#858796')
+
+        male_percentage = 0
+        female_percentage = 0
+        for stat in gender_stats:
+            if stat['gender'] == 'M':
+                male_percentage = stat['percentage']
+            elif stat['gender'] == 'F':
+                female_percentage = stat['percentage']
+
+        # Filtres appliqués affichables dans l'interface
+        applied_filters = []
+        if selected_year_value == 'all':
+            applied_filters.append({'label': 'Année académique', 'value': 'Toutes les années'})
+        elif current_year:
+            applied_filters.append({'label': 'Année académique', 'value': current_year.name})
+
+        selected_program_obj = programs.filter(pk=selected_program).first() if selected_program else None
+        selected_school_obj = schools.filter(pk=selected_school).first() if selected_school else None
+        selected_start_level_obj = levels.filter(pk=selected_start_level).first() if selected_start_level else None
+        selected_current_level_obj = levels.filter(pk=selected_current_level).first() if selected_current_level else None
+        selected_speciality_obj = specialities.filter(pk=selected_speciality).first() if selected_speciality else None
+
+        if selected_program_obj:
+            applied_filters.append({'label': 'Programme', 'value': selected_program_obj.name})
+        if selected_school_obj:
+            applied_filters.append({'label': 'École', 'value': selected_school_obj.name})
+        if selected_gender:
+            applied_filters.append({'label': 'Genre', 'value': gender_labels.get(selected_gender, selected_gender)})
+        if selected_lang:
+            applied_filters.append({'label': 'Langue', 'value': dict(language_choices).get(selected_lang, selected_lang)})
+        if selected_start_level_obj:
+            applied_filters.append({'label': 'Niveau d’entrée', 'value': selected_start_level_obj.name})
+        if selected_current_level_obj:
+            applied_filters.append({'label': 'Niveau actuel', 'value': selected_current_level_obj.name})
+        if selected_speciality_obj:
+            applied_filters.append({'label': 'Spécialité', 'value': selected_speciality_obj.name})
+        if selected_document_status:
+            applied_filters.append({'label': 'Statut document', 'value': document_status_labels.get(selected_document_status, selected_document_status)})
+        if selected_document_type:
+            applied_filters.append({'label': 'Type document', 'value': document_type_labels.get(selected_document_type, selected_document_type)})
 
         context.update({
+            'academic_years': academic_years,
+            'programs': programs,
+            'schools': schools,
+            'levels': levels,
+            'specialities': specialities,
+            'current_year': current_year,
+            'current_period_label': current_year.name if current_year else 'Toutes les années',
+            'selected_year': selected_year_value,
+            'selected_program': selected_program or '',
+            'selected_school': selected_school or '',
+            'selected_gender': selected_gender or '',
+            'selected_lang': selected_lang or '',
+            'selected_start_level': selected_start_level or '',
+            'selected_current_level': selected_current_level or '',
+            'selected_speciality': selected_speciality or '',
+            'selected_document_status': selected_document_status or '',
+            'selected_document_type': selected_document_type or '',
+            'gender_choices': Student._meta.get_field('gender').choices,
+            'language_choices': language_choices,
+            'document_status_choices': OfficialDocument._meta.get_field('status').choices,
+            'document_type_choices': OfficialDocument.TYPE_CHOICES,
+            'filters_expanded': bool(self.request.GET),
+            'applied_filters': applied_filters,
             'total_students': total_students,
             'new_enrollments': new_enrollments,
             'gender_stats': gender_stats,
             'level_stats': level_stats,
             'document_stats': document_stats,
+            'document_type_stats': document_type_stats,
             'total_documents': total_documents,
             'program_stats': program_stats,
+            'school_stats': school_stats,
+            'speciality_stats': speciality_stats,
+            'withdrawn_documents': withdrawn_documents,
+            'available_documents': available_documents,
+            'levels_count': levels_count,
+            'represented_schools_count': represented_schools_count,
+            'active_specialities_count': active_specialities_count,
+            'documents_per_student': documents_per_student,
+            'document_withdrawal_rate': document_withdrawal_rate,
+            'male_percentage': male_percentage,
+            'female_percentage': female_percentage,
         })
 
         return context
