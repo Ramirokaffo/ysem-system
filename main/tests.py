@@ -3,6 +3,7 @@ from io import BytesIO
 from tempfile import TemporaryDirectory
 from datetime import date, datetime
 from decimal import Decimal
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse
 
 from django import forms
@@ -21,7 +22,7 @@ from academic.document_requirements import PROGRAM_DOCUMENT_FIELD_NAMES
 from academic.models import AcademicYear, Level, Program, ProgramDocumentRequirement, Speciality
 from accounts.models import BaseUser, Godfather
 from audit.models import AuditLog
-from main.forms import InscriptionCompleteForm, SecondaryDiplomaForm, UniversityLevelForm
+from main.forms import BulkDocumentCreationForm, InscriptionCompleteForm, OfficialDocumentForm, SecondaryDiplomaForm, UniversityLevelForm
 from main.models import SystemSettings
 from payments.models import Payment, PaymentInstallment
 from prospection.models import Agent
@@ -84,6 +85,28 @@ class NouvelleInscriptionViewTests(TestCase):
     def _build_test_png(self, color='white'):
         buffer = BytesIO()
         Image.new('RGB', (120, 120), color=color).save(buffer, format='PNG')
+        return buffer.getvalue()
+
+    def _build_test_pdf(self, lines):
+        buffer = BytesIO()
+        pdf_canvas = canvas.Canvas(buffer)
+        y_position = 760
+        for line in lines:
+            pdf_canvas.drawString(72, y_position, line)
+            y_position -= 18
+        pdf_canvas.showPage()
+        pdf_canvas.save()
+        return buffer.getvalue()
+
+    def _build_test_pdf(self, lines):
+        buffer = BytesIO()
+        pdf_canvas = canvas.Canvas(buffer)
+        y_position = 760
+        for line in lines:
+            pdf_canvas.drawString(72, y_position, line)
+            y_position -= 18
+        pdf_canvas.showPage()
+        pdf_canvas.save()
         return buffer.getvalue()
 
     def _valid_payload(self):
@@ -2072,12 +2095,23 @@ class RegistrationCertificateDownloadTests(TestCase):
         )
         settings.save()
 
-        self.detail_url = reverse('main:etudiant_detail', kwargs={'pk': self.student.matricule})
+        self.detail_url = reverse('students:etudiant_detail', kwargs={'pk': self.student.matricule})
         self.download_url = reverse('main:registration_certificate_download', kwargs={'pk': self.document.pk})
 
     def _build_test_png(self, color='white'):
         buffer = BytesIO()
         Image.new('RGB', (120, 120), color=color).save(buffer, format='PNG')
+        return buffer.getvalue()
+
+    def _build_test_pdf(self, lines):
+        buffer = BytesIO()
+        pdf_canvas = canvas.Canvas(buffer)
+        y_position = 760
+        for line in lines:
+            pdf_canvas.drawString(72, y_position, line)
+            y_position -= 18
+        pdf_canvas.showPage()
+        pdf_canvas.save()
         return buffer.getvalue()
 
     def test_etudiant_detail_displays_registration_certificate_reference_and_download_link(self):
@@ -2089,26 +2123,42 @@ class RegistrationCertificateDownloadTests(TestCase):
         self.assertContains(response, self.download_url)
         self.assertContains(response, 'Télécharger')
 
-    def test_download_generates_registration_certificate_pdf_on_demand(self):
+    @patch('main.pdf_exports.pdfkit.from_string')
+    def test_download_generates_registration_certificate_pdf_on_demand(self, pdfkit_from_string):
+        generated_pdf = self._build_test_pdf([
+            'Institut de Test YSEM',
+            'Claire Essomba',
+            'CERT001',
+            'CI-2025-CERT001',
+        ])
+
+        def fake_from_string(html, output_path, options=None, **kwargs):
+            self.assertFalse(output_path)
+            self.assertEqual(options['page-size'], 'A4')
+            self.assertEqual(options['encoding'], 'UTF-8')
+            self.assertIn('enable-local-file-access', options)
+            self.assertIn('quiet', options)
+            self.assertIn('Institut de Test YSEM', html)
+            self.assertIn('YSEM-TEST', html)
+            self.assertIn('Claire Essomba', html)
+            self.assertIn('CERT001', html)
+            self.assertIn('CI-2025-CERT001', html)
+            self.assertIn('Licence 1', html)
+            self.assertIn('2025/2026', html)
+            self.assertIn('Damas, Yaoundé', html)
+            self.assertIn('contact@test-ysem.local', html)
+            self.assertIn('file://', html)
+            return generated_pdf
+
+        pdfkit_from_string.side_effect = fake_from_string
+
         response = self.client.get(self.download_url)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn('certificat_inscription_CI-2025-CERT001.pdf', response['Content-Disposition'])
-
-        reader = PdfReader(BytesIO(response.content))
-        full_text = '\n'.join(page.extract_text() or '' for page in reader.pages)
-        normalized_text = ' '.join(full_text.split())
-
-        self.assertIn('Institut de Test YSEM', normalized_text)
-        self.assertIn('YSEM-TEST', normalized_text)
-        self.assertIn('Claire Essomba', normalized_text)
-        self.assertIn('CERT001', normalized_text)
-        self.assertIn('CI-2025-CERT001', normalized_text)
-        self.assertIn('Licence 1', normalized_text)
-        self.assertIn('2025/2026', normalized_text)
-        self.assertIn('Damas, Yaoundé', normalized_text)
-        self.assertIn('contact@test-ysem.local', normalized_text)
+        self.assertEqual(response.content, generated_pdf)
+        self.assertEqual(pdfkit_from_string.call_count, 1)
 
 
 class DocumentWithdrawalRulesTests(TestCase):
@@ -2187,6 +2237,305 @@ class DocumentWithdrawalRulesTests(TestCase):
         self.document.refresh_from_db()
         self.assertEqual(self.document.status, 'withdrawn')
         self.assertEqual(self.document.withdrawn_date, timezone.localdate())
+
+
+class OfficialDocumentDynamicSelectionTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_document_dynamic',
+            password='testpass123',
+            role='scholar',
+        )
+        self.client.force_login(self.user)
+
+        self.academic_year_1 = AcademicYear.objects.create(
+            start_at=date(2024, 9, 1),
+            end_at=date(2025, 6, 30),
+            is_active=True,
+        )
+        self.academic_year_2 = AcademicYear.objects.create(
+            start_at=date(2025, 9, 1),
+            end_at=date(2026, 6, 30),
+        )
+        self.level_1 = Level.objects.create(name='Licence 1', academic_order=1)
+        self.level_2 = Level.objects.create(name='Licence 2', academic_order=2)
+        self.program = Program.objects.create(name='Informatique')
+        self.other_program = Program.objects.create(name='Gestion')
+
+        self.student = Student.objects.create(
+            matricule='DOC-DYN-001',
+            firstname='Aline',
+            lastname='Meka',
+            gender='F',
+            status='registered',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.other_student = Student.objects.create(
+            matricule='DOC-DYN-002',
+            firstname='Brice',
+            lastname='Nomo',
+            gender='M',
+            status='registered',
+            program=self.other_program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.student_without_level = Student.objects.create(
+            matricule='DOC-DYN-003',
+            firstname='Clara',
+            lastname='Essono',
+            gender='F',
+            status='registered',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+
+        StudentLevel.objects.create(
+            student=self.student,
+            level=self.level_1,
+            academic_year=self.academic_year_1,
+            is_active=True,
+        )
+        StudentLevel.objects.create(
+            student=self.student,
+            level=self.level_1,
+            academic_year=self.academic_year_2,
+        )
+        StudentLevel.objects.create(
+            student=self.student,
+            level=self.level_2,
+            academic_year=self.academic_year_2,
+        )
+        StudentLevel.objects.create(
+            student=self.other_student,
+            level=self.level_2,
+            academic_year=self.academic_year_1,
+        )
+
+        self.student_level_1 = StudentLevel.objects.get(
+            student=self.student,
+            level=self.level_1,
+            academic_year=self.academic_year_1,
+        )
+        self.other_student_level = StudentLevel.objects.get(
+            student=self.other_student,
+            level=self.level_2,
+            academic_year=self.academic_year_1,
+        )
+
+        self.student_document = OfficialDocument.objects.create(
+            student_level=self.student_level_1,
+            type=OfficialDocument.TYPE_CERTIFICATE,
+            status='available',
+        )
+        self.other_student_document = OfficialDocument.objects.create(
+            student_level=self.other_student_level,
+            type=OfficialDocument.TYPE_CERTIFICATE,
+            status='available',
+        )
+
+    def test_form_filters_levels_and_academic_years_for_selected_student(self):
+        form = OfficialDocumentForm(data={
+            'student': self.student.pk,
+            'level': self.level_1.pk,
+        })
+
+        self.assertEqual(list(form.fields['level'].queryset), [self.level_1, self.level_2])
+        self.assertEqual(list(form.fields['academic_year'].queryset), [self.academic_year_2, self.academic_year_1])
+
+    def test_form_rejects_student_level_combination_not_linked_to_student(self):
+        existing_student_level_count = StudentLevel.objects.count()
+
+        form = OfficialDocumentForm(data={
+            'student_search': OfficialDocumentForm.get_student_label(self.student),
+            'student': self.student.pk,
+            'level': self.level_2.pk,
+            'academic_year': self.academic_year_1.pk,
+            'type': OfficialDocument.TYPE_CERTIFICATE,
+            'status': 'available',
+        })
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('academic_year', form.errors)
+        self.assertEqual(StudentLevel.objects.count(), existing_student_level_count)
+
+    def test_document_ajax_endpoints_return_only_related_choices(self):
+        response = self.client.get(
+            reverse('main:document_student_search'),
+            {'q': 'DOC-DYN'},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        result_ids = [item['id'] for item in response.json()['results']]
+        self.assertIn(self.student.pk, result_ids)
+        self.assertIn(self.other_student.pk, result_ids)
+        self.assertNotIn(self.student_without_level.pk, result_ids)
+
+        response = self.client.get(
+            reverse('main:document_student_levels'),
+            {'student_id': self.student.pk},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [item['id'] for item in response.json()['levels']],
+            [self.level_1.pk, self.level_2.pk],
+        )
+
+        response = self.client.get(
+            reverse('main:document_student_academic_years'),
+            {'student_id': self.student.pk, 'level_id': self.level_2.pk},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual([item['id'] for item in payload['academic_years']], [self.academic_year_2.pk])
+        self.assertIn('sélectionnée automatiquement', payload['message'])
+
+    def test_documents_list_uses_autocomplete_student_filter(self):
+        selected_label = OfficialDocumentForm.get_student_label(self.student)
+
+        response = self.client.get(reverse('main:documents'), {
+            'student': self.student.pk,
+            'student_search': selected_label,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="student_search"')
+        self.assertContains(response, 'id="document-filter-student-results"')
+        self.assertContains(response, f'name="student" value="{self.student.pk}"', html=False)
+        self.assertContains(response, selected_label)
+        self.assertEqual(response.context['selected_student'], self.student)
+        self.assertEqual(response.context['selected_student_label'], selected_label)
+
+    def test_documents_list_filters_by_selected_student_primary_key(self):
+        response = self.client.get(reverse('main:documents'), {
+            'student': self.student.pk,
+            'student_search': OfficialDocumentForm.get_student_label(self.student),
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context['documents']), [self.student_document])
+        self.assertContains(response, self.student.matricule)
+        self.assertNotContains(response, self.other_student.matricule)
+
+
+class BulkDocumentCreationFormTests(TestCase):
+    def setUp(self):
+        self.user = BaseUser.objects.create_user(
+            username='scholar_bulk_document',
+            password='testpass123',
+            role='scholar',
+        )
+        self.client.force_login(self.user)
+
+        self.active_year = AcademicYear.objects.create(
+            start_at=date(2025, 9, 1),
+            end_at=date(2026, 6, 30),
+            is_active=True,
+        )
+        self.old_year = AcademicYear.objects.create(
+            start_at=date(2024, 9, 1),
+            end_at=date(2025, 6, 30),
+        )
+        self.level = Level.objects.create(name='Licence 3', academic_order=3)
+        self.program = Program.objects.create(name='Informatique')
+
+        self.registered_student = Student.objects.create(
+            matricule='BULK-001',
+            firstname='Alice',
+            lastname='Ngono',
+            gender='F',
+            status='registered',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.approved_student = Student.objects.create(
+            matricule='BULK-002',
+            firstname='Boris',
+            lastname='Ewane',
+            gender='M',
+            status='approved',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+        self.unregistered_level_student = Student.objects.create(
+            matricule='BULK-003',
+            firstname='Claire',
+            lastname='Mve',
+            gender='F',
+            status='registered',
+            program=self.program,
+            metadata=StudentMetaData.objects.create(original_country='Cameroun'),
+        )
+
+        self.registered_student_level = StudentLevel.objects.create(
+            student=self.registered_student,
+            level=self.level,
+            academic_year=self.active_year,
+            is_active=True,
+            is_registered=True,
+        )
+        StudentLevel.objects.create(
+            student=self.approved_student,
+            level=self.level,
+            academic_year=self.active_year,
+            is_active=True,
+            is_registered=True,
+        )
+        StudentLevel.objects.create(
+            student=self.unregistered_level_student,
+            level=self.level,
+            academic_year=self.active_year,
+            is_active=True,
+            is_registered=False,
+        )
+        StudentLevel.objects.create(
+            student=self.registered_student,
+            level=self.level,
+            academic_year=self.old_year,
+            is_registered=True,
+        )
+
+        self.form_data = {
+            'document_type': OfficialDocument.TYPE_CERTIFICATE,
+            'academic_year': self.active_year.pk,
+            'level': self.level.pk,
+            'status': 'available',
+        }
+
+    def test_bulk_document_form_defaults_to_active_year(self):
+        form = BulkDocumentCreationForm()
+
+        self.assertEqual(form.fields['academic_year'].initial, self.active_year)
+
+        response = self.client.get(reverse('main:document_bulk_create'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].fields['academic_year'].initial, self.active_year)
+
+    def test_bulk_document_form_returns_only_registered_students(self):
+        form = BulkDocumentCreationForm(data=self.form_data)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(list(form.get_matching_students()), [self.registered_student])
+
+    def test_bulk_document_form_creates_document_on_existing_registered_student_level_only(self):
+        form = BulkDocumentCreationForm(data=self.form_data)
+        existing_student_level_ids = list(StudentLevel.objects.values_list('id', flat=True))
+
+        created_count, skipped_count, errors = form.create_documents()
+
+        self.assertEqual(created_count, 1)
+        self.assertEqual(skipped_count, 0)
+        self.assertEqual(errors, [])
+        self.assertEqual(list(StudentLevel.objects.values_list('id', flat=True)), existing_student_level_ids)
+
+        document = OfficialDocument.objects.get(type=OfficialDocument.TYPE_CERTIFICATE)
+        self.assertEqual(document.student_level, self.registered_student_level)
 
 
 class PreInscriptionProfilePhotoTests(TestCase):
@@ -2425,7 +2774,8 @@ class PaymentStatusViewTests(TestCase):
             source='cash',
         )
 
-        self.url = reverse('main:payment_status')
+        self.url = reverse('payments:payment_status')
+        self.detail_url = reverse('payments:payment_status_student_detail', args=[self.student_up_to_date.matricule])
 
     def test_payment_status_view_uses_dynamic_payment_data(self):
         response = self.client.get(self.url)
@@ -2452,6 +2802,35 @@ class PaymentStatusViewTests(TestCase):
         self.assertEqual(response.context['filtered_students_count'], 1)
         self.assertContains(response, 'Alice Ngono')
         self.assertNotContains(response, 'Jean Dupont')
+
+    def test_payment_status_view_rows_link_to_financial_statement_detail(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'payment-status-row')
+        self.assertContains(response, self.detail_url)
+
+    def test_payment_status_student_detail_displays_statement_and_payment_history(self):
+        response = self.client.get(self.detail_url, {'academic_year': self.academic_year.pk})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['student'], self.student_up_to_date)
+        self.assertEqual(response.context['selected_academic_year'], self.academic_year)
+        self.assertContains(response, 'Relevé de compte étudiant')
+        self.assertContains(response, 'Jean Dupont')
+        self.assertContains(response, self.student_up_to_date.matricule)
+        self.assertContains(response, self.program.name)
+        self.assertContains(response, self.first_installment.name)
+        self.assertContains(response, 'REC-STATUS-001')
+
+        statement = response.context['statement']
+        self.assertEqual(statement['totals']['total_amount_due'], Decimal('120000.00'))
+        self.assertEqual(statement['totals']['amount_paid'], Decimal('50000.00'))
+        self.assertEqual(statement['totals']['remaining_amount'], Decimal('70000.00'))
+        self.assertEqual(statement['totals']['overdue_amount'], Decimal('0.00'))
+        self.assertEqual(statement['status'], 'up_to_date')
+        self.assertEqual(len(statement['installments']), 2)
+        self.assertEqual(len(statement['payments']), 1)
 
 
 class StatistiquesViewTests(TestCase):

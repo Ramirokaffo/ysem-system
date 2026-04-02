@@ -1,9 +1,18 @@
 <style>
     #filtersAccordion, #filtersAccordion .accordion-item, #filtersAccordion .accordion-header { border: none; background: transparent; box-shadow: none; }
     #filtersAccordion .accordion-button { background: var(--primary-color); color: var(--text-color); border: 1px solid rgba(0,0,0,.08); border-radius: 12px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; padding: 1rem 1.25rem; font-weight: 600; width: 100%; text-align: left; display: flex; align-items: center; }
-    #filtersAccordion .accordion-button:hover { color: var(--text-color); }
-    #filtersAccordion .accordion-button:not(.collapsed) { box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; border-color: var(--accent-color); }
-    #filtersAccordion .accordion-button:focus { outline: none; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 .25rem rgba(38, 40, 51, .15); }
+    #filtersAccordion .accordion-button:hover { 
+        color: var(--text-color); 
+    }
+    #filtersAccordion .accordion-button:not(.collapsed) { 
+        background: var(--primary-color); 
+        color: var(--text-color); 
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; */
+        /* border-color: var(--accent-color); */ 
+    }
+    #filtersAccordion .accordion-button:focus { 
+        /* border-color: var(--accent-color); */ 
+    }
     #filtersAccordion .accordion-button::after { content: ''; display: inline-block; width: 1.25rem; height: 1.25rem; margin-left: auto; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23262833'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-size: 1.25rem; transition: transform .2s ease-in-out; }
     #filtersAccordion .accordion-button:not(.collapsed)::after { transform: rotate(-180deg); }
     #filtersCollapse[hidden] { display: none !important; }

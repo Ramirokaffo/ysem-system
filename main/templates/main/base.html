@@ -51,19 +51,20 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'inscriptions' %}active{% endif %}" href="{% url 'main:inscriptions' %}">
+                    <a class="nav-link {% if 'inscription' in request.resolver_match.route %}active{% endif %}" href="{% url 'main:inscriptions' %}">
                         <i class="fas fa-user-plus"></i>
                         <span>Pré-Inscriptions</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'etudiants' %}active{% endif %}" href="{% url 'students:etudiants' %}">
+                    <a class="nav-link {% if 'etudiant' in request.resolver_match.route %}active{% endif %}" href="{% url 'students:etudiants' %}">
                         <i class="fas fa-users"></i>
                         <span>Étudiants</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'main:documents' %}">
+                    <a class="nav-link {% if 'document' in request.resolver_match.route %}active{% endif %}" href="{% url 'main:documents' %}">
+                    <!-- <a class="nav-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'main:documents' %}"> -->
                         <i class="fas fa-file-alt"></i>
                         <span>Documents</span>
                     </a>
@@ -181,11 +182,15 @@
             const mainContent = document.querySelector('.main-content');
             const header = document.querySelector('.header');
 
+
+
             // Restore sidebar state from localStorage
             const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (sidebarCollapsed) {
                 sidebar.classList.add('collapsed');
                 updateToggleIcon();
+                header.style.left = sidebar.classList.contains('collapsed') ? '80px' : '280px';
+
             }
 
             // Toggle sidebar on button click
@@ -194,6 +199,8 @@
                 sidebar.classList.toggle('collapsed');
                 localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
                 updateToggleIcon();
+                header.style.left = sidebar.classList.contains('collapsed') ? '80px' : '280px';
+                // mainContent.style.marginLeft = sidebar.classList.contains('collapsed') ? '80px' : '280px';
             });
 
             function updateToggleIcon() {

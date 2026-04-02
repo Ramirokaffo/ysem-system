@@ -1,8 +1,5 @@
-from collections import defaultdict
-from decimal import Decimal
 
 from django.shortcuts import redirect
-from django.db import models
 
 from main.utils import *
 from students.models import OfficialDocument, Student, StudentLevel
@@ -10,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.http import JsonResponse
-from django.utils.decorators import method_decorator
-from django.utils import timezone
 
 from academic.models import AcademicYear, Level, Program, Speciality
 from audit.utils import log_audit_event
@@ -21,7 +16,6 @@ from .program_documents import (
 import logging
 from django.core.paginator import Paginator
 from student_portal.decorators import scholar_admin_required
-from payments.models import Payment, PaymentInstallment
 
 from django.contrib import messages
 from .models import SystemSettings

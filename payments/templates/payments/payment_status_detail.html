@@ -1,0 +1,180 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Situation financière - YSEM{% endblock %}
+
+{% block page_title %}Situation financière{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 flex-wrap gap-3">
+                <div>
+                    <h5 class="mb-1"><i class="fas fa-file-invoice-dollar me-2 mr-2"></i>Relevé de compte étudiant</h5>
+                    <small class="text-muted">Vue synthétique et chronologique de la situation financière.</small>
+                </div>
+                <a href="{{ return_url }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau
+                </a>
+            </div>
+
+            <div class="statement-header">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    {% if student.profile_photo %}
+                    <img src="{{ student.profile_photo.url }}" alt="{{ student.firstname }} {{ student.lastname }}" class="statement-avatar">
+                    {% else %}
+                    <div class="statement-avatar statement-avatar-placeholder">{{ student.firstname|slice:":1" }}{{ student.lastname|slice:":1" }}</div>
+                    {% endif %}
+                    <div class="ml-2">
+                        <h4 class="mb-1">{{ student.firstname }} {{ student.lastname }}</h4>
+                        <div class="text-muted mb-2">Matricule : {{ student.matricule }}</div>
+                        {% if statement %}
+                        <span class="badge {{ statement.status_badge_class }}">{{ statement.status_label }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mt-4 g-3">
+                    <div class="col-md-6">
+                        <div><strong>Programme :</strong> {{ student.program.name|default:'Non défini' }}</div>
+                        <div><strong>Niveau :</strong> {% if statement and statement.current_level %}{{ statement.current_level.level.name }}{% else %}Non défini{% endif %}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div><strong>Année académique :</strong> {{ selected_academic_year.name|default:'Non renseignée' }}</div>
+                        <div><strong>Édité le :</strong> {{ generated_on|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if statement %}
+        <div class="row mb-4 g-3">
+            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Montant total dû</small><strong>{{ statement.totals.total_amount_due|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Déjà payé</small><strong class="text-success">{{ statement.totals.amount_paid|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Restant à payer</small><strong class="text-danger">{{ statement.totals.remaining_amount|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Montant échu</small><strong class="{% if statement.totals.overdue_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ statement.totals.overdue_amount|floatformat:0 }} FCFA</strong></div></div>
+        </div>
+
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-3">
+                <div>
+                    <h6 class="mb-1"><i class="fas fa-layer-group me-2 mr-1"></i>Échéancier des tranches</h6>
+                    <small class="text-muted">Détail des montants attendus et du niveau de règlement par tranche.</small>
+                </div>
+                <span class="text-muted small">{{ statement.installments_count }} tranche(s)</span>
+            </div>
+            {% if statement.installments %}
+            <div class="table-responsive">
+                <table class="table table-hover statement-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tranche</th>
+                            <th>Échéance</th>
+                            <th>Montant dû</th>
+                            <th>Payé</th>
+                            <th>Reste</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in statement.installments %}
+                        <tr>
+                            <td><strong>{{ item.installment.name|default:'Tranche' }}</strong><div class="text-muted small">Ordre {{ item.installment.order_number }}</div></td>
+                            <td>{{ item.installment.due_date|date:"d/m/Y"|default:'—' }}</td>
+                            <td>{{ item.amount|floatformat:0 }} FCFA</td>
+                            <td class="text-success fw-bold">{{ item.amount_paid|floatformat:0 }} FCFA</td>
+                            <td class="{% if item.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">{{ item.remaining_amount|floatformat:0 }} FCFA</td>
+                            <td><span class="badge {{ item.status_badge_class }}">{{ item.status_label }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-0">Aucune tranche de frais de scolarité n'est configurée pour cet étudiant sur l'année sélectionnée.</div>
+            {% endif %}
+        </div>
+
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-3">
+                <div>
+                    <h6 class="mb-1"><i class="fas fa-receipt me-2 mr-1"></i>Historique des paiements</h6>
+                    <small class="text-muted">Toutes les écritures liées aux frais de scolarité pour l'année choisie.</small>
+                </div>
+                <span class="text-muted small">{{ statement.payments_count }} paiement(s)</span>
+            </div>
+            {% if statement.payments %}
+            <div class="table-responsive">
+                <table class="table table-hover statement-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Tranche</th>
+                            <th>Référence</th>
+                            <th>Source</th>
+                            <th class="text-end">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in statement.payments %}
+                        <tr>
+                            <td>{{ payment.payment_date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ payment.installment.name|default:'Paiement non rattaché' }}</td>
+                            <td><div>{{ payment.receipt_number|default:'—' }}</div><small class="text-muted">{{ payment.transaction_id|default:'Sans transaction' }}</small></td>
+                            <td>{{ payment.get_source_display }}</td>
+                            <td class="text-end fw-bold">{{ payment.amount_paid|floatformat:0 }} FCFA</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-light mb-0">Aucun paiement de frais de scolarité n'a encore été enregistré pour cette année académique.</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-neumorphic p-4 mb-4">
+            <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-chart-pie me-2 mr-1"></i>Synthèse</h6>
+            {% if statement %}
+            <div class="mb-3"><strong>Progression du règlement :</strong></div>
+            <div class="statement-progress mb-2"><span style="width: {{ statement.completion_percentage }}%;"></span></div>
+            <div class="small text-muted mb-3">{{ statement.completion_percentage }}% des frais attendus ont été réglés.</div>
+            <div class="summary-line"><span>Dernier paiement</span><strong>{% if statement.last_payment %}{{ statement.last_payment.payment_date|date:"d/m/Y" }}{% else %}Aucun{% endif %}</strong></div>
+            <div class="summary-line"><span>Statut global</span><strong>{{ statement.status_label }}</strong></div>
+            <div class="summary-line"><span>Tranches suivies</span><strong>{{ statement.installments_count }}</strong></div>
+            {% else %}
+            <div class="alert alert-info mb-0">Aucune année académique n'est disponible pour établir ce relevé.</div>
+            {% endif %}
+        </div>
+
+        <div class="card-neumorphic p-4">
+            <h6 class="text-dark border-bottom pb-2 mb-3"><i class="fas fa-bolt me-2"></i>Actions rapides</h6>
+            <div class="d-grid gap-2">
+                <a href="{{ return_url }}" class="btn btn-outline-secondary mb-2"><i class="fas fa-table me-2 mr-1"></i>Retour au suivi</a>
+                <a href="{{ student_detail_url }}" class="btn btn-primary mb-2"><i class="fas fa-user-graduate me-2 mr-1"></i>Voir le dossier étudiant</a>
+                <a href="{{ payment_list_url }}" class="btn btn-outline-secondary mb-2"><i class="fas fa-money-bill-wave me-2 mr-1"></i>Voir les paiements</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .statement-header, .summary-tile { border: 1px solid rgba(0,0,0,0.04); border-radius: 1.1rem; box-shadow: inset 2px 2px 4px rgba(184,185,190,0.45), inset -2px -2px 4px rgba(255,255,255,0.85); }
+    .statement-header { padding: 1.5rem; }
+    .summary-tile { padding: 1rem 1.1rem; height: 100%; display: flex; flex-direction: column; gap: .35rem; }
+    .summary-tile small { color: #6c757d; text-transform: uppercase; letter-spacing: .04em; }
+    .summary-tile strong { font-size: 1.1rem; }
+    .statement-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; }
+    .statement-avatar-placeholder { display: inline-flex; align-items: center; justify-content: center; background: #e6e7ee; color: #4b5563; font-size: 1.25rem; font-weight: 700; }
+    .statement-table th, .statement-table td { vertical-align: middle; }
+    .statement-progress { width: 100%; height: 12px; border-radius: 999px; background: rgba(0,0,0,0.08); overflow: hidden; box-shadow: inset 2px 2px 5px rgba(184,185,190,0.55), inset -2px -2px 5px rgba(255,255,255,0.9); }
+    .statement-progress span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #315bff 0%, #00bcd4 100%); }
+    .summary-line { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    .summary-line:last-child { border-bottom: 0; padding-bottom: 0; }
+</style>
+{% endblock %}

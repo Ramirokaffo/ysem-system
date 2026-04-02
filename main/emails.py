@@ -73,8 +73,8 @@ def send_student_status_email(student, notification_type):
         'student': student,
         'student_name': _get_student_display_name(student),
         'institution_name': institution_name,
-        'contact_email': contact_email or 'Non renseigné',
-        'website': website or 'Non renseigné',
+        'contact_email': contact_email or '--',
+        'website': website or '--',
         'email_logo_url': email_logo_url,
     }
 

@@ -75,7 +75,7 @@
                                     {% if request.GET.search %}<li class="list-inline-item"><span class="badge badge-info">Recherche : {{ request.GET.search }}</span></li>{% endif %}
                                     {% if selected_academic_year %}<li class="list-inline-item"><span class="badge badge-secondary">Année : {{ selected_academic_year.name }}</span></li>{% endif %}
                                     {% if request.GET.program %}<li class="list-inline-item"><span class="badge badge-dark">Programme : {% for program in programs %}{% if program.pk|stringformat:'s' == request.GET.program %}{{ program.name }}{% endif %}{% endfor %}</span></li>{% endif %}
-                                    {% if request.GET.level %}<li class="list-inline-item"><span class="badge badge-primary">Niveau : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.level %}{{ level.name }}{% endif %}{% endfor %}</span></li>{% endif %}
+                                    {% if request.GET.level %}<li class="list-inline-item"><span class="badge badge-dark">Niveau : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.level %}{{ level.name }}{% endif %}{% endfor %}</span></li>{% endif %}
                                     {% if request.GET.status %}<li class="list-inline-item"><span class="badge badge-success">Statut : {% for value, label in status_choices %}{% if value == request.GET.status %}{{ label }}{% endif %}{% endfor %}</span></li>{% endif %}
                                 </ul>
                             </div>
@@ -180,7 +180,7 @@
                     </thead>
                     <tbody>
                         {% for row in payment_rows %}
-                        <tr>
+                        <tr class="payment-status-row" data-href="{{ row.detail_url }}" tabindex="0" role="link" aria-label="Ouvrir le relevé financier de {{ row.full_name }}">
                             <td>
                                 {% if row.student.profile_photo %}
                                 <img src="{{ row.student.profile_photo.url }}" alt="{{ row.full_name }}" class="student-avatar">
@@ -287,7 +287,7 @@
                     Aucune année académique n'est disponible pour calculer les statuts de paiement.
                     {% endif %}
                 </p>
-                <a href="{% url 'main:payments:payment_create' %}" class="btn btn-primary">
+                <a href="{% url 'payments:payment_create' %}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i>Ajouter un paiement
                 </a>
             </div>
@@ -301,14 +301,21 @@
 <style>
     #filtersAccordion .accordion-button { background: var(--primary-color); color: var(--text-color); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; padding: 1rem 1.5rem; font-weight: 500; transition: all 0.3s ease; width: 100%; text-align: left; display: flex; align-items: center; }
     #filtersAccordion .accordion-button:hover { background: var(--primary-color); color: var(--text-color); }
-    #filtersAccordion .accordion-button:not(.collapsed) { background: var(--primary-color); color: var(--text-color); box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; border-color: var(--accent-color); }
-    #filtersAccordion .accordion-button:focus { border-color: var(--accent-color); box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25); outline: none; }
+    #filtersAccordion .accordion-button:not(.collapsed) { 
+        background: var(--primary-color); 
+        color: var(--text-color); 
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; */
+        /* border-color: var(--accent-color); */ 
+    }
+    #filtersAccordion .accordion-button:focus { outline: none; }
     #filtersAccordion .accordion-button::after { content: ''; display: inline-block; width: 1.25rem; height: 1.25rem; margin-left: auto; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23262833'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-size: 1.25rem; transition: transform 0.2s ease-in-out; }
     #filtersAccordion .accordion-button:not(.collapsed)::after { transform: rotate(-180deg); }
     #filtersCollapse[hidden] { display: none !important; }
     #filtersCollapse .accordion-body { padding: 1.5rem; background: transparent; border-top: 1px solid rgba(0,0,0,0.05); }
     .student-avatar { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; }
     .student-avatar-placeholder { display: inline-flex; align-items: center; justify-content: center; background: #e6e7ee; color: #4b5563; font-weight: 700; }
+    .payment-status-row { cursor: pointer; }
+    .payment-status-row:focus { outline: 2px solid rgba(49, 91, 255, 0.35); outline-offset: -2px; }
 </style>
 {% endblock %}
 
@@ -327,6 +334,22 @@
             filtersToggle.setAttribute('aria-expanded', String(!isExpanded));
             filtersToggle.classList.toggle('collapsed', isExpanded);
             filtersCollapse.hidden = isExpanded;
+        });
+
+        document.querySelectorAll('.payment-status-row[data-href]').forEach(function(row) {
+            row.addEventListener('click', function(event) {
+                if (event.target.closest('a, button, input, select, textarea, label')) {
+                    return;
+                }
+                window.location.href = row.dataset.href;
+            });
+
+            row.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    window.location.href = row.dataset.href;
+                }
+            });
         });
     });
 </script>

@@ -15,7 +15,7 @@ class RoleBasedAccessMiddleware:
         # Définition des accès par rôle
         self.role_access_map = {
             'scholar': {
-                'allowed_paths': ['/scholar/', '/auth/', '/admin/'],
+                'allowed_paths': ['/scholar/', '/etudiants/', '/auth/', '/admin/'],
                 'dashboard_url': 'main:dashboard',
                 'forbidden_paths': ['/teach/', '/planning/', '/prospection/']
             },
@@ -30,7 +30,7 @@ class RoleBasedAccessMiddleware:
                 'forbidden_paths': ['/scholar/', '/teach/', '/prospection/']
             },
             'super_admin': {
-                'allowed_paths': ['/scholar/', '/teach/', '/planning/', '/prospection/', '/auth/', '/admin/'],
+                'allowed_paths': ['/scholar/', '/etudiants/', '/teach/', '/planning/', '/prospection/', '/auth/', '/admin/'],
                 'dashboard_url': 'main:dashboard',
                 'forbidden_paths': []
             },

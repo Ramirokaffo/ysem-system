@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.utils import timezone
@@ -14,7 +15,7 @@ from main.forms import BulkDocumentCreationForm, OfficialDocumentForm
 from main.pdf_exports import build_registration_certificate_pdf
 from students.models import Student
 from academic.models import AcademicYear, Level
-from students.models import OfficialDocument
+from students.models import OfficialDocument, StudentLevel
 
 
 class DocumentsView(LoginRequiredMixin, TemplateView):
@@ -27,15 +28,16 @@ class DocumentsView(LoginRequiredMixin, TemplateView):
         documents = OfficialDocument.objects.select_related('student_level__student').all()
         levels = Level.objects.all()
         academic_years = AcademicYear.objects.all().order_by('-start_at')
-        students = Student.objects.all()
 
         document_type = self.request.GET.get('document_type')
         status = self.request.GET.get('status')
         level_id = self.request.GET.get('level')
         academic_year_id = self.request.GET.get('academic_year')
         student_id = self.request.GET.get('student')
+        student_search = (self.request.GET.get('student_search') or '').strip()
         per_page = self.request.GET.get('per_page', 10)
         page = self.request.GET.get('page', 1)
+        selected_student = None
 
         # Utiliser l'année active par défaut si aucun filtre n'est fourni
         selected_academic_year = None
@@ -43,6 +45,13 @@ class DocumentsView(LoginRequiredMixin, TemplateView):
             selected_academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
         else:
             selected_academic_year = AcademicYear.get_active_year()
+
+        if student_id:
+            selected_student = Student.objects.select_related('program').filter(
+                pk=student_id,
+                student_levels__academic_year__isnull=False,
+                status='registered',
+            ).distinct().first()
 
         if document_type:
             documents = documents.filter(type=document_type)
@@ -63,7 +72,11 @@ class DocumentsView(LoginRequiredMixin, TemplateView):
         context['levels'] = levels
         context['academic_years'] = academic_years
         context['selected_academic_year'] = selected_academic_year
-        context['students'] = students
+        context['selected_student'] = selected_student
+        context['selected_student_label'] = (
+            OfficialDocumentForm.get_student_label(selected_student)
+            if selected_student else student_search
+        )
         context['per_page'] = int(per_page)
         per_page_choices = [5, 10, 25, 50, 100]
         context['per_page_choices'] = per_page_choices
@@ -93,6 +106,101 @@ def registration_certificate_download(request, pk):
     response = HttpResponse(pdf_content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="certificat_inscription_{filename_reference}.pdf"'
     return response
+
+
+@login_required
+def document_student_search(request):
+    """Endpoint JSON pour l'autocomplete étudiant du formulaire de document."""
+    query = (request.GET.get('q') or '').strip()
+
+    if not query:
+        return JsonResponse({'results': []})
+
+    students = Student.objects.select_related('program').filter(
+        student_levels__academic_year__isnull=False,
+        status='registered'
+    ).filter(
+        Q(matricule__icontains=query)
+        | Q(firstname__icontains=query)
+        | Q(lastname__icontains=query)
+        | Q(program__name__icontains=query)
+    ).distinct().order_by('matricule')[:10]
+
+    results = [
+        {
+            'id': student.pk,
+            'text': OfficialDocumentForm.get_student_label(student),
+            'matricule': student.matricule,
+            'firstname': student.firstname,
+            'lastname': student.lastname,
+            'program_name': student.program.name if student.program_id else '',
+        }
+        for student in students
+    ]
+    return JsonResponse({'results': results})
+
+
+@login_required
+def document_student_levels(request):
+    """Retourne les niveaux disponibles pour l'étudiant sélectionné."""
+    student_id = request.GET.get('student_id')
+
+    if not student_id:
+        return JsonResponse({'levels': [], 'message': "Sélectionnez d'abord un étudiant."})
+
+    student_levels = StudentLevel.objects.select_related('level', 'academic_year').filter(
+        student_id=student_id,
+    ).order_by('-is_active', 'level__academic_order', 'level__name', '-academic_year__start_at')
+
+    levels = []
+    seen_level_ids = set()
+    for student_level in student_levels:
+        if not student_level.level_id or student_level.level_id in seen_level_ids:
+            continue
+        seen_level_ids.add(student_level.level_id)
+        levels.append({
+            'id': student_level.level_id,
+            'label': student_level.level.name,
+        })
+
+    message = 'Sélectionnez le niveau associé à cet étudiant.' if levels else 'Aucun niveau associé à cet étudiant.'
+    return JsonResponse({'levels': levels, 'message': message})
+
+
+@login_required
+def document_student_academic_years(request):
+    """Retourne les années académiques disponibles pour un étudiant et un niveau."""
+    student_id = request.GET.get('student_id')
+    level_id = request.GET.get('level_id')
+
+    if not student_id or not level_id:
+        return JsonResponse({'academic_years': [], 'message': "Sélectionnez d'abord un niveau."})
+
+    student_levels = StudentLevel.objects.select_related('academic_year').filter(
+        student_id=student_id,
+        level_id=level_id,
+        academic_year__isnull=False,
+    ).order_by('-academic_year__start_at')
+
+    academic_years = []
+    seen_academic_year_ids = set()
+    for student_level in student_levels:
+        if not student_level.academic_year_id or student_level.academic_year_id in seen_academic_year_ids:
+            continue
+        seen_academic_year_ids.add(student_level.academic_year_id)
+        academic_years.append({
+            'id': student_level.academic_year_id,
+            'label': student_level.academic_year.name,
+        })
+
+    if len(academic_years) == 1:
+        message = "L'unique année académique disponible a été sélectionnée automatiquement."
+    elif academic_years:
+        message = "Sélectionnez l'année académique liée à ce niveau."
+    else:
+        message = 'Aucune année académique associée à ce niveau pour cet étudiant.'
+
+    return JsonResponse({'academic_years': academic_years, 'message': message})
 
 @login_required
 def document_create(request):

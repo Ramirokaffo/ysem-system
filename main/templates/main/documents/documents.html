@@ -60,13 +60,20 @@
                                         </select>
                                     </div>
                                     <div class="col-md-2">
-                                        <label for="student">Étudiant :</label>
-                                        <select class="form-control" id="student" name="student">
-                                            <option value="">Tous</option>
-                                            {% for student in students %}
-                                                <option value="{{ student.matricule }}" {% if request.GET.student == student.matricule|stringformat:'s' %}selected{% endif %}>{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        <label for="student_search">Étudiant :</label>
+                                        <input type="hidden" id="student" name="student" value="{{ request.GET.student|default:'' }}">
+                                        <div class="position-relative">
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                id="student_search"
+                                                name="student_search"
+                                                value="{{ selected_student_label }}"
+                                                placeholder="Rechercher par matricule, nom, prénom ou programme..."
+                                                autocomplete="off"
+                                            >
+                                            <div id="document-filter-student-results" class="document-autocomplete-results d-none" role="listbox" aria-label="Résultats de recherche étudiant"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row mt-3">
@@ -92,8 +99,8 @@
                                     {% if request.GET.academic_year %}
                                         <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Année : {% for academic_year in academic_years %}{% if academic_year.pk|stringformat:'s' == request.GET.academic_year %}{{ academic_year.name }}{% endif %}{% endfor %}</span></li>
                                     {% endif %}
-                                    {% if request.GET.student %}
-                                        <li class="list-inline-item"><span class="badge badge-danger text-uppercase">Étudiant : {% for student in students %}{% if student.matricule|stringformat:'s' == request.GET.student %}{{ student.matricule }} - {{ student.firstname }} {{ student.lastname }}{% endif %}{% endfor %}</span></li>
+                                    {% if request.GET.student and selected_student_label %}
+                                        <li class="list-inline-item"><span class="badge badge-danger text-uppercase">Étudiant : {{ selected_student_label }}</span></li>
                                     {% endif %}
                                 </ul>
                             </div>
@@ -124,13 +131,14 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>Matricule</th>
-                            <th>Nom complet</th>
+                            <th>Profile</th>
+                            <!-- <th>Matricule</th> -->
+                            <th>Étudiant</th>
                             <th>Niveau</th>
-                            <th>Type de document</th>
+                            <th>Type document</th>
                             <th>Status</th>
-                            <th>Date de décharge</th>
-                            <th>Date de retour</th>
+                            <th>Date décharge</th>
+                            <!-- <th>Date retour</th> -->
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -146,8 +154,20 @@
                                 </div>
                                 {% endif %}
                             </td> -->
-                            <td><strong>{{ document.student_level.student.matricule }}</strong></td>
-                            <td>{{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}</td>
+                            <td>
+                                <a href="{% url 'students:etudiant_detail' pk=document.student_level.student.matricule %}" class="d-inline-flex align-items-center justify-content-center">
+                                        {% if document.student_level.student.profile_photo %}
+                                            <img src="{{ document.student_level.student.profile_photo.url }}" alt="Photo de profil de {{ document.student_level.student }}" class="rounded-circle border border-light shadow-soft" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="avatar-sm bg-info text-white rounded-circle me-2 d-flex align-items-center justify-content-center mr-1">
+                                            {{ document.student_level.student.firstname|slice:":1" }}{{ document.student_level.student.lastname|slice:":1" }}
+                                        </div>
+                                        {% endif %}
+                                    </a>
+                            </td>
+                            <td>
+                                <strong>{{ document.student_level.student }}</strong></td>
+                            <!-- <td>{{ document.student_level.student.firstname }} {{ document.student_level.student.lastname }}</td> -->
                             <td>{{ document.student_level.level.name }} ({{ document.student_level.academic_year.name }})</td>
                             <td>{{ document.get_type_display }}</td>
                             <td>
@@ -168,13 +188,13 @@
                                     --
                                 {% endif %}
                             </td>
-                            <td>
+                            <!-- <td>
                                 {% if document.returned_at %}
                                     {{ document.returned_at|date:"d/m/Y" }}
                                 {% else %}
                                     --
                                 {% endif %}
-                            </td>
+                            </td> -->
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     {% if document.status == 'available' %}
@@ -336,13 +356,13 @@
     #filtersAccordion .accordion-button:not(.collapsed) {
         background: var(--primary-color);
         color: var(--text-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-        border-color: var(--accent-color);
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+        border-color: var(--accent-color); */
     }
 
     #filtersAccordion .accordion-button:focus {
-        border-color: var(--accent-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25);
+        /* border-color: var(--accent-color); */
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25); */
         outline: none;
     }
 
@@ -375,6 +395,41 @@
         background: transparent;
         border-top: 1px solid rgba(0,0,0,0.05);
     }
+
+    .document-autocomplete-results {
+        position: absolute;
+        top: calc(100% + .35rem);
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 280px;
+        overflow-y: auto;
+        background: #e6e7ee;
+        border-radius: 1rem;
+        box-shadow: 8px 8px 16px #c5c7d0, -8px -8px 16px #fff;
+        padding: .5rem;
+    }
+
+    .document-autocomplete-item {
+        display: block;
+        width: 100%;
+        padding: .75rem 1rem;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        border-radius: .75rem;
+    }
+
+    .document-autocomplete-item:hover,
+    .document-autocomplete-item.active {
+        background: rgba(49, 91, 255, .08);
+    }
+
+    .document-autocomplete-meta {
+        display: block;
+        font-size: .8rem;
+        color: #6c757d;
+    }
 </style>
 {% endblock %}
 
@@ -383,6 +438,82 @@
     document.addEventListener('DOMContentLoaded', function() {
         const filtersToggle = document.getElementById('filtersToggle');
         const filtersCollapse = document.getElementById('filtersCollapse');
+        const studentInput = document.getElementById('student_search');
+        const studentHiddenInput = document.getElementById('student');
+        const studentResults = document.getElementById('document-filter-student-results');
+        const studentSearchUrl = '{% url "main:document_student_search" %}';
+        let activeSearchToken = 0;
+        let debounceTimer = null;
+        let selectedStudent = studentHiddenInput && studentHiddenInput.value ? {
+            id: studentHiddenInput.value,
+            text: studentInput ? studentInput.value.trim() : '',
+        } : null;
+
+        function closeResults() {
+            if (!studentResults) {
+                return;
+            }
+            studentResults.classList.add('d-none');
+            studentResults.innerHTML = '';
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function setSelectedStudent(student) {
+            selectedStudent = student;
+            studentHiddenInput.value = student ? student.id : '';
+            studentInput.value = student ? student.text : '';
+            closeResults();
+        }
+
+        function clearSelectedStudent() {
+            selectedStudent = null;
+            studentHiddenInput.value = '';
+        }
+
+        function renderStudentResults(results) {
+            if (!results.length) {
+                studentResults.innerHTML = '<div class="small text-muted px-3 py-2">Aucun étudiant trouvé.</div>';
+                studentResults.classList.remove('d-none');
+                return;
+            }
+
+            studentResults.innerHTML = results.map((student) => `
+                <button type="button" class="document-autocomplete-item" data-student-id="${escapeHtml(student.id)}" data-label="${escapeHtml(student.text)}">
+                    <strong>${escapeHtml(student.matricule)}</strong> - ${escapeHtml(student.firstname)} ${escapeHtml(student.lastname)}
+                    <span class="document-autocomplete-meta">${escapeHtml(student.program_name || 'Programme non défini')}</span>
+                </button>
+            `).join('');
+            studentResults.classList.remove('d-none');
+        }
+
+        function fetchStudents(query) {
+            const token = ++activeSearchToken;
+            fetch(studentSearchUrl + '?q=' + encodeURIComponent(query), {
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (token !== activeSearchToken) {
+                        return;
+                    }
+                    renderStudentResults(data.results || []);
+                })
+                .catch(() => {
+                    if (token !== activeSearchToken) {
+                        return;
+                    }
+                    studentResults.innerHTML = '<div class="small text-danger px-3 py-2">Erreur lors de la recherche.</div>';
+                    studentResults.classList.remove('d-none');
+                });
+        }
 
         if (!filtersToggle || !filtersCollapse) {
             return;
@@ -394,6 +525,60 @@
             filtersToggle.setAttribute('aria-expanded', String(!isExpanded));
             filtersToggle.classList.toggle('collapsed', isExpanded);
             filtersCollapse.hidden = isExpanded;
+        });
+
+        if (!studentInput || !studentHiddenInput || !studentResults) {
+            return;
+        }
+
+        studentInput.addEventListener('input', function() {
+            const query = studentInput.value.trim();
+
+            if (!selectedStudent || query !== selectedStudent.text) {
+                clearSelectedStudent();
+            }
+
+            if (debounceTimer) {
+                window.clearTimeout(debounceTimer);
+            }
+
+            if (query.length < 2) {
+                closeResults();
+                return;
+            }
+
+            debounceTimer = window.setTimeout(function() {
+                fetchStudents(query);
+            }, 250);
+        });
+
+        studentInput.addEventListener('focus', function() {
+            const query = studentInput.value.trim();
+            if (query.length >= 2) {
+                fetchStudents(query);
+            }
+        });
+
+        studentInput.addEventListener('blur', function() {
+            window.setTimeout(closeResults, 150);
+        });
+
+        studentResults.addEventListener('click', function(event) {
+            const option = event.target.closest('[data-student-id]');
+            if (!option) {
+                return;
+            }
+
+            setSelectedStudent({
+                id: option.dataset.studentId,
+                text: option.dataset.label,
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#student_search') && !event.target.closest('#document-filter-student-results')) {
+                closeResults();
+            }
         });
     });
 </script>

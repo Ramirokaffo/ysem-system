@@ -11,5 +11,6 @@ urlpatterns = [
     path('ajax/installment-summary/', payment_installment_summary, name='payment_installment_summary'),
 
     path('statut-paiement/', PaymentStatusView.as_view(), name='payment_status'),
+    path('statut-paiement/<str:pk>/', PaymentStatusStudentDetailView.as_view(), name='payment_status_student_detail'),
 
 ]

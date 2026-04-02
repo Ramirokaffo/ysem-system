@@ -124,12 +124,15 @@ class Student(models.Model):
     """
     Modèle principal pour les étudiants
     """
+
+    STUDENT_STATUS_CHOICES = [('pending', 'En attente'), ('approved', 'Examinée & Approuvée'), ('abandoned', 'Abandonné'), ('rejected', 'Rejetée'), ("registered", "Inscrit")]
+
     matricule = models.CharField(max_length=50, unique=True, verbose_name="Matricule")
     dossier_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de dossier")
     firstname = models.CharField(max_length=100, verbose_name="Prénom")
     lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
-    status = models.CharField(max_length=50, choices=[('pending', 'En attente'), ('approved', 'Examinée & Approuvée'), ('abandoned', 'Abandonné'), ('rejected', 'Rejetée'), ("registered", "Inscrit")], verbose_name="Statut de pré-inscription", default='pending')
+    status = models.CharField(max_length=50, choices=STUDENT_STATUS_CHOICES, verbose_name="Statut de pré-inscription", default='pending')
     gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
     lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr', verbose_name="Langue")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
@@ -272,6 +275,15 @@ class Student(models.Model):
         active_level = self.student_levels.filter(is_active=True).first()
         return active_level
 
+    def get_current_speciality(self):
+        active_level = self.get_active_level()
+        return active_level.speciality if active_level else None
+
+    @property
+    def current_level(self):
+        active_level = self.get_active_level()
+        return active_level.level if active_level else None
+    
     def mark_last_registration_date(self):
         self.last_registration_date = timezone.now()
         self.save()

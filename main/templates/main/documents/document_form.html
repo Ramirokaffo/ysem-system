@@ -9,11 +9,46 @@
         content: " *";
         color: #dc3545;
     }
+
+    .document-autocomplete-results {
+        position: absolute;
+        top: calc(100% + .35rem);
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 280px;
+        overflow-y: auto;
+        background: #e6e7ee;
+        border-radius: 1rem;
+        box-shadow: 8px 8px 16px #c5c7d0, -8px -8px 16px #fff;
+        padding: .5rem;
+    }
+
+    .document-autocomplete-item {
+        display: block;
+        width: 100%;
+        padding: .75rem 1rem;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        border-radius: .75rem;
+    }
+
+    .document-autocomplete-item:hover,
+    .document-autocomplete-item.active {
+        background: rgba(49, 91, 255, .08);
+    }
+
+    .document-autocomplete-meta {
+        display: block;
+        font-size: .8rem;
+        color: #6c757d;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="col-12 row mb-4 w-100">
     <!-- En-tête de page -->
     <!-- <div class="row">
         <div class="col-12">
@@ -42,9 +77,9 @@
     </div> -->
 
     <!-- Formulaire -->
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
-            <div class="card bg-primary shadow-soft border-light">
+    <div class="col-12 w-100">
+        <div class="col-12 w-100">
+            <div class="card bg-primary shadow-soft border-light w-100">
                 <div class="card-header bg-primary border-light text-center pb-0">
                     <h5 class="card-title mb-3">
                         <span class="fas fa-file-alt mr-2"></span>
@@ -67,20 +102,17 @@
 
                 <form method="post" novalidate class="mt-4">
                     {% csrf_token %}
+                    {{ form.student }}
 
                     <!-- Étudiant -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.student.id_for_label }}" class="form-label font-weight-bold required-field">
-                            {{ form.student.label }}
+                        <label for="{{ form.student_search.id_for_label }}" class="form-label font-weight-bold required-field">
+                            {{ form.student_search.label }}
                         </label>
-                        <select class="form-control shadow-inset border-light" name="{{ form.student.name }}" id="{{ form.student.id_for_label }}">
-                            <option value="">---------</option>
-                            {% for value, label in form.student.field.choices %}
-                                {% if value %}
-                                    <option value="{{ value }}" {% if form.student.value == value %}selected{% endif %}>{{ label }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        <div class="position-relative">
+                            {{ form.student_search }}
+                            <div id="document-student-results" class="document-autocomplete-results d-none" role="listbox" aria-label="Résultats de recherche étudiant"></div>
+                        </div>
                         {% if form.student.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.student.errors %}
@@ -89,7 +121,7 @@
                             </div>
                         {% endif %}
                         <div class="form-text">
-                            Sélectionnez l'étudiant pour lequel créer le document.
+                            Recherchez puis sélectionnez l'étudiant pour lequel créer le document.
                         </div>
                     </div>
 
@@ -98,14 +130,7 @@
                         <label for="{{ form.level.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.level.label }}
                         </label>
-                        <select class="form-control shadow-inset border-light" name="{{ form.level.name }}" id="{{ form.level.id_for_label }}">
-                            <option value="">---------</option>
-                            {% for value, label in form.level.field.choices %}
-                                {% if value %}
-                                    <option value="{{ value }}" {% if form.level.value == value %}selected{% endif %}>{{ label }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        {{ form.level }}
                         {% if form.level.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.level.errors %}
@@ -113,8 +138,8 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">
-                            Sélectionnez le niveau d'études.
+                        <div class="form-text" id="document-level-help-text">
+                            Sélectionnez d'abord un étudiant.
                         </div>
                     </div>
 
@@ -123,14 +148,7 @@
                         <label for="{{ form.academic_year.id_for_label }}" class="form-label font-weight-bold required-field">
                             {{ form.academic_year.label }}
                         </label>
-                        <select class="form-control shadow-inset border-light" name="{{ form.academic_year.name }}" id="{{ form.academic_year.id_for_label }}">
-                            <option value="">---------</option>
-                            {% for value, label in form.academic_year.field.choices %}
-                                {% if value %}
-                                    <option value="{{ value }}" {% if form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        {{ form.academic_year }}
                         {% if form.academic_year.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.academic_year.errors %}
@@ -138,8 +156,8 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">
-                            Sélectionnez l'année académique.
+                        <div class="form-text" id="document-academic-year-help-text">
+                            Sélectionnez un niveau pour afficher les années académiques associées.
                         </div>
                     </div>
 
@@ -234,38 +252,320 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion de l'affichage conditionnel de la date de retrait
     const statusField = document.getElementById('{{ form.status.id_for_label }}');
-    const withdrawnDateGroup = document.querySelector('label[for="{{ form.withdrawn_date.id_for_label }}"]').closest('.form-group');
+    const withdrawnDateLabel = document.querySelector('label[for="{{ form.withdrawn_date.id_for_label }}"]');
+    const withdrawnDateGroup = withdrawnDateLabel ? withdrawnDateLabel.closest('.form-group') : null;
+    const withdrawnDateInput = document.getElementById('{{ form.withdrawn_date.id_for_label }}');
+    const studentInput = document.getElementById('{{ form.student_search.id_for_label }}');
+    const studentHiddenInput = document.getElementById('{{ form.student.id_for_label }}');
+    const studentResults = document.getElementById('document-student-results');
+    const levelField = document.getElementById('{{ form.level.id_for_label }}');
+    const academicYearField = document.getElementById('{{ form.academic_year.id_for_label }}');
+    const levelHelpText = document.getElementById('document-level-help-text');
+    const academicYearHelpText = document.getElementById('document-academic-year-help-text');
+    const studentSearchUrl = '{% url "main:document_student_search" %}';
+    const studentLevelsUrl = '{% url "main:document_student_levels" %}';
+    const studentAcademicYearsUrl = '{% url "main:document_student_academic_years" %}';
+    const initialLevelValue = levelField.value;
+    const initialAcademicYearValue = academicYearField.value;
+    let selectedStudent = studentHiddenInput.value ? {
+        id: studentHiddenInput.value,
+        text: studentInput.value.trim(),
+    } : null;
+    let searchDebounceTimer = null;
+    let activeSearchToken = 0;
+    let activeLevelToken = 0;
+    let activeAcademicYearToken = 0;
 
     function toggleWithdrawnDate() {
+        if (!statusField || !withdrawnDateGroup || !withdrawnDateInput) {
+            return;
+        }
+
         if (statusField.value === 'withdrawn') {
             withdrawnDateGroup.style.display = 'block';
-            document.getElementById('{{ form.withdrawn_date.id_for_label }}').required = true;
+            withdrawnDateInput.required = true;
         } else {
             withdrawnDateGroup.style.display = 'none';
-            document.getElementById('{{ form.withdrawn_date.id_for_label }}').required = false;
-            document.getElementById('{{ form.withdrawn_date.id_for_label }}').value = '';
+            withdrawnDateInput.required = false;
+            withdrawnDateInput.value = '';
         }
     }
 
-    // Appliquer au chargement de la page
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function closeResults() {
+        studentResults.classList.add('d-none');
+        studentResults.innerHTML = '';
+    }
+
+    function populateSelect(selectField, items, emptyLabel, preferredValue) {
+        selectField.innerHTML = '';
+
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = emptyLabel;
+        selectField.appendChild(emptyOption);
+
+        items.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.label;
+            selectField.appendChild(option);
+        });
+
+        const canRestore = items.some((item) => String(item.id) === String(preferredValue || ''));
+        selectField.value = canRestore ? String(preferredValue) : '';
+        return canRestore;
+    }
+
+    function resetLevelField(message) {
+        populateSelect(levelField, [], selectedStudent ? 'Sélectionner un niveau' : "Sélectionner d'abord un étudiant", '');
+        levelHelpText.textContent = message;
+    }
+
+    function resetAcademicYearField(message) {
+        populateSelect(
+            academicYearField,
+            [],
+            levelField.value ? 'Sélectionner une année académique' : "Sélectionner d'abord un niveau",
+            '',
+        );
+        academicYearHelpText.textContent = message;
+    }
+
+    function setSelectedStudent(student) {
+        selectedStudent = student;
+        studentHiddenInput.value = student ? student.id : '';
+        studentInput.value = student ? student.text : studentInput.value;
+        closeResults();
+    }
+
+    function clearSelectedStudent(preserveText) {
+        selectedStudent = null;
+        studentHiddenInput.value = '';
+        if (!preserveText) {
+            studentInput.value = '';
+        }
+    }
+
+    function renderStudentResults(results) {
+        if (!results.length) {
+            studentResults.innerHTML = '<div class="small text-muted px-3 py-2">Aucun étudiant trouvé.</div>';
+            studentResults.classList.remove('d-none');
+            return;
+        }
+
+        studentResults.innerHTML = results.map((student) => `
+            <button type="button" class="document-autocomplete-item" data-student-id="${escapeHtml(student.id)}" data-label="${escapeHtml(student.text)}">
+                <strong>${escapeHtml(student.matricule)}</strong> - ${escapeHtml(student.firstname)} ${escapeHtml(student.lastname)}
+                <span class="document-autocomplete-meta">${escapeHtml(student.program_name || 'Programme non défini')}</span>
+            </button>
+        `).join('');
+        studentResults.classList.remove('d-none');
+    }
+
+    function fetchStudents(query) {
+        const token = ++activeSearchToken;
+        fetch(studentSearchUrl + '?q=' + encodeURIComponent(query), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (token !== activeSearchToken) {
+                    return;
+                }
+                renderStudentResults(data.results || []);
+            })
+            .catch(() => {
+                if (token !== activeSearchToken) {
+                    return;
+                }
+                studentResults.innerHTML = '<div class="small text-danger px-3 py-2">Erreur lors de la recherche.</div>';
+                studentResults.classList.remove('d-none');
+            });
+    }
+
+    function loadAcademicYears(preferredAcademicYearValue) {
+        const studentId = studentHiddenInput.value;
+        const levelId = levelField.value;
+
+        if (!studentId) {
+            resetAcademicYearField("Sélectionnez d'abord un étudiant.");
+            return Promise.resolve();
+        }
+
+        if (!levelId) {
+            resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+            return Promise.resolve();
+        }
+
+        const token = ++activeAcademicYearToken;
+        academicYearHelpText.textContent = 'Chargement des années académiques...';
+
+        return fetch(
+            studentAcademicYearsUrl
+                + '?student_id=' + encodeURIComponent(studentId)
+                + '&level_id=' + encodeURIComponent(levelId),
+            {headers: {'X-Requested-With': 'XMLHttpRequest'}}
+        )
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            })
+            .then((data) => {
+                if (token !== activeAcademicYearToken) {
+                    return;
+                }
+
+                const academicYears = Array.isArray(data.academic_years) ? data.academic_years : [];
+                const preferredValue = preferredAcademicYearValue || academicYearField.value || '';
+                populateSelect(academicYearField, academicYears, 'Sélectionner une année académique', preferredValue);
+
+                if (academicYears.length === 1) {
+                    academicYearField.value = String(academicYears[0].id);
+                }
+
+                academicYearHelpText.textContent = data.message || (
+                    academicYears.length
+                        ? 'Sélectionnez l’année académique liée à ce niveau.'
+                        : 'Aucune année académique associée à ce niveau pour cet étudiant.'
+                );
+            })
+            .catch((error) => {
+                if (token !== activeAcademicYearToken) {
+                    return;
+                }
+
+                resetAcademicYearField(
+                    (error && error.message) ? error.message : 'Impossible de charger les années académiques.'
+                );
+            });
+    }
+
+    function loadLevels(preferredLevelValue, preferredAcademicYearValue) {
+        const studentId = studentHiddenInput.value;
+
+        if (!studentId) {
+            resetLevelField("Sélectionnez d'abord un étudiant.");
+            resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+            return Promise.resolve();
+        }
+
+        const token = ++activeLevelToken;
+        levelHelpText.textContent = 'Chargement des niveaux...';
+        resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+
+        return fetch(studentLevelsUrl + '?student_id=' + encodeURIComponent(studentId), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            })
+            .then((data) => {
+                if (token !== activeLevelToken) {
+                    return;
+                }
+
+                const levels = Array.isArray(data.levels) ? data.levels : [];
+                populateSelect(levelField, levels, 'Sélectionner un niveau', preferredLevelValue || '');
+                levelHelpText.textContent = data.message || (
+                    levels.length
+                        ? 'Sélectionnez le niveau associé à cet étudiant.'
+                        : 'Aucun niveau associé à cet étudiant.'
+                );
+
+                if (!levelField.value) {
+                    resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+                    return;
+                }
+
+                return loadAcademicYears(preferredAcademicYearValue);
+            })
+            .catch((error) => {
+                if (token !== activeLevelToken) {
+                    return;
+                }
+
+                resetLevelField((error && error.message) ? error.message : 'Impossible de charger les niveaux.');
+                resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+            });
+    }
+
     toggleWithdrawnDate();
 
-    // Appliquer lors du changement de statut
-    statusField.addEventListener('change', toggleWithdrawnDate);
+    if (statusField) {
+        statusField.addEventListener('change', toggleWithdrawnDate);
+    }
 
-    // Amélioration de l'affichage des options d'étudiant
-    const studentField = document.getElementById('{{ form.student.id_for_label }}');
-    if (studentField) {
-        // Personnaliser l'affichage des options d'étudiant
-        Array.from(studentField.options).forEach(option => {
-            if (option.value) {
-                const text = option.text;
-                // Le texte est déjà au format "matricule - nom prénom"
-                option.text = text;
-            }
+    studentInput.addEventListener('input', function () {
+        const query = studentInput.value.trim();
+        if (!selectedStudent || query !== selectedStudent.text) {
+            clearSelectedStudent(true);
+            resetLevelField("Sélectionnez d'abord un étudiant.");
+            resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
+        }
+
+        window.clearTimeout(searchDebounceTimer);
+        if (query.length < 2) {
+            closeResults();
+            return;
+        }
+
+        searchDebounceTimer = window.setTimeout(function () {
+            fetchStudents(query);
+        }, 250);
+    });
+
+    studentInput.addEventListener('focus', function () {
+        const query = studentInput.value.trim();
+        if (query.length >= 2 && studentResults.innerHTML.trim()) {
+            studentResults.classList.remove('d-none');
+        }
+    });
+
+    studentInput.addEventListener('blur', function () {
+        window.setTimeout(function () {
+            closeResults();
+        }, 150);
+    });
+
+    studentResults.addEventListener('click', function (event) {
+        const option = event.target.closest('[data-student-id]');
+        if (!option) {
+            return;
+        }
+
+        setSelectedStudent({
+            id: option.dataset.studentId,
+            text: option.dataset.label,
         });
+        loadLevels('', '');
+    });
+
+    levelField.addEventListener('change', function () {
+        loadAcademicYears('');
+    });
+
+    if (selectedStudent) {
+        loadLevels(initialLevelValue, initialAcademicYearValue);
+    } else {
+        resetLevelField("Sélectionnez d'abord un étudiant.");
+        resetAcademicYearField('Sélectionnez un niveau pour afficher les années académiques associées.');
     }
 });
 </script>

@@ -21,9 +21,8 @@ from audit.utils import log_audit_event
 
 from accounts.models import Godfather
 from schools.models import School
-from students.models import Student, StudentLevel, StudentMetaData, OfficialDocument
+from students.models import Student, StudentLevel, StudentMetaData
 from django.core.paginator import Paginator
-from student_portal.decorators import scholar_admin_required
 from academic.models import Level
 
 from django.contrib import messages
@@ -516,7 +515,7 @@ class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
                 messages.success(request, 'Pré-Inscription éffectuée avec succès!')
                 if save_action == 'save_and_new':
                     return redirect('main:nouvelle_inscription')
-                return redirect('students:etudiant_detail', pk=student.matricule)
+                return redirect('main:inscription_detail', pk=student.matricule)
 
             # except Exception as e:
             #     messages.error(request, f'Erreur lors de la pré-inscription: {str(e)}')
@@ -865,5 +864,5 @@ def pre_inscription_register(request, pk):
         request,
         f"L'étudiant {student.firstname} {student.lastname} a été inscrit avec succès sous le matricule {final_matricule}.",
     )
-    return redirect('main:etudiant_detail', pk=final_matricule)
+    return redirect('students:etudiant_detail', pk=final_matricule)
 

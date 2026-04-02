@@ -6,19 +6,18 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from audit.utils import log_audit_event
-from main.forms import SecondaryDiplomaFormSet, StudentEditForm, StudentLevelForm, StudentMetaDataEditForm, UniversityLevelFormSet
+from main.forms import SecondaryDiplomaFormSet, StudentLevelForm, UniversityLevelFormSet
+from students.forms import StudentEditForm, StudentMetaDataEditForm
 from main.program_documents import build_program_document_entries, get_required_program_document_field_names
 from .emails import send_student_status_email
 from schools.models import School, SecondaryDiploma, UniversityLevel
-from students.models import StudentLevel, OfficialDocument, StudentMetaData
+from students.models import Student, StudentLevel, OfficialDocument, StudentMetaData
 
 from academic.document_requirements import DEFAULT_REQUIRED_PROGRAM_DOCUMENT_FIELDS, PROGRAM_DOCUMENT_FIELD_NAMES
 from main.program_documents import build_program_document_entries
-from students.models import Student, StudentLevel, OfficialDocument
 from django.forms import ValidationError
 
 from academic.models import Program
-from students.models import Student
 
 
 SECONDARY_DIPLOMA_FORMSET_PREFIX = 'secondary_diplomas'
@@ -612,5 +611,5 @@ def render_student_edit(request, student, detail_route_name, page_title, success
         ),
     }
 
-    return render(request, 'main/etudiant_edit.html', context)
+    return render(request, 'students/etudiant_edit.html', context)
 

@@ -109,6 +109,7 @@ def etudiant_detail(request, pk):
             'secondary_diplomas__school',
             'student_levels__level',
             'student_levels__academic_year',
+            'student_levels__speciality',
             'student_levels__official_documents',
             'university_levels__university',
         ),

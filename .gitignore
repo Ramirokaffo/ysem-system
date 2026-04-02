@@ -18,6 +18,7 @@ media/
 .env
 venv/
 env/
+env314/
 ENV/
 .venv/
 

@@ -17,7 +17,7 @@ import ssl
 import stat
 import subprocess
 import sys
-import environ
+# import environ
 from decouple import config
 
 
@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     "prospection",
     "audit",
     "payments",
+    "scholarship",
 ]
 
 MIDDLEWARE = [

@@ -6,55 +6,39 @@
 {% block page_title %}{{ page_title }}{% endblock %}
 
 {% block extra_css %}
-<!-- Utilisation des classes neumorphism uniquement -->
+<style>
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .bulk-preview-list-item {
+        border-radius: .85rem;
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.55);
+    }
+
+    .bulk-preview-empty {
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- En-tête de page -->
-    <div class="col-12 mb-4">
-        <div class="card bg-primary shadow-soft border-light p-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-2">
-                        <span class="fas fa-copy mr-2"></span>
-                        {{ page_title }}
-                    </h1>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 bg-transparent p-0">
-                            <li class="breadcrumb-item">
-                                <a href="{% url 'main:dashboard' %}" class="text-secondary">
-                                    <span class="fas fa-home mr-1"></span>Tableau de bord
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="{% url 'main:documents' %}" class="text-secondary">Documents</a>
-                            </li>
-                            <li class="breadcrumb-item active text-dark" aria-current="page">Création en masse</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div>
-                    <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft">
-                        <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Formulaire principal -->
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4">
+<div class="col-12 row mb-4 w-100">
+    <div class="col-12 w-100">
+        <div class="card bg-primary shadow-soft border-light w-100">
             <div class="card-header bg-primary border-light text-center pb-0">
-                <h2 class="h4 mb-2">
+                <h5 class="card-title mb-2">
                     <span class="fas fa-copy mr-2"></span>
                     Création en masse de documents officiels
-                </h2>
-                <p class="text-muted mb-3">
-                    Créez des documents pour tous les étudiants correspondant aux critères sélectionnés
+                </h5>
+                <p class="text-muted mb-0">
+                    Générez des documents uniquement pour les étudiants officiellement inscrits selon les critères choisis.
                 </p>
             </div>
             <div class="card-body">
@@ -76,22 +60,28 @@
                     {% endfor %}
                 {% endif %}
 
-                <form method="post" id="bulkForm" novalidate>
+                <!-- <div class="alert alert-info shadow-inset border-light mb-4" role="alert">
+                    <span class="fas fa-info-circle mr-2"></span>
+                    Les candidats pris en compte sont uniquement les étudiants inscrits dans l'année académique et le niveau sélectionnés.
+                    <div class="form-text mt-2 mb-0 text-dark">
+                        L'année académique active du système est présélectionnée par défaut.
+                    </div>
+                </div> -->
+
+                <form method="post" id="bulkForm" novalidate class="mt-4">
                     {% csrf_token %}
 
                     <div class="row">
-                        <!-- Type de document -->
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="form-group">
-                                <label for="{{ form.document_type.id_for_label }}" class="form-label font-weight-bold">
-                                    <span class="fas fa-file-alt mr-2"></span>
-                                    {{ form.document_type.label }} <span class="text-danger">*</span>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="{{ form.document_type.id_for_label }}" class="form-label font-weight-bold required-field">
+                                    <span class="fas fa-file-alt mr-2"></span>{{ form.document_type.label }}
                                 </label>
                                 <select class="form-control shadow-inset border-light" name="{{ form.document_type.name }}" id="{{ form.document_type.id_for_label }}">
-                                    <option value="">---------</option>
+                                    <option value="">Sélectionner un type de document</option>
                                     {% for value, label in form.document_type.field.choices %}
                                         {% if value %}
-                                            <option value="{{ value }}" {% if form.document_type.value == value %}selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}" {% if form.document_type.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -102,24 +92,20 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <small class="form-text text-muted">
-                                    Type de document à créer pour tous les étudiants sélectionnés.
-                                </small>
+                                <div class="form-text">Type de document à générer pour tous les étudiants sélectionnés.</div>
                             </div>
                         </div>
 
-                        <!-- Année académique -->
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="form-group">
-                                <label for="{{ form.academic_year.id_for_label }}" class="form-label font-weight-bold">
-                                    <span class="fas fa-calendar-alt mr-2"></span>
-                                    {{ form.academic_year.label }} <span class="text-danger">*</span>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="{{ form.academic_year.id_for_label }}" class="form-label font-weight-bold required-field">
+                                    <span class="fas fa-calendar-alt mr-2"></span>{{ form.academic_year.label }}
                                 </label>
                                 <select class="form-control shadow-inset border-light" name="{{ form.academic_year.name }}" id="{{ form.academic_year.id_for_label }}">
-                                    <option value="">---------</option>
+                                    <option value="">Sélectionner une année académique</option>
                                     {% for value, label in form.academic_year.field.choices %}
                                         {% if value %}
-                                            <option value="{{ value }}" {% if form.academic_year.value == value %}selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}" {% if form.academic_year.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -130,23 +116,22 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
+                                <div class="form-text">L'année académique active est proposée automatiquement.</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="row">
-                        <!-- Niveau -->
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="form-group">
-                                <label for="{{ form.level.id_for_label }}" class="form-label font-weight-bold">
-                                    <span class="fas fa-layer-group mr-2"></span>
-                                    {{ form.level.label }} <span class="text-danger">*</span>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="{{ form.level.id_for_label }}" class="form-label font-weight-bold required-field">
+                                    <span class="fas fa-layer-group mr-2"></span>{{ form.level.label }}
                                 </label>
                                 <select class="form-control shadow-inset border-light" name="{{ form.level.name }}" id="{{ form.level.id_for_label }}">
-                                    <option value="">---------</option>
+                                    <option value="">Sélectionner un niveau</option>
                                     {% for value, label in form.level.field.choices %}
                                         {% if value %}
-                                            <option value="{{ value }}" {% if form.level.value == value %}selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}" {% if form.level.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -157,21 +142,20 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
+                                <div class="form-text">Niveau d'inscription des étudiants à prendre en compte.</div>
                             </div>
                         </div>
 
-                        <!-- Programme -->
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="form-group">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-4">
                                 <label for="{{ form.program.id_for_label }}" class="form-label font-weight-bold">
-                                    <span class="fas fa-graduation-cap mr-2"></span>
-                                    {{ form.program.label }}
+                                    <span class="fas fa-graduation-cap mr-2"></span>{{ form.program.label }}
                                 </label>
                                 <select class="form-control shadow-inset border-light" name="{{ form.program.name }}" id="{{ form.program.id_for_label }}">
-                                    <option value="">---------</option>
+                                    <option value="">Tous les programmes</option>
                                     {% for value, label in form.program.field.choices %}
                                         {% if value %}
-                                            <option value="{{ value }}" {% if form.program.value == value %}selected{% endif %}>{{ label }}</option>
+                                            <option value="{{ value }}" {% if form.program.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -182,24 +166,20 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <small class="form-text text-muted">
-                                    Laissez vide pour inclure tous les programmes.
-                                </small>
+                                <div class="form-text">Laissez vide pour inclure tous les programmes du niveau choisi.</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Statut initial -->
                     <div class="row">
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="form-group">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mb-4">
                                 <label for="{{ form.status.id_for_label }}" class="form-label font-weight-bold">
-                                    <span class="fas fa-flag mr-2"></span>
-                                    {{ form.status.label }}
+                                    <span class="fas fa-flag mr-2"></span>{{ form.status.label }}
                                 </label>
                                 <select class="form-control shadow-inset border-light" name="{{ form.status.name }}" id="{{ form.status.id_for_label }}">
                                     {% for value, label in form.status.field.choices %}
-                                        <option value="{{ value }}" {% if form.status.value == value %}selected{% endif %}>{{ label }}</option>
+                                        <option value="{{ value }}" {% if form.status.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
                                     {% endfor %}
                                 </select>
                                 {% if form.status.errors %}
@@ -209,53 +189,46 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <small class="form-text text-muted">
-                                    Statut initial des documents créés.
-                                </small>
+                                <div class="form-text">Statut attribué aux nouveaux documents créés.</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Bouton de prévisualisation -->
                     <div class="text-center mb-4">
-                        <button type="button" id="previewBtn" class="btn btn-info shadow-soft px-5 py-3">
-                            <span class="fas fa-eye mr-2"></span>
-                            Prévisualiser les étudiants concernés
+                        <button type="button" id="previewBtn" class="btn btn-primary shadow-soft px-5 py-3">
+                            <span class="fas fa-eye mr-2"></span>Prévisualiser les étudiants concernés
                         </button>
                     </div>
 
-                    <!-- Section de prévisualisation -->
                     <div id="previewSection" style="display: none;">
-                        <div class="card bg-primary shadow-soft border-light mt-4 p-4">
-                            <div class="text-center mb-4">
+                        <div class="card bg-primary shadow-soft border-light mt-4">
+                            <div class="card-header bg-primary border-light text-center pb-0">
                                 <h5 class="mb-0">
-                                    <span class="fas fa-users mr-2"></span>
-                                    Étudiants concernés
+                                    <span class="fas fa-users mr-2"></span>Étudiants concernés
                                 </h5>
                             </div>
-                            <div id="previewStats" class="row mb-4"></div>
-                            <div id="previewContent" class="card bg-primary shadow-inset border-light p-3" style="max-height: 300px; overflow-y: auto;"></div>
+                            <div class="card-body">
+                                <div id="previewStats" class="row mb-4"></div>
+                                <div id="previewContent" class="card bg-primary shadow-inset border-light p-3" style="max-height: 320px; overflow-y: auto;"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Erreurs générales du formulaire -->
                     {% if form.non_field_errors %}
                         <div class="alert alert-danger mb-4" role="alert">
                             <span class="fas fa-fire mr-2"></span>
-                            <strong>Erreur!</strong>
                             {% for error in form.non_field_errors %}
                                 <p class="mb-0">{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
 
-                    <!-- Boutons d'action -->
-                    <div class="card bg-primary shadow-soft border-light p-3 mt-5">
-                        <div class="d-flex justify-content-end gap-3">
-                            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft px-4 py-2 mx-1">
+                    <div class="card bg-primary shadow-soft border-light p-3 mt-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'main:documents' %}" class="btn btn-outline-secondary shadow-soft mx-2">
                                 <span class="fas fa-times mr-2"></span>Annuler
                             </a>
-                            <button type="submit" class="btn btn-success shadow-soft px-5 py-2 mx-1" id="submitBtn" disabled>
+                            <button type="submit" class="btn btn-success shadow-soft" id="submitBtn" disabled>
                                 <span class="fas fa-plus mr-2"></span>Créer les documents
                             </button>
                         </div>
@@ -274,6 +247,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewSection = document.getElementById('previewSection');
     const submitBtn = document.getElementById('submitBtn');
     const form = document.getElementById('bulkForm');
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
     
     previewBtn.addEventListener('click', function() {
         // Vérifier que les champs requis sont remplis
@@ -330,12 +312,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function displayPreview(data) {
-        // Afficher les statistiques avec style neumorphism
         const statsHtml = `
             <div class="col-md-4 mb-3">
                 <div class="card bg-primary shadow-inset border-light text-center p-3">
                     <h3 class="mb-1 text-muted">${data.total_count}</h3>
-                    <p class="text-muted mb-0">Total étudiants</p>
+                    <p class="text-muted mb-0">Étudiants inscrits</p>
                 </div>
             </div>
             <div class="col-md-4 mb-3">
@@ -353,17 +334,16 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.getElementById('previewStats').innerHTML = statsHtml;
 
-        // Afficher la liste des étudiants avec style neumorphism
         let studentsHtml = '';
         if (data.students.length > 0) {
             data.students.forEach(student => {
                 studentsHtml += `
-                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-light rounded">
+                    <div class="bulk-preview-list-item d-flex justify-content-between align-items-center p-3 mb-2 shadow-soft border-light">
                         <div>
-                            <strong>${student.matricule}</strong>
-                            <span class="text-muted">- ${student.firstname} ${student.lastname}</span>
+                            <strong>${escapeHtml(student.matricule)}</strong>
+                            <span class="text-muted">- ${escapeHtml(student.firstname)} ${escapeHtml(student.lastname)}</span>
                         </div>
-                        <small class="text-muted">(${student.program})</small>
+                        <small class="text-muted">${escapeHtml(student.program)}</small>
                     </div>
                 `;
             });
@@ -376,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
         } else {
-            studentsHtml += '<div class="text-center text-muted p-4"><i class="fas fa-users fa-2x mb-3 d-block"></i>Aucun étudiant trouvé avec ces critères</div>';
+            studentsHtml += '<div class="bulk-preview-empty text-center text-muted"><i class="fas fa-users fa-2x mb-3 d-block"></i><span>Aucun étudiant inscrit trouvé avec ces critères.</span></div>';
         }
 
         document.getElementById('previewContent').innerHTML = studentsHtml;

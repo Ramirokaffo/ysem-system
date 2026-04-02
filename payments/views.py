@@ -28,6 +28,139 @@ def _format_amount(value):
     return formatted[:-3] if formatted.endswith('.00') else formatted
 
 
+def _get_selected_academic_year_from_request(request):
+    academic_year_id = request.GET.get('academic_year')
+    if academic_year_id:
+        academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
+        if academic_year:
+            return academic_year
+
+    return AcademicYear.get_active_year() or AcademicYear.objects.order_by('-start_at').first()
+
+
+def _get_student_level_for_academic_year(student, academic_year):
+    if not academic_year:
+        return None
+
+    return student.student_levels.filter(
+        academic_year=academic_year,
+    ).select_related('level', 'academic_year', 'speciality').order_by(
+        '-is_active', 'level__academic_order', 'level__name'
+    ).first()
+
+
+def _get_student_installments(student, academic_year, current_level=None):
+    if not academic_year or not student.program_id:
+        return []
+
+    level_id = current_level.level_id if current_level else None
+    base_queryset = PaymentInstallment.objects.filter(
+        deleted_at__isnull=True,
+        academic_year=academic_year,
+        program=student.program,
+    ).select_related('program', 'level').order_by('order_number', 'name', 'pk')
+
+    installments = list(base_queryset.filter(level_id=level_id)) if level_id else []
+    if not installments:
+        installments = list(base_queryset.filter(level__isnull=True))
+
+    return installments
+
+
+def _build_student_financial_statement(student, academic_year):
+    current_level = _get_student_level_for_academic_year(student, academic_year)
+    installments = _get_student_installments(student, academic_year, current_level=current_level)
+    payments = list(
+        Payment.objects.filter(
+            student=student,
+            academic_year=academic_year,
+            category='frais_scolarite',
+        ).select_related(
+            'installment', 'author', 'academic_year'
+        ).order_by('-payment_date', '-created_at')
+    )
+
+    amount_paid = Decimal('0.00')
+    paid_by_installment = defaultdict(lambda: Decimal('0.00'))
+    for payment in payments:
+        payment_amount = payment.amount_paid or Decimal('0.00')
+        amount_paid += payment_amount
+        if payment.installment_id:
+            paid_by_installment[payment.installment_id] += payment_amount
+
+    today = timezone.localdate()
+    total_amount_due = Decimal('0.00')
+    overdue_amount = Decimal('0.00')
+    installment_rows = []
+
+    for installment in installments:
+        installment_amount = installment.amount or Decimal('0.00')
+        installment_paid = paid_by_installment[installment.pk]
+        remaining_amount = installment_amount - installment_paid
+        if remaining_amount < Decimal('0.00'):
+            remaining_amount = Decimal('0.00')
+
+        is_overdue = bool(
+            installment.due_date
+            and installment.due_date <= today
+            and remaining_amount > Decimal('0.00')
+        )
+
+        if remaining_amount <= Decimal('0.00'):
+            status_label = 'Soldé'
+            status_badge_class = 'bg-success text-white'
+        elif installment_paid > Decimal('0.00'):
+            status_label = 'Paiement partiel'
+            status_badge_class = 'bg-warning text-dark'
+        else:
+            status_label = 'Non soldé'
+            status_badge_class = 'bg-secondary text-white'
+
+        if is_overdue:
+            status_label = 'Échu non soldé'
+            status_badge_class = 'bg-danger text-white'
+            overdue_amount += remaining_amount
+
+        total_amount_due += installment_amount
+        installment_rows.append({
+            'installment': installment,
+            'amount': installment_amount,
+            'amount_paid': installment_paid,
+            'remaining_amount': remaining_amount,
+            'is_overdue': is_overdue,
+            'status_label': status_label,
+            'status_badge_class': status_badge_class,
+        })
+
+    remaining_amount = total_amount_due - amount_paid
+    if remaining_amount < Decimal('0.00'):
+        remaining_amount = Decimal('0.00')
+
+    completion_percentage = 0
+    if total_amount_due > Decimal('0.00'):
+        completion_percentage = min(int((amount_paid / total_amount_due) * 100), 100)
+
+    status = 'overdue' if overdue_amount > Decimal('0.00') else 'up_to_date'
+    return {
+        'current_level': current_level,
+        'installments': installment_rows,
+        'payments': payments,
+        'payments_count': len(payments),
+        'installments_count': len(installment_rows),
+        'totals': {
+            'total_amount_due': total_amount_due,
+            'amount_paid': amount_paid,
+            'remaining_amount': remaining_amount,
+            'overdue_amount': overdue_amount,
+        },
+        'status': status,
+        'status_label': 'En retard' if status == 'overdue' else 'À jour',
+        'status_badge_class': 'bg-danger text-white' if status == 'overdue' else 'bg-success text-white',
+        'completion_percentage': completion_percentage,
+        'last_payment': payments[0] if payments else None,
+    }
+
+
 def _build_installment_summary(student, academic_year):
     empty_summary = {
         'student': {
@@ -409,7 +542,7 @@ def payment_create(request):
                         request,
                         f'Paiement enregistré avec succès pour {payment.student}. Vous pouvez en ajouter un autre.',
                     )
-                redirect_url = reverse('main:payments:payment_create')
+                redirect_url = reverse('payments:payment_create')
                 query_string = _build_payment_create_query_string(flow_context)
                 if query_string:
                     redirect_url = f'{redirect_url}?{query_string}'
@@ -429,7 +562,7 @@ def payment_create(request):
 
                 return pre_inscription_register(request, flow_context['registration_student'].matricule)
 
-            return redirect('main:payments:payments_list')
+            return redirect('payments:payments_list')
 
         messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
     else:
@@ -559,13 +692,7 @@ class PaymentStatusView(LoginRequiredMixin, TemplateView):
     PER_PAGE_CHOICES = [10, 25, 50, 100]
 
     def _get_selected_academic_year(self):
-        academic_year_id = self.request.GET.get('academic_year')
-        if academic_year_id:
-            academic_year = AcademicYear.objects.filter(pk=academic_year_id).first()
-            if academic_year:
-                return academic_year
-
-        return AcademicYear.get_active_year() or AcademicYear.objects.order_by('-start_at').first()
+        return _get_selected_academic_year_from_request(self.request)
 
     def _get_per_page(self):
         try:
@@ -708,6 +835,10 @@ class PaymentStatusView(LoginRequiredMixin, TemplateView):
                 'status': status,
                 'status_label': 'En retard' if status == 'overdue' else 'À jour',
                 'status_badge_class': 'bg-danger' if status == 'overdue' else 'bg-success',
+                'detail_url': (
+                    f"{reverse('payments:payment_status_student_detail', args=[student.matricule])}?"
+                    f"{urlencode({'academic_year': academic_year.pk, 'return_url': self.request.get_full_path()})}"
+                ),
             })
 
         return rows
@@ -768,6 +899,37 @@ class PaymentStatusView(LoginRequiredMixin, TemplateView):
             },
         })
 
+        return context
+
+
+@method_decorator(scholar_admin_required, name='dispatch')
+class PaymentStatusStudentDetailView(LoginRequiredMixin, TemplateView):
+    """Vue détaillée de la situation financière d'un étudiant."""
+    template_name = 'payments/payment_status_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = get_object_or_404(
+            Student.objects.select_related('program').filter(deleted_at__isnull=True),
+            matricule=kwargs['pk'],
+        )
+        academic_year = _get_selected_academic_year_from_request(self.request)
+        statement = _build_student_financial_statement(student, academic_year) if academic_year else None
+
+        payment_list_query = {'search': student.matricule}
+        if academic_year:
+            payment_list_query['academic_year'] = academic_year.pk
+
+        context.update({
+            'page_title': 'Situation financière',
+            'student': student,
+            'selected_academic_year': academic_year,
+            'statement': statement,
+            'return_url': self.request.GET.get('return_url') or reverse('payments:payment_status'),
+            'payment_list_url': f"{reverse('payments:payments_list')}?{urlencode(payment_list_query)}",
+            'student_detail_url': reverse('students:etudiant_detail', args=[student.matricule]),
+            'generated_on': timezone.localtime(),
+        })
         return context
 
 

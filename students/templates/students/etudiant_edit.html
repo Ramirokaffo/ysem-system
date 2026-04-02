@@ -100,7 +100,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label class="form-label font-weight-bold">{{ student_form.status.label }}</label>
-                                <select class="form-control shadow-inset border-light" name="{{ student_form.status.name }}" id="{{ student_form.status.id_for_label }}">
+                                <select class="form-control shadow-inset border-light" name="{{ student_form.status.name }}" id="{{ student_form.status.id_for_label }}" readonly>
                                     {% for value, label in student_form.status.field.choices %}
                                         <option value="{{ value }}" {% if student_form.status.value == value %}selected{% endif %}>{{ label }}</option>
                                     {% endfor %}

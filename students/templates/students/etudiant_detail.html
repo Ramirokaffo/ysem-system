@@ -5,555 +5,1005 @@
 
 {% block page_title %}Détails de l'étudiant{% endblock %}
 
+{% block extra_css %}
+<style>
+    .student-detail-page {
+        padding-bottom: 1rem;
+    }
+
+    .student-hero,
+    .student-tab-shell,
+    .student-action-bar {
+        border-radius: 1.5rem;
+    }
+
+    .student-hero {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .student-hero::after {
+        content: '';
+        position: absolute;
+        inset: auto -80px -80px auto;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.35);
+        box-shadow: inset 2px 2px 8px rgba(184, 185, 190, 0.7);
+    }
+
+    .student-kicker {
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #66799e;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .student-name {
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: #31344b;
+        margin-bottom: 0.5rem;
+    }
+
+    .student-subtitle {
+        color: #66799e;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .student-avatar,
+    .student-avatar-placeholder {
+        width: 170px;
+        height: 170px;
+        border-radius: 50%;
+    }
+
+    .student-avatar {
+        object-fit: cover;
+        border: 6px solid #e6e7ee;
+        box-shadow: 8px 8px 16px #b8b9be, -8px -8px 16px #ffffff;
+    }
+
+    .student-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e6e7ee;
+        color: #66799e;
+        box-shadow: inset 2px 2px 6px #b8b9be, inset -3px -3px 7px #ffffff, 8px 8px 16px #b8b9be, -8px -8px 16px #ffffff;
+    }
+
+    .student-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        background: #e6e7ee;
+        color: #31344b;
+        font-weight: 700;
+        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #ffffff;
+    }
+
+    .student-hero-badge {
+        margin-right: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.82rem;
+    }
+
+    .student-stat-card,
+    .document-stat-card {
+        background: #e6e7ee;
+        border-radius: 1.1rem;
+        padding: 1.15rem 1rem;
+        box-shadow: 6px 6px 12px #b8b9be, -6px -6px 12px #ffffff;
+    }
+
+    .student-stat-label {
+        color: #66799e;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .student-stat-value {
+        color: #31344b;
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .student-tabs-wrapper {
+        margin-bottom: 1.5rem;
+    }
+
+    .student-tabs .nav-item {
+        margin-bottom: 0.75rem;
+    }
+
+    .student-tabs .nav-link {
+        border-radius: 1rem;
+        color: #525480;
+        font-weight: 700;
+    }
+
+    .student-tabs .nav-link i {
+        margin-right: 0.5rem;
+    }
+
+    .detail-section-card,
+    .relation-card,
+    .timeline-card {
+        border-radius: 1.25rem;
+    }
+
+    .section-heading {
+        display: flex;
+        align-items: center;
+        color: #31344b;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-heading i {
+        color: #2d4cc8;
+        margin-right: 0.75rem;
+    }
+
+    .detail-item,
+    .timeline-entry {
+        border-radius: 1rem;
+        background: #e6e7ee;
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -3px -3px 7px #ffffff;
+    }
+
+    .detail-item {
+        height: 100%;
+        padding: 1rem 1.1rem;
+    }
+
+    .detail-label {
+        color: #66799e;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.45rem;
+    }
+
+    .detail-value {
+        color: #31344b;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .detail-value-muted {
+        color: #93a5be;
+        font-weight: 500;
+    }
+
+    .timeline-entry {
+        padding: 1rem;
+    }
+
+    .timeline-entry + .timeline-entry {
+        margin-top: 1rem;
+    }
+
+    .empty-state {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        border-radius: 1.25rem;
+        background: #e6e7ee;
+        color: #66799e;
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -3px -3px 7px #ffffff;
+    }
+
+    .empty-state i {
+        display: block;
+        font-size: 1.75rem;
+        color: #93a5be;
+        margin-bottom: 1rem;
+    }
+
+    .table-neumorphic {
+        min-width: 780px;
+    }
+
+    .table-neumorphic thead th {
+        border-top: 0;
+        color: #66799e;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.76rem;
+    }
+
+    .table-neumorphic tbody td {
+        vertical-align: middle;
+    }
+
+    .document-stat-card {
+        text-align: center;
+    }
+
+    .document-stat-card.success {
+        background: #18634B;
+        color: #ffffff;
+    }
+
+    .document-stat-card.warning {
+        background: #F0B400;
+        color: #ffffff;
+    }
+
+    .document-stat-card.danger {
+        background: #A91E2C;
+        color: #ffffff;
+    }
+
+    .document-stat-card .student-stat-label,
+    .document-stat-card .student-stat-value {
+        color: inherit;
+    }
+
+    .student-action-bar .btn {
+        margin-right: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    @media (min-width: 992px) {
+        .student-tabs .nav-item {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .student-name {
+            font-size: 1.8rem;
+        }
+
+        .student-avatar,
+        .student-avatar-placeholder {
+            width: 130px;
+            height: 130px;
+        }
+    }
+
+    @media print {
+        .student-tabs-wrapper,
+        .student-action-bar,
+        .btn,
+        form button {
+            display: none !important;
+        }
+
+        .student-tab-shell {
+            box-shadow: none !important;
+        }
+
+        .tab-content > .tab-pane {
+            display: block !important;
+            opacity: 1 !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-<!-- Ligne d'entete -->
-
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card-neumorphic p-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>
-                        Retour à la liste
-                    </a>
-                </div>
-                <div>
-                    <span class="badge bg-secondary text-white fs-6 p-2">
-                        {{ student.matricule }}
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-user mr-2"></span>Profil général</h4>
-            </div>
-            <div class="card-body">
-                <div class="row mb-4">
-                    <div class="col-12 text-center">
-                        <label class="form-label text-muted font-weight-bold d-block">Photo de profil</label>
+<div class="student-detail-page">
+    <div class="card bg-primary shadow-soft border-light p-4 mb-4 student-hero">
+        <div class="row align-items-center">
+            <div class="col-xl-8">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center">
+                    <div class="text-center text-lg-left mb-4 mb-lg-0 mr-lg-4">
                         {% if student.profile_photo %}
-                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="img-fluid img-thumbnail rounded" style="max-height: 220px; object-fit: cover;">
+                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="student-avatar">
                         {% else %}
-                            <div class="icon icon-shape icon-xl shadow-soft border border-light rounded-circle bg-primary text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 160px; height: 160px;">
+                            <div class="student-avatar-placeholder mx-auto mx-lg-0">
                                 <span class="fas fa-user fa-3x"></span>
                             </div>
-                            <div class="text-muted small mt-2">Aucune photo de profil enregistrée</div>
                         {% endif %}
                     </div>
-                </div>
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Matricule</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.matricule }}</div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap align-items-center mb-3">
+                            <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary btn-sm mr-3 mb-2">
+                                <i class="fas fa-arrow-left mr-2"></i>Retour à la liste
+                            </a>
+                            <span class="student-pill mb-2">
+                                <i class="fas fa-id-card mr-2"></i>{{ student.matricule }}
+                            </span>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Nom complet</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.firstname }} {{ student.lastname }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Genre</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.get_gender_display }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Date de naissance</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.date_naiss|date:'d/m/Y' }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Téléphone</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.phone_number }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Email</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.email }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Statut</label>
-                            <div class="form-control shadow-inset border-light bg-primary">
-                                <span class="badge badge-info">{{ student.get_status_display }}</span>
-                            </div>
+
+                        <div class="student-kicker">Fiche étudiant</div>
+                        <h2 class="student-name">{{ student.firstname }} {{ student.lastname }}</h2>
+                        <p class="student-subtitle mb-0">
+                            {{ student.get_gender_display }} · {{ student.get_lang_display }}
+                            {% if student.program %} · {{ student.program.name }}{% endif %}
+                            {% if student.start_level %} · Entrée en {{ student.start_level.name }}{% endif %}
+                        </p>
+
+                        <div class="d-flex flex-wrap mt-4">
+                            <span class="badge badge-info student-hero-badge">{{ student.get_status_display }}</span>
+
+                            {% if student.has_external_password %}
+                                <span class="badge badge-success student-hero-badge">Accès externe configuré</span>
+                            {% else %}
+                                <span class="badge badge-secondary student-hero-badge">Accès externe non configuré</span>
+                            {% endif %}
+
+                            {% if student.metadata and student.metadata.is_complete %}
+                                <span class="badge badge-success student-hero-badge">Dossier complémentaire complet</span>
+                            {% else %}
+                                <span class="badge badge-warning student-hero-badge">Dossier complémentaire à compléter</span>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Programme</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{% if student.program %}{{ student.program.name }}{% else %}<span class="text-muted">Non défini</span>{% endif %}</div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 mt-4 mt-xl-0">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <div class="student-stat-card h-100">
+                            <div class="student-stat-label">Documents officiels</div>
+                            <div class="student-stat-value">{{ document_stats.total|default:0 }}</div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Dernière école fréquentée</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{% if student.school %}{{ student.school.name }}{% else %}<span class="text-muted">Non définie</span>{% endif %}</div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="student-stat-card h-100">
+                            <div class="student-stat-label">Niveaux académiques</div>
+                            <div class="student-stat-value">{{ student_levels|length }}</div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Langue</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.get_lang_display }}</div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="student-stat-card h-100">
+                            <div class="student-stat-label">Diplômes secondaires</div>
+                            <div class="student-stat-value">{{ student.secondary_diplomas.all|length }}</div>
                         </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Parrain</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{% if student.godfather %}{{ student.godfather.full_name }}{% else %}<span class="text-muted">Aucun</span>{% endif %}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Date d'ajout</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{% if student.created_at %}{{ student.created_at|date:'d/m/Y H:i' }}{% else %}<span class="text-muted">Non définie</span>{% endif %}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Dernière mise à jour</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.last_updated|date:'d/m/Y H:i' }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Accès externe</label>
-                            <div class="form-control shadow-inset border-light bg-primary">
-                                {% if student.has_external_password %}
-                                    <span class="badge badge-success">Configuré</span>
-                                    {% if student.external_password_created_at %}
-                                        <small class="text-muted">({{ student.external_password_created_at|date:'d/m/Y H:i' }})</small>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge badge-secondary">Non configuré</span>
-                                {% endif %}
-                            </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="student-stat-card h-100">
+                            <div class="student-stat-label">Parcours universitaire</div>
+                            <div class="student-stat-value">{{ student.university_levels.all|length }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-{% if student.metadata %}
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-address-card mr-2"></span>Informations complémentaires</h4>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <h6 class="text-secondary mb-3"><span class="fas fa-map-marker-alt mr-2"></span>Informations géographiques</h6>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Pays d'origine</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.original_country|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Région d'origine</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.original_region|default:"Non spécifiée" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Département d'origine</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.original_department|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Arrondissement d'origine</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.original_district|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Ville de résidence</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.residence_city|default:"Non spécifiée" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Quartier de résidence</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.residence_quarter|default:"Non spécifié" }}</div>
+    <div class="nav-wrapper position-relative student-tabs-wrapper">
+        <ul class="nav nav-pills nav-fill flex-column flex-lg-row rounded student-tabs" id="student-detail-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="student-profile-tab-link" data-toggle="tab" href="#student-profile-tab" role="tab" aria-controls="student-profile-tab" aria-selected="true">
+                    <i class="fas fa-user"></i>Profil
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="student-extra-tab-link" data-toggle="tab" href="#student-extra-tab" role="tab" aria-controls="student-extra-tab" aria-selected="false">
+                    <i class="fas fa-address-card"></i>Compléments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="student-relations-tab-link" data-toggle="tab" href="#student-relations-tab" role="tab" aria-controls="student-relations-tab" aria-selected="false">
+                    <i class="fas fa-link"></i>Relations
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="student-path-tab-link" data-toggle="tab" href="#student-path-tab" role="tab" aria-controls="student-path-tab" aria-selected="false">
+                    <i class="fas fa-graduation-cap"></i>Parcours
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="student-documents-tab-link" data-toggle="tab" href="#student-documents-tab" role="tab" aria-controls="student-documents-tab" aria-selected="false">
+                    <i class="fas fa-file-alt"></i>Documents
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card shadow-inset bg-primary border-light p-4 student-tab-shell">
+        <div class="tab-content" id="student-detail-tab-content">
+            <div class="tab-pane fade show active" id="student-profile-tab" role="tabpanel" aria-labelledby="student-profile-tab-link">
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card bg-primary shadow-soft border-light p-4 h-100 detail-section-card">
+                            <h4 class="section-heading"><i class="fas fa-id-badge"></i>Informations personnelles</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Matricule</div>
+                                        <div class="detail-value">{{ student.matricule }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Nom complet</div>
+                                        <div class="detail-value">{{ student.firstname }} {{ student.lastname }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Genre</div>
+                                        <div class="detail-value">{{ student.get_gender_display }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Date de naissance</div>
+                                        <div class="detail-value">{{ student.date_naiss|date:'d/m/Y' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Téléphone</div>
+                                        <div class="detail-value">{{ student.phone_number }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Email</div>
+                                        <div class="detail-value">{{ student.email }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-12 mb-3 mb-md-0">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Statut</div>
+                                        <div class="detail-value"><span class="badge badge-info">{{ student.get_status_display }}</span></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="text-secondary mb-3"><span class="fas fa-users mr-2"></span>Informations familiales</h6>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Nom de la mère</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_full_name|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Ville de la mère</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_live_city|default:"Non spécifiée" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Email de la mère</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_email|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Profession de la mère</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_occupation|default:"Non spécifiée" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Téléphone de la mère</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.mother_phone_number|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Nom du père</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ student.metadata.father_full_name|default:"Non spécifié" }}</div>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label class="form-label text-muted font-weight-bold">Dossier complet</label>
-                            <div class="form-control shadow-inset border-light bg-primary">
-                                {% if student.metadata.is_complete %}
-                                    <span class="badge badge-success">Oui</span>
-                                {% else %}
-                                    <span class="badge badge-warning">Non</span>
-                                {% endif %}
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="card bg-primary shadow-soft border-light p-4 h-100 detail-section-card">
+                            <h4 class="section-heading"><i class="fas fa-school"></i>Scolarité et accès</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Programme</div>
+                                        <div class="detail-value">
+                                            {% if student.program %}{{ student.program.name }}{% else %}<span class="detail-value-muted">Non défini</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Niveau d'entrée</div>
+                                        <div class="detail-value">
+                                            {% if student.start_level %}{{ student.start_level.name }}{% else %}<span class="detail-value-muted">Non défini</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Dernière école fréquentée</div>
+                                        <div class="detail-value">
+                                            {% if student.school %}{{ student.school.name }}{% else %}<span class="detail-value-muted">Non définie</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Langue</div>
+                                        <div class="detail-value">{{ student.get_lang_display }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Parrain</div>
+                                        <div class="detail-value">
+                                            {% if student.godfather %}{{ student.godfather.full_name }}{% else %}<span class="detail-value-muted">Aucun</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Date d'ajout</div>
+                                        <div class="detail-value">
+                                            {% if student.created_at %}{{ student.created_at|date:'d/m/Y H:i' }}{% else %}<span class="detail-value-muted">Non définie</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Dernière mise à jour</div>
+                                        <div class="detail-value">{{ student.last_updated|date:'d/m/Y H:i' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="detail-item">
+                                        <div class="detail-label">Accès externe</div>
+                                        <div class="detail-value">
+                                            {% if student.has_external_password %}
+                                                <span class="badge badge-success">Configuré</span>
+                                                {% if student.external_password_created_at %}
+                                                    <small class="text-muted d-block mt-2">Créé le {{ student.external_password_created_at|date:'d/m/Y H:i' }}</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge badge-secondary">Non configuré</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
-<!-- Détails des relations -->
-{% if student.school or student.program or student.godfather %}
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-link mr-2"></span>Détails des relations</h4>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-
-                    {% if student.program %}
-                    <div class="col-md-4">
-                        <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-book mr-2"></span>Programme</h6>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Nom</label>
-                                <div class="text-dark">{{ student.program.name }}</div>
-                            </div>
-                            {% if student.program.description %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Description</label>
-                                <div class="text-dark">{{ student.program.description }}</div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if student.start_level %}
-                    <div class="col-md-4">
-                        <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-level-up-alt mr-2"></span>Niveau d'entrée</h6>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Nom</label>
-                                <div class="text-dark">{{ student.start_level.name }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if student.school %}
-                    <div class="col-md-4">
-                        <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-school mr-2"></span>Dernière École fréquentée</h6>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Nom</label>
-                                <div class="text-dark">{{ student.school.name }}</div>
-                            </div>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Niveau</label>
-                                <div class="text-dark">{{ student.school.get_level_display }}</div>
-                            </div>
-                            {% if student.school.address %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Adresse</label>
-                                <div class="text-dark">{{ student.school.address }}</div>
-                            </div>
-                            {% endif %}
-                            {% if student.school.phone_number %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Téléphone</label>
-                                <div class="text-dark">{{ student.school.phone_number }}</div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    
-                    {% if student.godfather %}
-                    <div class="col-md-4">
-                        <div class="card bg-primary shadow-inset border-light p-3">
-                            <h6 class="text-secondary mb-3"><span class="fas fa-user-tie mr-2"></span>Parrain</h6>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Nom complet</label>
-                                <div class="text-dark">{{ student.godfather.full_name }}</div>
-                            </div>
-                            {% if student.godfather.occupation %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Profession</label>
-                                <div class="text-dark">{{ student.godfather.occupation }}</div>
-                            </div>
-                            {% endif %}
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Téléphone</label>
-                                <div class="text-dark">{{ student.godfather.phone_number }}</div>
-                            </div>
-                            <div class="form-group mb-2">
-                                <label class="form-label text-muted font-weight-bold">Email</label>
-                                <div class="text-dark">{{ student.godfather.email }}</div>
+            <div class="tab-pane fade" id="student-extra-tab" role="tabpanel" aria-labelledby="student-extra-tab-link">
+                {% if student.metadata %}
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 detail-section-card">
+                                <h4 class="section-heading"><i class="fas fa-map-marker-alt"></i>Informations géographiques</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Pays d'origine</div>
+                                            <div class="detail-value">{{ student.metadata.original_country|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Région d'origine</div>
+                                            <div class="detail-value">{{ student.metadata.original_region|default:'Non spécifiée' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Département d'origine</div>
+                                            <div class="detail-value">{{ student.metadata.original_department|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Arrondissement d'origine</div>
+                                            <div class="detail-value">{{ student.metadata.original_district|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Ville de résidence</div>
+                                            <div class="detail-value">{{ student.metadata.residence_city|default:'Non spécifiée' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Quartier de résidence</div>
+                                            <div class="detail-value">{{ student.metadata.residence_quarter|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% endif %}
 
-                    
-
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<div class="row">
-    <div class="col-lg-6">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-school mr-2"></span>Cursus académique</h4>
-            </div>
-            <div class="card-body">
-                {% if student.secondary_diplomas.all %}
-                    {% for diploma in student.secondary_diplomas.all %}
-                    <div class="row g-3 mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Diplôme</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.name }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Année d'obtention</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.obtained_year }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Série / spécialité</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.serie|default:"Non renseignée" }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Mention</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ diploma.mention|default:"Non renseignée" }}</div>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label text-muted font-weight-bold">Établissement</label>
-                            <div class="form-control shadow-inset border-light bg-primary">
-                                {% if diploma.school %}{{ diploma.school.name }}{% else %}<span class="text-muted">Non renseigné</span>{% endif %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 detail-section-card">
+                                <h4 class="section-heading"><i class="fas fa-users"></i>Informations familiales</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Nom de la mère</div>
+                                            <div class="detail-value">{{ student.metadata.mother_full_name|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Ville de la mère</div>
+                                            <div class="detail-value">{{ student.metadata.mother_live_city|default:'Non spécifiée' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Email de la mère</div>
+                                            <div class="detail-value">{{ student.metadata.mother_email|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Profession de la mère</div>
+                                            <div class="detail-value">{{ student.metadata.mother_occupation|default:'Non spécifiée' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Téléphone de la mère</div>
+                                            <div class="detail-value">{{ student.metadata.mother_phone_number|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Nom du père</div>
+                                            <div class="detail-value">{{ student.metadata.father_full_name|default:'Non spécifié' }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mb-0">
+                                        <div class="detail-item">
+                                            <div class="detail-label">Dossier complet</div>
+                                            <div class="detail-value">
+                                                {% if student.metadata.is_complete %}
+                                                    <span class="badge badge-success">Oui</span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">Non</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
                 {% else %}
-                    <div class="text-muted">Aucun diplôme du secondaire renseigné.</div>
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <div class="font-weight-bold mb-2">Aucune information complémentaire enregistrée</div>
+                        <div>Les données géographiques et familiales de cet étudiant ne sont pas encore renseignées.</div>
+                    </div>
                 {% endif %}
             </div>
-        </div>
-    </div>
 
-    <div class="col-lg-6">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-university mr-2"></span>Cursus universitaire</h4>
-            </div>
-            <div class="card-body">
-                {% if student.university_levels.all %}
-                    {% for university_level in student.university_levels.all %}
-                    <div class="row g-3 mb-3 {% if not forloop.last %}border-bottom pb-3{% endif %}">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Niveau</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.level_name }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Année académique</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.academic_year|default:"Non renseignée" }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Diplôme obtenu</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.diploma_name|default:"Non renseigné" }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted font-weight-bold">Spécialité</label>
-                            <div class="form-control shadow-inset border-light bg-primary">{{ university_level.speciality|default:"Non renseignée" }}</div>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label text-muted font-weight-bold">Université</label>
-                            <div class="form-control shadow-inset border-light bg-primary">
-                                {% if university_level.university %}{{ university_level.university.name }}{% else %}<span class="text-muted">Non renseignée</span>{% endif %}
+            <div class="tab-pane fade" id="student-relations-tab" role="tabpanel" aria-labelledby="student-relations-tab-link">
+                {% if student.school or student.program or student.godfather or student.start_level %}
+                    <div class="row">
+                        {% if student.program %}
+                        <div class="col-lg-6 col-xl-3 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 relation-card">
+                                <h5 class="section-heading h6 mb-3"><i class="fas fa-book"></i>Programme</h5>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Nom</div>
+                                    <div class="detail-value">{{ student.program.name }}</div>
+                                </div>
+                                <div class="detail-item mb-0">
+                                    <div class="detail-label">Description</div>
+                                    <div class="detail-value">
+                                        {% if student.program.description %}{{ student.program.description }}{% else %}<span class="detail-value-muted">Non renseignée</span>{% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        {% endif %}
+
+                        {% if student.start_level %}
+                        <div class="col-lg-6 col-xl-3 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 relation-card">
+                                <h5 class="section-heading h6 mb-3"><i class="fas fa-level-up-alt"></i>Niveau d'entrée</h5>
+                                <div class="detail-item mb-0">
+                                    <div class="detail-label">Nom</div>
+                                    <div class="detail-value">{{ student.start_level.name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if student.school %}
+                        <div class="col-lg-6 col-xl-3 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 relation-card">
+                                <h5 class="section-heading h6 mb-3"><i class="fas fa-school"></i>Dernière école</h5>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Nom</div>
+                                    <div class="detail-value">{{ student.school.name }}</div>
+                                </div>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Niveau</div>
+                                    <div class="detail-value">{{ student.school.get_level_display }}</div>
+                                </div>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Adresse</div>
+                                    <div class="detail-value">
+                                        {% if student.school.address %}{{ student.school.address }}{% else %}<span class="detail-value-muted">Non renseignée</span>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="detail-item mb-0">
+                                    <div class="detail-label">Téléphone</div>
+                                    <div class="detail-value">
+                                        {% if student.school.phone_number %}{{ student.school.phone_number }}{% else %}<span class="detail-value-muted">Non renseigné</span>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if student.godfather %}
+                        <div class="col-lg-6 col-xl-3 mb-4">
+                            <div class="card bg-primary shadow-soft border-light p-4 h-100 relation-card">
+                                <h5 class="section-heading h6 mb-3"><i class="fas fa-user-tie"></i>Parrain</h5>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Nom complet</div>
+                                    <div class="detail-value">{{ student.godfather.full_name }}</div>
+                                </div>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Profession</div>
+                                    <div class="detail-value">
+                                        {% if student.godfather.occupation %}{{ student.godfather.occupation }}{% else %}<span class="detail-value-muted">Non renseignée</span>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="detail-item mb-3">
+                                    <div class="detail-label">Téléphone</div>
+                                    <div class="detail-value">{{ student.godfather.phone_number }}</div>
+                                </div>
+                                <div class="detail-item mb-0">
+                                    <div class="detail-label">Email</div>
+                                    <div class="detail-value">{{ student.godfather.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
                 {% else %}
-                    <div class="text-muted">Aucun cursus universitaire renseigné.</div>
+                    <div class="empty-state">
+                        <i class="fas fa-unlink"></i>
+                        <div class="font-weight-bold mb-2">Aucune relation liée</div>
+                        <div>Le programme, le niveau d'entrée, l'école précédente ou le parrain ne sont pas encore associés à cet étudiant.</div>
+                    </div>
                 {% endif %}
             </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-graduation-cap mr-2"></span>Niveaux & Années Académiques</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="thead-light">
-                            <tr>
-                                <th class="border-light">Niveau</th>
-                                <th class="border-light">Année académique</th>
-                                <th class="border-light">Période</th>
-                                <th class="border-light">Documents</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sl in student_levels %}
-                            <tr>
-                                <td class="border-light">{{ sl.level.name }}</td>
-                                <td class="border-light">{{ sl.academic_year.name }}</td>
-                                <td class="border-light">{{ sl.academic_year.start_at|date:'d/m/Y' }} - {{ sl.academic_year.end_at|date:'d/m/Y' }}</td>
-                                <td class="border-light">
-                                    {% if sl.official_documents.all %}
-                                        <span class="badge badge-info">{{ sl.official_documents.count }} document(s)</span>
-                                    {% else %}
-                                        <span class="text-muted">Aucun document</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="4" class="text-center text-muted border-light">Aucun niveau enregistré</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Documents officiels -->
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
-            <div class="card-header bg-primary border-light pb-0">
-                <h4 class="mb-3"><span class="fas fa-file-alt mr-2"></span>Documents officiels</h4>
-            </div>
-            <div class="card-body">
-                <!-- Statistiques des documents -->
-                {% if document_stats.total > 0 %}
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card bg-primary shadow-inset border-light text-center p-3">
-                            <h5 class="mb-1 text-dark">{{ document_stats.total }}</h5>
-                            <small class="text-muted">Total</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success shadow-soft border-light text-center p-3 text-white">
-                            <h5 class="mb-1">{{ document_stats.available }}</h5>
-                            <small>Disponibles</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning shadow-soft border-light text-center p-3 text-white">
-                            <h5 class="mb-1">{{ document_stats.withdrawn }}</h5>
-                            <small>Retirés</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-danger shadow-soft border-light text-center p-3 text-white">
-                            <h5 class="mb-1">{{ document_stats.lost }}</h5>
-                            <small>Perdus</small>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Liste détaillée des documents -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="thead-light">
-                            <tr>
-                                <th class="border-light">Niveau</th>
-                                <th class="border-light">Type de document</th>
-                                <th class="border-light">Référence</th>
-                                <th class="border-light">Statut</th>
-                                <th class="border-light">Date de retrait</th>
-                                <th class="border-light">Date de création</th>
-                                <th class="border-light">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sl in student_levels %}
-                                {% for doc in sl.official_documents.all %}
-                                <tr>
-                                    <td class="border-light">{{ sl.level.name }} ({{ sl.academic_year.name }})</td>
-                                    <td class="border-light">{{ doc.get_type_display }}</td>
-                                    <td class="border-light">{{ doc.reference|default:'-' }}</td>
-                                    <td class="border-light">
-                                        {% if doc.status == 'available' %}
-                                            <span class="badge badge-success">{{ doc.get_status_display }}</span>
-                                        {% elif doc.status == 'withdrawn' %}
-                                            <span class="badge badge-warning">{{ doc.get_status_display }}</span>
-                                        {% else %}
-                                            <span class="badge badge-danger">{{ doc.get_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="border-light">{{ doc.withdrawn_date|date:'d/m/Y'|default:'-' }}</td>
-                                    <td class="border-light">{{ doc.created_at|date:'d/m/Y' }}</td>
-                                    <td class="border-light">
-                                        {% if doc.type == 'registration_certificate' %}
-                                            <a href="{% url 'main:registration_certificate_download' doc.pk %}" class="btn btn-sm btn-outline-primary shadow-soft text-dark">
-                                                <span class="fas fa-download mr-1"></span>Télécharger
-                                            </a>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+            <div class="tab-pane fade" id="student-path-tab" role="tabpanel" aria-labelledby="student-path-tab-link">
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card bg-primary shadow-soft border-light p-4 h-100 timeline-card">
+                            <h4 class="section-heading"><i class="fas fa-school"></i>Cursus du secondaire</h4>
+                            {% if student.secondary_diplomas.all %}
+                                {% for diploma in student.secondary_diplomas.all %}
+                                <div class="timeline-entry">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Diplôme</div>
+                                                <div class="detail-value">{{ diploma.name }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Année d'obtention</div>
+                                                <div class="detail-value">{{ diploma.obtained_year }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Série / spécialité</div>
+                                                <div class="detail-value">{{ diploma.serie|default:'Non renseignée' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Mention</div>
+                                                <div class="detail-value">{{ diploma.mention|default:'Non renseignée' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Établissement</div>
+                                                <div class="detail-value">
+                                                    {% if diploma.school %}{{ diploma.school.name }}{% else %}<span class="detail-value-muted">Non renseigné</span>{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endfor %}
-                            {% empty %}
-                            <tr><td colspan="7" class="text-center text-muted border-light">Aucun document officiel enregistré</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-scroll"></i>
+                                    <div class="font-weight-bold mb-2">Aucun diplôme du secondaire</div>
+                                    <div>Le cursus secondaire n'a pas encore été renseigné pour cet étudiant.</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="card bg-primary shadow-soft border-light p-4 h-100 timeline-card">
+                            <h4 class="section-heading"><i class="fas fa-university"></i>Cursus universitaire</h4>
+                            {% if student.university_levels.all %}
+                                {% for university_level in student.university_levels.all %}
+                                <div class="timeline-entry">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Niveau</div>
+                                                <div class="detail-value">{{ university_level.level_name }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Année académique</div>
+                                                <div class="detail-value">{{ university_level.academic_year|default:'Non renseignée' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Diplôme obtenu</div>
+                                                <div class="detail-value">{{ university_level.diploma_name|default:'Non renseigné' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Spécialité</div>
+                                                <div class="detail-value">{{ university_level.speciality|default:'Non renseignée' }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <div class="detail-item">
+                                                <div class="detail-label">Université</div>
+                                                <div class="detail-value">
+                                                    {% if university_level.university %}{{ university_level.university.name }}{% else %}<span class="detail-value-muted">Non renseignée</span>{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <div class="font-weight-bold mb-2">Aucun cursus universitaire</div>
+                                    <div>Le parcours universitaire n'a pas encore été renseigné pour cet étudiant.</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="card bg-primary shadow-soft border-light p-4 detail-section-card">
+                            <h4 class="section-heading"><i class="fas fa-graduation-cap"></i>Cursus académique</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-neumorphic mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="border-light">Niveau</th>
+                                            <th class="border-light">Année académique</th>
+                                            <th class="border-light">Spécialité</th>
+                                            <th class="border-light">Période</th>
+                                            <th class="border-light">Documents</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sl in student_levels %}
+                                        <tr>
+                                            <td class="border-light">{{ sl.level.name }}</td>
+                                            <td class="border-light">{{ sl.academic_year.name }}</td>
+                                            <td class="border-light">{{ sl.speciality.name }}</td>
+                                            <td class="border-light">{{ sl.academic_year.start_at|date:'d/m/Y' }} - {{ sl.academic_year.end_at|date:'d/m/Y' }}</td>
+                                            <td class="border-light">
+                                                {% if sl.official_documents.all %}
+                                                    <span class="badge badge-info">{{ sl.official_documents.count }} document(s)</span>
+                                                {% else %}
+                                                    <span class="text-muted">Aucun document</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted border-light">Aucun niveau enregistré</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Boutons d'action -->
-<div class="row">
-    <div class="col-12">
-        <div class="card bg-primary shadow-soft border-light p-3 mb-4">
-            <div class="d-flex flex-wrap gap-4">
-                <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary shadow-soft">
-                    <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
-                </a>
-                <a href="{% url 'students:etudiant_edit' pk=student.matricule %}" class="btn btn-warning shadow-soft mx-2">
-                    <span class="fas fa-edit mr-2"></span>Modifier
-                </a>
-                {% if user.is_scholar_admin %}
-                <form method="post" action="{% url 'students:generate_student_external_password' pk=student.matricule %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-info shadow-soft" onclick="return confirm('Êtes-vous sûr de vouloir {% if student.has_external_password %}réinitialiser{% else %}générer{% endif %} le mot de passe externe pour cet étudiant ?')">
-                        <span class="fas fa-key mr-2"></span>{% if student.has_external_password %}Réinitialiser{% else %}Générer{% endif %} mot de passe externe
-                    </button>
-                </form>
+            <div class="tab-pane fade" id="student-documents-tab" role="tabpanel" aria-labelledby="student-documents-tab-link">
+                {% if document_stats.total > 0 %}
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="document-stat-card h-100">
+                                <div class="student-stat-label">Total</div>
+                                <div class="student-stat-value">{{ document_stats.total }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="document-stat-card success h-100">
+                                <div class="student-stat-label">Disponibles</div>
+                                <div class="student-stat-value">{{ document_stats.available }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="document-stat-card warning h-100">
+                                <div class="student-stat-label">Retirés</div>
+                                <div class="student-stat-value">{{ document_stats.withdrawn }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="document-stat-card danger h-100">
+                                <div class="student-stat-label">Perdus</div>
+                                <div class="student-stat-value">{{ document_stats.lost }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-primary shadow-soft border-light p-4 detail-section-card">
+                        <h4 class="section-heading"><i class="fas fa-file-alt"></i>Documents officiels</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-neumorphic mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th class="border-light">Niveau</th>
+                                        <th class="border-light">Type de document</th>
+                                        <th class="border-light">Référence</th>
+                                        <th class="border-light">Statut</th>
+                                        <th class="border-light">Date de retrait</th>
+                                        <th class="border-light">Date de création</th>
+                                        <th class="border-light">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sl in student_levels %}
+                                        {% for doc in sl.official_documents.all %}
+                                        <tr>
+                                            <td class="border-light">{{ sl.level.name }} ({{ sl.academic_year.name }})</td>
+                                            <td class="border-light">{{ doc.get_type_display }}</td>
+                                            <td class="border-light">{{ doc.reference|default:'-' }}</td>
+                                            <td class="border-light">
+                                                {% if doc.status == 'available' %}
+                                                    <span class="badge badge-success">{{ doc.get_status_display }}</span>
+                                                {% elif doc.status == 'withdrawn' %}
+                                                    <span class="badge badge-warning">{{ doc.get_status_display }}</span>
+                                                {% else %}
+                                                    <span class="badge badge-danger">{{ doc.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="border-light">{{ doc.withdrawn_date|date:'d/m/Y'|default:'-' }}</td>
+                                            <td class="border-light">{{ doc.created_at|date:'d/m/Y' }}</td>
+                                            <td class="border-light">
+                                                {% if doc.type == 'registration_certificate' %}
+                                                    <a href="{% url 'main:registration_certificate_download' doc.pk %}" class="btn btn-sm btn-outline-primary shadow-soft text-dark">
+                                                        <span class="fas fa-download mr-1"></span>Télécharger
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-medical-alt"></i>
+                        <div class="font-weight-bold mb-2">Aucun document officiel enregistré</div>
+                        <div>Les certificats et autres pièces officielles apparaîtront ici dès qu'ils seront associés au parcours académique de l'étudiant.</div>
+                    </div>
                 {% endif %}
-                <button class="btn btn-primary shadow-soft mx-2" onclick="window.print()">
-                    <span class="fas fa-print mr-2"></span>Imprimer
-                </button>
             </div>
         </div>
     </div>
-</div>
 
+    <div class="card bg-primary shadow-soft border-light p-3 mt-4 student-action-bar">
+        <div class="d-flex flex-wrap align-items-center">
+            <a href="{% url 'students:etudiants' %}" class="btn btn-outline-secondary shadow-soft">
+                <span class="fas fa-arrow-left mr-2"></span>Retour à la liste
+            </a>
+            <a href="{% url 'students:etudiant_edit' pk=student.matricule %}" class="btn btn-warning shadow-soft">
+                <span class="fas fa-edit mr-2"></span>Modifier
+            </a>
+            {% if user.is_scholar_admin %}
+            <form method="post" action="{% url 'students:generate_student_external_password' pk=student.matricule %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info shadow-soft" onclick="return confirm('Êtes-vous sûr de vouloir {% if student.has_external_password %}réinitialiser{% else %}générer{% endif %} le mot de passe externe pour cet étudiant ?')">
+                    <span class="fas fa-key mr-2"></span>{% if student.has_external_password %}Réinitialiser{% else %}Générer{% endif %} mot de passe externe
+                </button>
+            </form>
+            {% endif %}
+            <button class="btn btn-primary shadow-soft" onclick="window.print()">
+                <span class="fas fa-print mr-2"></span>Imprimer
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

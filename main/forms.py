@@ -2,6 +2,7 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
+from students.forms import SchoolChoiceField
 from students.models import Student, StudentMetaData, OfficialDocument, StudentLevel
 from accounts.models import Godfather
 from academic.models import Speciality, Program, Level, AcademicYear
@@ -12,6 +13,7 @@ from academic.document_requirements import (
 from schools.models import School, SecondaryDiploma, UniversityLevel
 from .models import SystemSettings
 from .program_documents import build_program_document_entries
+
 
 
 def validate_file_size(value):
@@ -47,16 +49,6 @@ class GodfatherChoiceField(forms.ModelChoiceField):
             parts.append(obj.phone_number)
         if obj.email:
             parts.append(obj.email)
-        return " - ".join(parts)
-
-
-class SchoolChoiceField(forms.ModelChoiceField):
-    """Champ de sélection des établissements avec libellé enrichi."""
-
-    def label_from_instance(self, obj):
-        parts = [obj.name]
-        if obj.phone_number:
-            parts.append(obj.phone_number)
         return " - ".join(parts)
 
 
@@ -119,6 +111,7 @@ UNIVERSITY_DIPLOMA_CHOICES = [
     ('Master', 'Master'),
     ('Doctorat', 'Doctorat'),
     ('Certification', 'Certification'),
+    ('Aucun diplome', 'Aucun diplôme'),
     ('Autres', 'Autres'),
 ]
 
@@ -254,10 +247,6 @@ class UniversityLevelForm(forms.ModelForm):
 SecondaryDiplomaFormSet = formset_factory(SecondaryDiplomaForm, extra=0, can_delete=True)
 UniversityLevelFormSet = formset_factory(UniversityLevelForm, extra=0, can_delete=True)
 
-
-# Le formulaire InscriptionEtape1Form a été supprimé car il n'est plus nécessaire
-# Les informations administratives sont maintenant intégrées dans le formulaire complet
-
 class InscriptionCompleteForm(forms.Form):
     """Formulaire complet de pre-inscription combinant toutes les étapes nécessaires"""
 
@@ -334,16 +323,6 @@ class InscriptionCompleteForm(forms.Form):
             'placeholder': '+237 6XX XXX XXX'
         })
     )
-
-    # Informations complémentaires
-    # nationalite = forms.CharField(
-    #     max_length=100,
-    #     label="Nationalité",
-    #     widget=forms.TextInput(attrs={
-    #         'class': 'form-control',
-    #         'placeholder': 'Nationalité'
-    #     })
-    # )
 
     LANGUE_CHOICES = [
         ('', 'Sélectionner'),
@@ -489,10 +468,10 @@ class InscriptionCompleteForm(forms.Form):
 
     ville_residence_pere = forms.CharField(
         max_length=100,
-        label="Ville de résidence du père",
+        label="Pays & Ville de résidence du père",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ville de résidence'
+            'placeholder': 'Adresse de résidence'
         }),
         required=False
     )
@@ -539,10 +518,10 @@ class InscriptionCompleteForm(forms.Form):
 
     ville_residence_mere = forms.CharField(
         max_length=100,
-        label="Ville de résidence de la mère",
+        label="Pays & Ville de résidence de la mère",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ville de résidence'
+            'placeholder': 'Adresse de résidence'
         }),
         required=False
     )
@@ -1603,606 +1582,624 @@ class InscriptionEtape4Form(forms.Form):
         }
 
 
-class StudentEditForm(forms.ModelForm):
-    """Formulaire de modification des informations principales de l'étudiant"""
+# class StudentEditForm(forms.ModelForm):
+#     """Formulaire de modification des informations principales de l'étudiant"""
 
-    remove_profile_photo = forms.BooleanField(
-        required=False,
-        label='Supprimer la photo actuelle',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
+#     remove_profile_photo = forms.BooleanField(
+#         required=False,
+#         label='Supprimer la photo actuelle',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
 
-    bac_etablissement_existant = SchoolChoiceField(
-        queryset=School.objects.none(),
-        label="Établissement d'obtention du Baccalauréat (existant)",
-        widget=forms.Select(attrs={
-            'class': 'form-select'
-        }),
-        empty_label="Sélectionner un établissement existant",
-        required=False,
-    )
+#     bac_etablissement_existant = SchoolChoiceField(
+#         queryset=School.objects.none(),
+#         label="Établissement d'obtention du Baccalauréat (existant)",
+#         widget=forms.Select(attrs={
+#             'class': 'form-select'
+#         }),
+#         empty_label="Sélectionner un établissement existant",
+#         required=False,
+#     )
 
-    bac_etablissement = forms.CharField(
-        max_length=255,
-        label="Ou saisir un autre établissement",
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': "Nom de l'établissement d'obtention du Baccalauréat",
-        }),
-        required=False,
-    )
+#     bac_etablissement = forms.CharField(
+#         max_length=255,
+#         label="Ou saisir un autre établissement",
+#         widget=forms.TextInput(attrs={
+#             'class': 'form-control',
+#             'placeholder': "Nom de l'établissement d'obtention du Baccalauréat",
+#         }),
+#         required=False,
+#     )
 
-    specialite_souhaitee_1 = forms.ModelChoiceField(
-        queryset=Speciality.objects.none(),
-        label="Spécialité souhaitée 1",
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-            'disabled': True,
-        }),
-        empty_label="Sélectionner d'abord un programme",
-        required=False,
-    )
+#     specialite_souhaitee_1 = forms.ModelChoiceField(
+#         queryset=Speciality.objects.none(),
+#         label="Spécialité souhaitée 1",
+#         widget=forms.Select(attrs={
+#             'class': 'form-select',
+#             'disabled': True,
+#         }),
+#         empty_label="Sélectionner d'abord un programme",
+#         required=False,
+#     )
 
-    specialite_souhaitee_2 = forms.ModelChoiceField(
-        queryset=Speciality.objects.none(),
-        label="Spécialité souhaitée 2",
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-            'disabled': True,
-        }),
-        empty_label="Sélectionner d'abord un programme",
-        required=False,
-    )
+#     specialite_souhaitee_2 = forms.ModelChoiceField(
+#         queryset=Speciality.objects.none(),
+#         label="Spécialité souhaitée 2",
+#         widget=forms.Select(attrs={
+#             'class': 'form-select',
+#             'disabled': True,
+#         }),
+#         empty_label="Sélectionner d'abord un programme",
+#         required=False,
+#     )
 
-    specialite_souhaitee_3 = forms.ModelChoiceField(
-        queryset=Speciality.objects.none(),
-        label="Spécialité souhaitée 3",
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-            'disabled': True,
-        }),
-        empty_label="Sélectionner d'abord un programme",
-        required=False,
-    )
+#     specialite_souhaitee_3 = forms.ModelChoiceField(
+#         queryset=Speciality.objects.none(),
+#         label="Spécialité souhaitée 3",
+#         widget=forms.Select(attrs={
+#             'class': 'form-select',
+#             'disabled': True,
+#         }),
+#         empty_label="Sélectionner d'abord un programme",
+#         required=False,
+#     )
 
-    class Meta:
-        model = Student
-        fields = [
-            'firstname', 'lastname', 'date_naiss', 'gender', 'lang',
-            'phone_number', 'email', 'status', 'school', 'program', 'godfather', 'profile_photo'
-        ]
-        widgets = {
-            'firstname': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Prénom'
-            }),
-            'lastname': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nom de famille'
-            }),
-            'date_naiss': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
-            'gender': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'lang': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'phone_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': '+237 6XX XXX XXX'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'exemple@email.com'
-            }),
-            'status': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'school': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'program': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'godfather': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'profile_photo': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': 'image/png,image/jpeg,image/jpg'
-            }),
-        }
-        labels = {
-            'firstname': 'Prénom',
-            'lastname': 'Nom de famille',
-            'date_naiss': 'Date de naissance',
-            'gender': 'Genre',
-            'lang': 'Langue',
-            'phone_number': 'Numéro de téléphone',
-            'email': 'Adresse email',
-            'status': 'Statut',
-            'school': 'École',
-            'program': 'Programme',
-            'godfather': 'Parrain',
-            'profile_photo': 'Photo de profil',
-        }
+#     # Desactiver le champs statut
+#     status = forms.ChoiceField(
+#         choices=Student.STUDENT_STATUS_CHOICES,
+#         label="Statut",
+#         widget=forms.Select(attrs={
+#             'class': 'form-select',
+#             'disabled': True,
+#         }),
+#         disabled=True,
+#         required=False,
+#     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Rendre certains champs optionnels
-        self.fields['phone_number'].required = False
-        self.fields['email'].required = False
-        self.fields['school'].required = False
-        self.fields['program'].required = False
-        self.fields['godfather'].required = False
-        self.fields['date_naiss'].required = False
-        self.fields['profile_photo'].required = False
+#     class Meta:
+#         model = Student
+#         fields = [
+#             'firstname', 'lastname', 'date_naiss', 'gender', 'lang',
+#             'phone_number', 'email', 'status', 'school', 'program', 'godfather', 'profile_photo'
+#         ]
+#         widgets = {
+#             'firstname': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Prénom'
+#             }),
+#             'lastname': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Nom de famille'
+#             }),
+#             'date_naiss': forms.DateInput(attrs={
+#                 'class': 'form-control',
+#                 'type': 'date'
+#             }),
+#             'gender': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'lang': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'phone_number': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': '+237 6XX XXX XXX'
+#             }),
+#             'email': forms.EmailInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'exemple@email.com'
+#             }),
+#             'status': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'school': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'program': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'godfather': forms.Select(attrs={
+#                 'class': 'form-select'
+#             }),
+#             'profile_photo': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': 'image/png,image/jpeg,image/jpg'
+#             }),
+#         }
+#         labels = {
+#             'firstname': 'Prénom',
+#             'lastname': 'Nom de famille',
+#             'date_naiss': 'Date de naissance',
+#             'gender': 'Genre',
+#             'lang': 'Langue',
+#             'phone_number': 'Numéro de téléphone',
+#             'email': 'Adresse email',
+#             'status': 'Statut',
+#             'school': 'École',
+#             'program': 'Programme',
+#             'godfather': 'Parrain',
+#             'profile_photo': 'Photo de profil',
+#         }
 
-        self.fields['school'].queryset = School.objects.all().order_by('name', 'phone_number')
-        self.fields['program'].queryset = Program.objects.all().order_by('name')
-        self.fields['godfather'].queryset = Godfather.objects.all().order_by('full_name', 'phone_number', 'email')
-        self.fields['bac_etablissement_existant'].queryset = School.objects.filter(level='secondary').order_by(
-            'name', 'phone_number'
-        )
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Rendre certains champs optionnels
+#         self.fields['phone_number'].required = False
+#         self.fields['email'].required = False
+#         self.fields['school'].required = False
+#         self.fields['program'].required = False
+#         self.fields['godfather'].required = False
+#         self.fields['date_naiss'].required = False
+#         self.fields['profile_photo'].required = False
 
-        program_id = None
-        if self.data:
-            program_id = self.data.get('program')
-        elif self.instance and self.instance.program_id:
-            program_id = self.instance.program_id
-        elif self.initial:
-            program_id = self.initial.get('program')
+#         self.fields['school'].queryset = School.objects.all().order_by('name', 'phone_number')
+#         self.fields['program'].queryset = Program.objects.all().order_by('name')
+#         self.fields['godfather'].queryset = Godfather.objects.all().order_by('full_name', 'phone_number', 'email')
+#         self.fields['bac_etablissement_existant'].queryset = School.objects.filter(level='secondary').order_by(
+#             'name', 'phone_number'
+#         )
 
-        speciality_field_names = [
-            'specialite_souhaitee_1',
-            'specialite_souhaitee_2',
-            'specialite_souhaitee_3',
-        ]
+#         program_id = None
+#         if self.data:
+#             program_id = self.data.get('program')
+#         elif self.instance and self.instance.program_id:
+#             program_id = self.instance.program_id
+#         elif self.initial:
+#             program_id = self.initial.get('program')
 
-        if program_id:
-            try:
-                program_id = int(program_id)
-                specialities = Speciality.objects.filter(program_id=program_id).order_by('name')
-                for index, field_name in enumerate(speciality_field_names, start=1):
-                    self.fields[field_name].queryset = specialities
-                    self.fields[field_name].widget.attrs.pop('disabled', None)
-                    self.fields[field_name].empty_label = (
-                        f"Sélectionner la spécialité #{index}"
-                        if index == 1 else f"Sélectionner la spécialité #{index} (optionnel)"
-                    )
-            except (TypeError, ValueError):
-                for field_name in speciality_field_names:
-                    self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
-                    self.fields[field_name].widget.attrs.pop('disabled', None)
-        else:
-            for field_name in speciality_field_names:
-                self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
+#         speciality_field_names = [
+#             'specialite_souhaitee_1',
+#             'specialite_souhaitee_2',
+#             'specialite_souhaitee_3',
+#         ]
 
-        if not self.is_bound and self.instance and self.instance.pk:
-            if self.instance.school:
-                if self.instance.school.level == 'secondary':
-                    self.initial.setdefault('bac_etablissement_existant', self.instance.school)
-                else:
-                    self.initial.setdefault('bac_etablissement', self.instance.school.name)
+#         if program_id:
+#             try:
+#                 program_id = int(program_id)
+#                 specialities = Speciality.objects.filter(program_id=program_id).order_by('name')
+#                 for index, field_name in enumerate(speciality_field_names, start=1):
+#                     self.fields[field_name].queryset = specialities
+#                     self.fields[field_name].widget.attrs.pop('disabled', None)
+#                     self.fields[field_name].empty_label = (
+#                         f"Sélectionner la spécialité #{index}"
+#                         if index == 1 else f"Sélectionner la spécialité #{index} (optionnel)"
+#                     )
+#             except (TypeError, ValueError):
+#                 for field_name in speciality_field_names:
+#                     self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
+#                     self.fields[field_name].widget.attrs.pop('disabled', None)
+#         else:
+#             for field_name in speciality_field_names:
+#                 self.fields[field_name].queryset = Speciality.objects.all().order_by('name')
 
-            if self.instance.program_id:
-                for field_name in speciality_field_names:
-                    speciality_name = getattr(self.instance, field_name, '')
-                    if not speciality_name:
-                        continue
+#         if not self.is_bound and self.instance and self.instance.pk:
+#             if self.instance.school:
+#                 if self.instance.school.level == 'secondary':
+#                     self.initial.setdefault('bac_etablissement_existant', self.instance.school)
+#                 else:
+#                     self.initial.setdefault('bac_etablissement', self.instance.school.name)
 
-                    speciality = Speciality.objects.filter(
-                        program_id=self.instance.program_id,
-                        name=speciality_name,
-                    ).first()
-                    if speciality:
-                        self.initial.setdefault(field_name, speciality)
+#             if self.instance.program_id:
+#                 for field_name in speciality_field_names:
+#                     speciality_name = getattr(self.instance, field_name, '')
+#                     if not speciality_name:
+#                         continue
 
-    def clean(self):
-        cleaned_data = super().clean()
-        bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
-        bac_etablissement = (cleaned_data.get('bac_etablissement') or '').strip()
+#                     speciality = Speciality.objects.filter(
+#                         program_id=self.instance.program_id,
+#                         name=speciality_name,
+#                     ).first()
+#                     if speciality:
+#                         self.initial.setdefault(field_name, speciality)
 
-        cleaned_data['bac_etablissement'] = (
-            bac_etablissement_existant.name if bac_etablissement_existant else bac_etablissement
-        )
-        cleaned_data['school'] = bac_etablissement_existant
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         bac_etablissement_existant = cleaned_data.get('bac_etablissement_existant')
+#         bac_etablissement = (cleaned_data.get('bac_etablissement') or '').strip()
 
-        programme = cleaned_data.get('program')
-        selected_specialities = []
+#         cleaned_data['bac_etablissement'] = (
+#             bac_etablissement_existant.name if bac_etablissement_existant else bac_etablissement
+#         )
+#         cleaned_data['school'] = bac_etablissement_existant
 
-        for field_name in [
-            'specialite_souhaitee_1',
-            'specialite_souhaitee_2',
-            'specialite_souhaitee_3',
-        ]:
-            specialite = cleaned_data.get(field_name)
+#         programme = cleaned_data.get('program')
+#         selected_specialities = []
 
-            if programme and specialite and specialite.program_id != programme.id:
-                self.add_error(
-                    field_name,
-                    "La spécialité sélectionnée doit appartenir au programme choisi.",
-                )
-                continue
+#         for field_name in [
+#             'specialite_souhaitee_1',
+#             'specialite_souhaitee_2',
+#             'specialite_souhaitee_3',
+#         ]:
+#             specialite = cleaned_data.get(field_name)
 
-            if not specialite:
-                continue
+#             if programme and specialite and specialite.program_id != programme.id:
+#                 self.add_error(
+#                     field_name,
+#                     "La spécialité sélectionnée doit appartenir au programme choisi.",
+#                 )
+#                 continue
 
-            if specialite.pk in selected_specialities:
-                self.add_error(field_name, "Veuillez choisir une spécialité différente pour chaque choix.")
-                continue
+#             if not specialite:
+#                 continue
 
-            selected_specialities.append(specialite.pk)
+#             if specialite.pk in selected_specialities:
+#                 self.add_error(field_name, "Veuillez choisir une spécialité différente pour chaque choix.")
+#                 continue
 
-        return cleaned_data
+#             selected_specialities.append(specialite.pk)
 
-    def save(self, commit=True):
-        previous_photo = None
-        if self.instance.pk:
-            previous_photo = Student.objects.get(pk=self.instance.pk).profile_photo
+#         return cleaned_data
 
-        uploaded_photo = self.files.get('profile_photo')
-        should_remove_photo = self.cleaned_data.get('remove_profile_photo') and not uploaded_photo
+#     def save(self, commit=True):
+#         previous_photo = None
+#         if self.instance.pk:
+#             previous_photo = Student.objects.get(pk=self.instance.pk).profile_photo
 
-        student = super().save(commit=False)
+#         uploaded_photo = self.files.get('profile_photo')
+#         should_remove_photo = self.cleaned_data.get('remove_profile_photo') and not uploaded_photo
 
-        school = self.cleaned_data.get('bac_etablissement_existant')
-        if not school:
-            school_name = (self.cleaned_data.get('bac_etablissement') or '').strip()
-            if school_name:
-                school = School.objects.filter(name__iexact=school_name, level='secondary').first()
-                if not school:
-                    school = School.objects.create(name=school_name, level='secondary')
+#         student = super().save(commit=False)
 
-        student.school = school
-        student.specialite_souhaitee_1 = (
-            self.cleaned_data['specialite_souhaitee_1'].name
-            if self.cleaned_data.get('specialite_souhaitee_1') else ''
-        )
-        student.specialite_souhaitee_2 = (
-            self.cleaned_data['specialite_souhaitee_2'].name
-            if self.cleaned_data.get('specialite_souhaitee_2') else ''
-        )
-        student.specialite_souhaitee_3 = (
-            self.cleaned_data['specialite_souhaitee_3'].name
-            if self.cleaned_data.get('specialite_souhaitee_3') else ''
-        )
+#         school = self.cleaned_data.get('bac_etablissement_existant')
+#         if not school:
+#             school_name = (self.cleaned_data.get('bac_etablissement') or '').strip()
+#             if school_name:
+#                 school = School.objects.filter(name__iexact=school_name, level='secondary').first()
+#                 if not school:
+#                     school = School.objects.create(name=school_name, level='secondary')
 
-        if should_remove_photo:
-            student.profile_photo = None
+#         student.school = school
+#         student.specialite_souhaitee_1 = (
+#             self.cleaned_data['specialite_souhaitee_1'].name
+#             if self.cleaned_data.get('specialite_souhaitee_1') else ''
+#         )
+#         student.specialite_souhaitee_2 = (
+#             self.cleaned_data['specialite_souhaitee_2'].name
+#             if self.cleaned_data.get('specialite_souhaitee_2') else ''
+#         )
+#         student.specialite_souhaitee_3 = (
+#             self.cleaned_data['specialite_souhaitee_3'].name
+#             if self.cleaned_data.get('specialite_souhaitee_3') else ''
+#         )
 
-        if commit:
-            student.save()
-            self.save_m2m()
+#         if should_remove_photo:
+#             student.profile_photo = None
 
-            previous_photo_name = getattr(previous_photo, 'name', '')
-            current_photo_name = getattr(student.profile_photo, 'name', '')
+#         if commit:
+#             student.save()
+#             self.save_m2m()
 
-            if should_remove_photo and previous_photo_name:
-                previous_photo.storage.delete(previous_photo_name)
-            elif uploaded_photo and previous_photo_name and previous_photo_name != current_photo_name:
-                previous_photo.storage.delete(previous_photo_name)
+#             previous_photo_name = getattr(previous_photo, 'name', '')
+#             current_photo_name = getattr(student.profile_photo, 'name', '')
 
-        return student
+#             if should_remove_photo and previous_photo_name:
+#                 previous_photo.storage.delete(previous_photo_name)
+#             elif uploaded_photo and previous_photo_name and previous_photo_name != current_photo_name:
+#                 previous_photo.storage.delete(previous_photo_name)
+
+#         return student
 
 
-class StudentMetaDataEditForm(forms.ModelForm):
-    """Formulaire de modification des métadonnées de l'étudiant"""
+# class StudentMetaDataEditForm(forms.ModelForm):
+#     """Formulaire de modification des métadonnées de l'étudiant"""
 
-    remove_preuve_baccalaureat = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_acte_naissance = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_certificat_nationalite = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_releve_notes_last_class = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_justificatif_dernier_diplome = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_bulletins_terminale = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_decharge_equivalence = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_releve_notes_master1 = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
-    remove_photocopie_bts_hnd = forms.BooleanField(
-        required=False,
-        label='Supprimer le document actuel',
-        widget=forms.CheckboxInput(attrs={
-            'class': 'form-check-input'
-        })
-    )
+#     remove_preuve_baccalaureat = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_acte_naissance = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_certificat_nationalite = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_releve_notes_last_class = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_justificatif_dernier_diplome = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_bulletins_terminale = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_decharge_equivalence = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_releve_notes_master1 = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
+#     remove_photocopie_bts_hnd = forms.BooleanField(
+#         required=False,
+#         label='Supprimer le document actuel',
+#         widget=forms.CheckboxInput(attrs={
+#             'class': 'form-check-input'
+#         })
+#     )
 
-    removable_file_fields = [
-        'preuve_baccalaureat',
-        'acte_naissance',
-        'certificat_nationalite',
-        'releve_notes_last_class',
-        'justificatif_dernier_diplome',
-        'decharge_equivalence',
-        'bulletins_terminale',
-        'releve_notes_master1',
-        'photocopie_bts_hnd',
-    ]
+#     removable_file_fields = [
+#         'preuve_baccalaureat',
+#         'acte_naissance',
+#         'certificat_nationalite',
+#         'releve_notes_last_class',
+#         'justificatif_dernier_diplome',
+#         'decharge_equivalence',
+#         'bulletins_terminale',
+#         'releve_notes_master1',
+#         'photocopie_bts_hnd',
+#     ]
 
-    class Meta:
-        model = StudentMetaData
-        fields = [
-            'mother_full_name', 'mother_live_city', 'mother_email',
-            'mother_occupation', 'mother_phone_number', 'father_full_name',
-            'father_live_city', 'father_email',
-            'father_occupation', 'father_phone_number', 'original_country',
-            'original_region', 'original_department', 'original_district',
-            'residence_city', 'residence_quarter', 'is_complete',
-            'preuve_baccalaureat', 'acte_naissance', 'certificat_nationalite', 'releve_notes_last_class',
-            'justificatif_dernier_diplome', 'decharge_equivalence', 'bulletins_terminale',
-            'releve_notes_master1', 'photocopie_bts_hnd'
-        ]
-        widgets = {
-            'mother_full_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nom complet de la mère'
-            }),
-            'mother_live_city': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ville de résidence de la mère'
-            }),
-            'mother_email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Email de la mère'
-            }),
-            'mother_occupation': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Profession de la mère'
-            }),
-            'mother_phone_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Téléphone de la mère'
-            }),
-            'father_full_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nom complet du père'
-            }),
-            'father_live_city': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ville de résidence du père'
-            }),
-            'father_email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Email du père'
-            }),
-            'father_occupation': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Profession du père'
-            }),
-            'father_phone_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Téléphone du père'
-            }),
-            'original_country': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Pays d\'origine'
-            }),
-            'original_region': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Région d\'origine'
-            }),
-            'original_department': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Département d\'origine'
-            }),
-            'original_district': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Arrondissement d\'origine'
-            }),
-            'residence_city': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ville de résidence'
-            }),
-            'residence_quarter': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Quartier de résidence'
-            }),
-            'is_complete': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
-            'preuve_baccalaureat': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'acte_naissance': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'certificat_nationalite': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'releve_notes_last_class': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'justificatif_dernier_diplome': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'decharge_equivalence': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'bulletins_terminale': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'releve_notes_master1': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-            'photocopie_bts_hnd': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.png,.jpg,.jpeg,.pdf'
-            }),
-        }
-        labels = {
-            'mother_full_name': 'Nom complet de la mère',
-            'mother_live_city': 'Ville de résidence de la mère',
-            'mother_email': 'Email de la mère',
-            'mother_occupation': 'Profession de la mère',
-            'mother_phone_number': 'Téléphone de la mère',
-            'father_full_name': 'Nom complet du père',
-            'father_live_city': 'Ville de résidence du père',
-            'father_email': 'Email du père',
-            'father_occupation': 'Profession du père',
-            'father_phone_number': 'Téléphone du père',
-            'original_country': 'Pays d\'origine',
-            'original_region': 'Région d\'origine',
-            'original_department': 'Département d\'origine',
-            'original_district': 'Arrondissement d\'origine',
-            'residence_city': 'Ville de résidence',
-            'residence_quarter': 'Quartier de résidence',
-            'is_complete': 'Dossier complet',
-            'preuve_baccalaureat': 'Preuve d\'obtention du baccalauréat',
-            'acte_naissance': 'Photocopie certifiée de l\'acte de naissance',
-            'certificat_nationalite': 'Certificat de nationalité',
-            'releve_notes_last_class': 'Relevé de notes de la dernière classe fréquentée',
-            'justificatif_dernier_diplome': 'Justificatif du dernier diplôme obtenu',
-            'decharge_equivalence': 'Décharge de la demande d\'équivalence',
-            'bulletins_terminale': 'Bulletins de la classe de terminale',
-            'releve_notes_master1': 'Relevé de notes du Master 1',
-            'photocopie_bts_hnd': 'Photocopie du BTS, HND ou diplôme équivalent',
-        }
+#     class Meta:
+#         model = StudentMetaData
+#         fields = [
+#             'mother_full_name', 'mother_live_city', 'mother_email',
+#             'mother_occupation', 'mother_phone_number', 'father_full_name',
+#             'father_live_city', 'father_email',
+#             'father_occupation', 'father_phone_number', 'original_country',
+#             'original_region', 'original_department', 'original_district',
+#             'residence_city', 'residence_quarter', 'is_complete',
+#             'preuve_baccalaureat', 'acte_naissance', 'certificat_nationalite', 'releve_notes_last_class',
+#             'justificatif_dernier_diplome', 'decharge_equivalence', 'bulletins_terminale',
+#             'releve_notes_master1', 'photocopie_bts_hnd'
+#         ]
+#         widgets = {
+#             'mother_full_name': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Nom complet de la mère'
+#             }),
+#             'mother_live_city': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Ville de résidence de la mère'
+#             }),
+#             'mother_email': forms.EmailInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Email de la mère'
+#             }),
+#             'mother_occupation': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Profession de la mère'
+#             }),
+#             'mother_phone_number': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Téléphone de la mère'
+#             }),
+#             'father_full_name': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Nom complet du père'
+#             }),
+#             'father_live_city': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Ville de résidence du père'
+#             }),
+#             'father_email': forms.EmailInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Email du père'
+#             }),
+#             'father_occupation': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Profession du père'
+#             }),
+#             'father_phone_number': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Téléphone du père'
+#             }),
+#             'original_country': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Pays d\'origine'
+#             }),
+#             'original_region': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Région d\'origine'
+#             }),
+#             'original_department': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Département d\'origine'
+#             }),
+#             'original_district': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Arrondissement d\'origine'
+#             }),
+#             'residence_city': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Ville de résidence'
+#             }),
+#             'residence_quarter': forms.TextInput(attrs={
+#                 'class': 'form-control',
+#                 'placeholder': 'Quartier de résidence'
+#             }),
+#             'is_complete': forms.CheckboxInput(attrs={
+#                 'class': 'form-check-input'
+#             }),
+#             'preuve_baccalaureat': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'acte_naissance': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'certificat_nationalite': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'releve_notes_last_class': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'justificatif_dernier_diplome': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'decharge_equivalence': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'bulletins_terminale': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'releve_notes_master1': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#             'photocopie_bts_hnd': forms.FileInput(attrs={
+#                 'class': 'form-control',
+#                 'accept': '.png,.jpg,.jpeg,.pdf'
+#             }),
+#         }
+#         labels = {
+#             'mother_full_name': 'Nom complet de la mère',
+#             'mother_live_city': 'Ville de résidence de la mère',
+#             'mother_email': 'Email de la mère',
+#             'mother_occupation': 'Profession de la mère',
+#             'mother_phone_number': 'Téléphone de la mère',
+#             'father_full_name': 'Nom complet du père',
+#             'father_live_city': 'Ville de résidence du père',
+#             'father_email': 'Email du père',
+#             'father_occupation': 'Profession du père',
+#             'father_phone_number': 'Téléphone du père',
+#             'original_country': 'Pays d\'origine',
+#             'original_region': 'Région d\'origine',
+#             'original_department': 'Département d\'origine',
+#             'original_district': 'Arrondissement d\'origine',
+#             'residence_city': 'Ville de résidence',
+#             'residence_quarter': 'Quartier de résidence',
+#             'is_complete': 'Dossier complet',
+#             'preuve_baccalaureat': 'Preuve d\'obtention du baccalauréat',
+#             'acte_naissance': 'Photocopie certifiée de l\'acte de naissance',
+#             'certificat_nationalite': 'Certificat de nationalité',
+#             'releve_notes_last_class': 'Relevé de notes de la dernière classe fréquentée',
+#             'justificatif_dernier_diplome': 'Justificatif du dernier diplôme obtenu',
+#             'decharge_equivalence': 'Décharge de la demande d\'équivalence',
+#             'bulletins_terminale': 'Bulletins de la classe de terminale',
+#             'releve_notes_master1': 'Relevé de notes du Master 1',
+#             'photocopie_bts_hnd': 'Photocopie du BTS, HND ou diplôme équivalent',
+#         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Rendre tous les champs optionnels sauf le pays d'origine
-        for field_name, field in self.fields.items():
-            if field_name != 'original_country':
-                field.required = False
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Rendre tous les champs optionnels sauf le pays d'origine
+#         for field_name, field in self.fields.items():
+#             if field_name != 'original_country':
+#                 field.required = False
 
-        for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
-            if field_name not in self.fields:
-                continue
+#         for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
+#             if field_name not in self.fields:
+#                 continue
 
-            document_definition = PROGRAM_DOCUMENTS_BY_FIELD[field_name]
-            self.fields[field_name].label = document_definition['label']
-            self.fields[field_name].help_text = document_definition['help_text']
+#             document_definition = PROGRAM_DOCUMENTS_BY_FIELD[field_name]
+#             self.fields[field_name].label = document_definition['label']
+#             self.fields[field_name].help_text = document_definition['help_text']
 
-    def save(self, commit=True):
-        previous_files = {}
-        if self.instance.pk:
-            previous_instance = StudentMetaData.objects.get(pk=self.instance.pk)
-            previous_files = {
-                field_name: getattr(previous_instance, field_name)
-                for field_name in self.removable_file_fields
-            }
+#     def save(self, commit=True):
+#         previous_files = {}
+#         if self.instance.pk:
+#             previous_instance = StudentMetaData.objects.get(pk=self.instance.pk)
+#             previous_files = {
+#                 field_name: getattr(previous_instance, field_name)
+#                 for field_name in self.removable_file_fields
+#             }
 
-        uploaded_files = {
-            field_name: self.files.get(field_name)
-            for field_name in self.removable_file_fields
-        }
-        removal_flags = {
-            field_name: bool(self.cleaned_data.get(f'remove_{field_name}')) and not uploaded_files[field_name]
-            for field_name in self.removable_file_fields
-        }
+#         uploaded_files = {
+#             field_name: self.files.get(field_name)
+#             for field_name in self.removable_file_fields
+#         }
+#         removal_flags = {
+#             field_name: bool(self.cleaned_data.get(f'remove_{field_name}')) and not uploaded_files[field_name]
+#             for field_name in self.removable_file_fields
+#         }
 
-        metadata = super().save(commit=False)
+#         metadata = super().save(commit=False)
 
-        for field_name, should_remove in removal_flags.items():
-            if should_remove:
-                setattr(metadata, field_name, None)
+#         for field_name, should_remove in removal_flags.items():
+#             if should_remove:
+#                 setattr(metadata, field_name, None)
 
-        if commit:
-            metadata.save()
-            self.save_m2m()
+#         if commit:
+#             metadata.save()
+#             self.save_m2m()
 
-            for field_name in self.removable_file_fields:
-                previous_file = previous_files.get(field_name)
-                previous_file_name = getattr(previous_file, 'name', '')
-                current_file = getattr(metadata, field_name)
-                current_file_name = getattr(current_file, 'name', '')
+#             for field_name in self.removable_file_fields:
+#                 previous_file = previous_files.get(field_name)
+#                 previous_file_name = getattr(previous_file, 'name', '')
+#                 current_file = getattr(metadata, field_name)
+#                 current_file_name = getattr(current_file, 'name', '')
 
-                if removal_flags[field_name] and previous_file_name:
-                    previous_file.storage.delete(previous_file_name)
-                elif uploaded_files[field_name] and previous_file_name and previous_file_name != current_file_name:
-                    previous_file.storage.delete(previous_file_name)
+#                 if removal_flags[field_name] and previous_file_name:
+#                     previous_file.storage.delete(previous_file_name)
+#                 elif uploaded_files[field_name] and previous_file_name and previous_file_name != current_file_name:
+#                     previous_file.storage.delete(previous_file_name)
 
-        return metadata
+#         return metadata
 
 
 class OfficialDocumentForm(forms.ModelForm):
     """Formulaire pour la création et modification des documents officiels"""
 
-    # Champs séparés pour permettre la sélection individuelle
-    student = forms.ModelChoiceField(
-        queryset=Student.objects.all(),
+    student_search = forms.CharField(
         label="Étudiant",
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-            'required': True
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control shadow-inset border-light bg-primary document-student-autocomplete',
+            'placeholder': 'Rechercher par matricule, nom, prénom ou programme...',
+            'autocomplete': 'off',
         }),
-        empty_label="Sélectionner un étudiant"
+    )
+
+    student = forms.ModelChoiceField(
+        queryset=Student.objects.none(),
+        label="Étudiant",
+        required=False,
+        widget=forms.HiddenInput(),
     )
 
     level = forms.ModelChoiceField(
-        queryset=Level.objects.all(),
+        queryset=Level.objects.none(),
         label="Niveau",
         widget=forms.Select(attrs={
-            'class': 'form-select',
+            'class': 'form-control shadow-inset border-light bg-primary',
             'required': True
         }),
         empty_label="Sélectionner un niveau"
     )
 
     academic_year = forms.ModelChoiceField(
-        queryset=AcademicYear.objects.all(),
+        queryset=AcademicYear.objects.none(),
         label="Année académique",
         widget=forms.Select(attrs={
-            'class': 'form-select',
+            'class': 'form-control shadow-inset border-light bg-primary',
             'required': True
         }),
         empty_label="Sélectionner une année académique"
@@ -2235,8 +2232,18 @@ class OfficialDocumentForm(forms.ModelForm):
             'returned_at': 'Date de retour',
         }
 
+    @staticmethod
+    def get_student_label(student):
+        student_name = f"{student.firstname} {student.lastname}".strip()
+        program_name = student.program.name if student.program_id else 'Programme non défini'
+        return f"{student.matricule} - {student_name} - {program_name}"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        def normalize_pk(value):
+            return getattr(value, 'pk', value)
+
         # Rendre la date de retrait optionnelle
         self.fields['withdrawn_date'].required = False
 
@@ -2246,11 +2253,22 @@ class OfficialDocumentForm(forms.ModelForm):
             if choice[0] != OfficialDocument.TYPE_REGISTRATION_CERTIFICATE
         ]
 
+        student_level = getattr(self.instance, 'student_level', None)
+        selected_student_id = normalize_pk(
+            self.data.get('student') or self.initial.get('student') or getattr(student_level, 'student_id', None)
+        )
+        selected_level_id = normalize_pk(
+            self.data.get('level') or self.initial.get('level') or getattr(student_level, 'level_id', None)
+        )
+        selected_academic_year_id = normalize_pk(
+            self.data.get('academic_year') or self.initial.get('academic_year') or getattr(student_level, 'academic_year_id', None)
+        )
+
         # Si on modifie un document existant, pré-remplir les champs
-        if self.instance and self.instance.pk and self.instance.student_level:
-            self.fields['student'].initial = self.instance.student_level.student
-            self.fields['level'].initial = self.instance.student_level.level
-            self.fields['academic_year'].initial = self.instance.student_level.academic_year
+        if self.instance and self.instance.pk and student_level:
+            self.fields['student'].initial = student_level.student
+            self.fields['level'].initial = student_level.level
+            self.fields['academic_year'].initial = student_level.academic_year
 
             if self.instance.type == OfficialDocument.TYPE_REGISTRATION_CERTIFICATE:
                 allowed_type_choices = [
@@ -2265,27 +2283,60 @@ class OfficialDocumentForm(forms.ModelForm):
 
         self.fields['type'].choices = allowed_type_choices
 
-        # Personnaliser l'affichage des étudiants
-        self.fields['student'].queryset = Student.objects.all().order_by('matricule')
+        student_queryset = Student.objects.select_related('program').filter(
+            student_levels__academic_year__isnull=False,
+        ).distinct().order_by('matricule')
+        self.fields['student'].queryset = student_queryset
 
-        # Personnaliser les choix pour afficher matricule - nom prénom
-        student_choices = [('', 'Sélectionner un étudiant')]
-        for student in self.fields['student'].queryset:
-            label = f"{student.matricule} - {student.firstname} {student.lastname}"
-            student_choices.append((student.pk, label))
-        self.fields['student'].choices = student_choices
+        selected_student = None
+        if selected_student_id:
+            selected_student = student_queryset.filter(pk=selected_student_id).first()
 
-        # Personnaliser l'affichage des niveaux
-        self.fields['level'].queryset = Level.objects.all().order_by('name')
+        level_ids = StudentLevel.objects.filter(
+            student_id=selected_student_id,
+        ).values_list('level_id', flat=True)
+        self.fields['level'].queryset = Level.objects.filter(
+            pk__in=level_ids,
+        ).distinct().order_by('academic_order', 'name')
 
-        # Personnaliser l'affichage des années académiques (les plus récentes en premier)
-        self.fields['academic_year'].queryset = AcademicYear.objects.all().order_by('-start_at')
+        academic_year_ids = StudentLevel.objects.filter(
+            student_id=selected_student_id,
+            level_id=selected_level_id,
+            academic_year__isnull=False,
+        ).values_list('academic_year_id', flat=True)
+        self.fields['academic_year'].queryset = AcademicYear.objects.filter(
+            pk__in=academic_year_ids,
+        ).distinct().order_by('-start_at')
+
+        self.fields['level'].empty_label = (
+            "Sélectionner un niveau" if selected_student_id else "Sélectionner d'abord un étudiant"
+        )
+        self.fields['academic_year'].empty_label = (
+            "Sélectionner une année académique" if selected_level_id else "Sélectionner d'abord un niveau"
+        )
+
+        if selected_student and not self.is_bound:
+            self.fields['student_search'].initial = self.get_student_label(selected_student)
+
+        if (
+            not self.is_bound
+            and selected_student_id
+            and selected_level_id
+            and not selected_academic_year_id
+            and self.fields['academic_year'].queryset.count() == 1
+        ):
+            self.fields['academic_year'].initial = self.fields['academic_year'].queryset.first()
+
+        self.fields['student_search'].widget.attrs['data-selected-student-id'] = (
+            str(selected_student.pk) if selected_student else ''
+        )
 
     def clean(self):
         cleaned_data = super().clean()
         document_type = cleaned_data.get('type') or getattr(self.instance, 'type', None)
         status = cleaned_data.get('status')
         withdrawn_date = cleaned_data.get('withdrawn_date')
+        student_search = (cleaned_data.get('student_search') or '').strip()
         student = cleaned_data.get('student')
         level = cleaned_data.get('level')
         academic_year = cleaned_data.get('academic_year')
@@ -2305,21 +2356,31 @@ class OfficialDocumentForm(forms.ModelForm):
         if status != 'withdrawn' and withdrawn_date:
             cleaned_data['withdrawn_date'] = None
 
-        # Vérifier qu'on a tous les champs nécessaires pour créer/trouver le StudentLevel
+        if not student:
+            if student_search:
+                self.add_error('student', "Veuillez sélectionner un étudiant dans la liste proposée.")
+            else:
+                self.add_error('student', "Veuillez sélectionner un étudiant.")
+
         if student and level and academic_year:
-            # Rechercher ou créer le StudentLevel
-            student_level, _ = StudentLevel.objects.get_or_create(
+            student_level = StudentLevel.objects.filter(
                 student=student,
                 level=level,
                 academic_year=academic_year
-            )
+            ).select_related('student', 'level', 'academic_year').first()
 
-            # Vérifier s'il existe déjà un document du même type pour ce StudentLevel
-            if not self.instance.pk:  # Seulement pour la création, pas la modification
+            if not student_level:
+                self.add_error(
+                    'academic_year',
+                    "L'année académique sélectionnée n'est pas associée à cet étudiant pour le niveau choisi.",
+                )
+                return cleaned_data
+
+            if document_type:
                 existing_doc = OfficialDocument.objects.filter(
                     student_level=student_level,
                     type=document_type
-                ).first()
+                ).exclude(pk=self.instance.pk).first()
 
                 if existing_doc:
                     document_label = dict(OfficialDocument.TYPE_CHOICES).get(document_type, document_type)
@@ -2329,7 +2390,6 @@ class OfficialDocumentForm(forms.ModelForm):
                         f"({academic_year.name})."
                     )
 
-            # Stocker le student_level pour l'utiliser dans save()
             cleaned_data['student_level'] = student_level
 
         return cleaned_data
@@ -2337,7 +2397,7 @@ class OfficialDocumentForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        # Assigner le student_level trouvé/créé dans clean()
+        # Assigner le student_level trouvé dans clean()
         if hasattr(self, 'cleaned_data') and 'student_level' in self.cleaned_data:
             instance.student_level = self.cleaned_data['student_level']
 
@@ -2463,14 +2523,18 @@ class BulkDocumentCreationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ordonner les choix
+        academic_years = AcademicYear.objects.all().order_by('-start_at')
         self.fields['document_type'].choices = [
             choice
             for choice in OfficialDocument._meta.get_field('type').choices
             if choice[0] != OfficialDocument.TYPE_REGISTRATION_CERTIFICATE
         ]
-        self.fields['academic_year'].queryset = AcademicYear.objects.all().order_by('-start_at')
+        self.fields['academic_year'].queryset = academic_years
         self.fields['level'].queryset = Level.objects.all().order_by('name')
         self.fields['program'].queryset = Program.objects.all().order_by('name')
+
+        if not self.is_bound and self.fields['academic_year'].initial in (None, ''):
+            self.fields['academic_year'].initial = AcademicYear.get_active_year() or academic_years.first()
 
     def clean_document_type(self):
         document_type = self.cleaned_data.get('document_type')
@@ -2488,18 +2552,28 @@ class BulkDocumentCreationForm(forms.Form):
         academic_year = self.cleaned_data.get('academic_year')
         level = self.cleaned_data.get('level')
         program = self.cleaned_data.get('program')
+
         # Filtrer les étudiants qui ont un StudentLevel correspondant
         students = Student.objects.filter(
             student_levels__academic_year=academic_year,
             student_levels__level=level,
-            status='approved'  # Seulement les étudiants approuvés
-        ).distinct()
+            student_levels__is_registered=True,
+            status='registered'
+        ).select_related('program').distinct().order_by('matricule')
 
         # Filtrer par programme si spécifié
         if program:
             students = students.filter(program=program)
 
         return students
+
+    @staticmethod
+    def _get_registered_student_level(student, academic_year, level):
+        return student.student_levels.filter(
+            academic_year=academic_year,
+            level=level,
+            is_registered=True,
+        ).order_by('-is_active', '-registered_at', 'pk').first()
 
     def get_existing_documents_count(self):
         """Retourne le nombre de documents existants pour éviter les doublons"""
@@ -2513,10 +2587,7 @@ class BulkDocumentCreationForm(forms.Form):
 
         existing_count = 0
         for student in students:
-            student_level = student.student_levels.filter(
-                academic_year=academic_year,
-                level=level
-            ).first()
+            student_level = self._get_registered_student_level(student, academic_year, level)
 
             if student_level:
                 existing = OfficialDocument.objects.filter(
@@ -2545,12 +2616,14 @@ class BulkDocumentCreationForm(forms.Form):
 
         for student in students:
             try:
-                # Trouver ou créer le StudentLevel
-                student_level, _ = StudentLevel.objects.get_or_create(
-                    student=student,
-                    academic_year=academic_year,
-                    level=level
-                )
+                student_level = self._get_registered_student_level(student, academic_year, level)
+
+                if not student_level:
+                    errors.append(
+                        f"Aucune inscription valide trouvée pour {student.matricule} au niveau {level.name} "
+                        f"pour l'année {academic_year.name}."
+                    )
+                    continue
 
                 # Vérifier si le document existe déjà
                 existing = OfficialDocument.objects.filter(

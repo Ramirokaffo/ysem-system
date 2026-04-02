@@ -1,7 +1,9 @@
 from io import BytesIO
 import os
+from pathlib import Path
 from urllib import request
 from xml.sax.saxutils import escape
+from django.template.loader import render_to_string
 
 from django.utils import timezone
 from django.conf import settings as django_settings
@@ -14,6 +16,8 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Image as PlatypusImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+import pdfkit
+# import weasyprint
 
 from .models import SystemSettings
 
@@ -62,80 +66,71 @@ def build_pre_inscriptions_pdf(students):
 
 
 def build_registration_certificate_pdf(official_document):
+    html = render_to_string(
+        'main/pdf/registration_certificate.html',
+        _build_registration_certificate_context(official_document),
+    )
+    options = {
+        'page-size': 'A4',
+        'encoding': 'UTF-8',
+        'enable-local-file-access': '',
+        'quiet': '',
+    }
+    # return weasyprint.HTML(string=html).write_pdf('output.pdf')
+    # return weasyprint.HTML(string=html)
+    return
+    # return pdfkit.from_string(html, False, options=options)
+
+
+def _build_registration_certificate_context(official_document):
     student_level = official_document.student_level
     student = student_level.student
     settings = SystemSettings.get_settings()
     issue_date = timezone.localdate()
-    styles = _build_styles()
-    buffer = BytesIO()
-
-    document = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.7 * cm, bottomMargin=1.7 * cm)
     full_name = f'{student.firstname} {student.lastname}'.strip()
-    contact_parts = [settings.address]
-    if settings.phone:
-        contact_parts.append(f"Tél. : {settings.phone}")
-    if settings.email:
-        contact_parts.append(f"Email : {settings.email}")
-    if settings.website:
-        contact_parts.append(settings.website)
-    contact_line = ' · '.join(part for part in contact_parts if part)
 
-    story = [
-        Paragraph(escape(settings.institution_name), styles['title_centered']),
-        Paragraph(escape(contact_line or ' '), styles['subtitle_centered']),
-        Spacer(1, 0.45 * cm),
-        Paragraph("CERTIFICAT D'INSCRIPTION", styles['certificate_title']),
-        Paragraph(f"Référence : {escape(_display_value(official_document.reference))}", styles['certificate_reference']),
-        Spacer(1, 0.35 * cm),
-    ]
+    return {
+        'official_document': official_document,
+        'logo_uri': _build_registration_certificate_logo_uri(settings),
+        'logo_alt': settings.get_logo_alt(),
+        'institution_name': _display_value(settings.institution_name),
+        'institution_code': _display_value(settings.institution_code),
+        'address': _display_value(settings.address),
+        'phone': _display_value(settings.phone),
+        'email': _display_value(settings.email),
+        'website': _display_value(settings.website),
+        'reference': _display_value(official_document.reference),
+        'full_name': _display_value(full_name),
+        'birth_date': _format_date(student.date_naiss),
+        'matricule': _display_value(student.matricule),
+        'dossier_number': _display_value(student.dossier_number),
+        'program_name': _display_value(getattr(student.program, 'name', None)),
+        'level_name': _display_value(getattr(student_level.level, 'name', None)),
+        'academic_year_name': _display_value(getattr(student_level.academic_year, 'name', None)),
+        'signature_city': 'Yaoundé',
+        'issue_date': _format_date(issue_date),
+        'issue_date_short': _format_date(issue_date),
+    }
 
-    story.extend(_build_section('Informations de l’inscription', [
-        ('Nom complet', full_name),
-        ('Matricule', student.matricule),
-        ('Numéro de dossier', student.dossier_number),
-        ('Programme', getattr(student.program, 'name', None)),
-        ('Niveau', getattr(student_level.level, 'name', None)),
-        ('Année académique', getattr(student_level.academic_year, 'name', None)),
-        ('Date de délivrance', _format_date(issue_date)),
-    ], styles))
 
-    story.append(Paragraph(
-        (
-            f"Nous certifions que <b>{escape(_display_value(full_name))}</b>, matricule "
-            f"<b>{escape(_display_value(student.matricule))}</b>, numéro de dossier "
-            f"<b>{escape(_display_value(student.dossier_number))}</b>, est régulièrement inscrit(e) "
-            f"en <b>{escape(_display_value(getattr(student_level.level, 'name', None)))}</b> au titre de "
-            f"l'année académique <b>{escape(_display_value(getattr(student_level.academic_year, 'name', None)))}</b> "
-            f"au sein de <b>{escape(settings.institution_name)}</b>."
-        ),
-        styles['body'],
-    ))
-    story.append(Spacer(1, 0.2 * cm))
-    story.append(Paragraph(
-        "Le présent certificat est délivré à l'intéressé(e) pour servir et valoir ce que de droit.",
-        styles['body'],
-    ))
-    story.append(Spacer(1, 1.0 * cm))
-    story.append(Paragraph(f"Fait à Yaoundé, le {_format_date(issue_date)}", styles['signature']))
-    story.append(Spacer(1, 1.5 * cm))
-    story.append(Paragraph(escape(settings.institution_name), styles['signature']))
+def _build_registration_certificate_logo_uri(settings):
+    candidate_paths = []
 
-    document.build(
-        story,
-        onFirstPage=lambda pdf_canvas, doc: _draw_registration_certificate_footer(
-            pdf_canvas,
-            doc,
-            settings.institution_name,
-            official_document.reference,
-        ),
-        onLaterPages=lambda pdf_canvas, doc: _draw_registration_certificate_footer(
-            pdf_canvas,
-            doc,
-            settings.institution_name,
-            official_document.reference,
-        ),
-    )
-    return buffer.getvalue()
+    if settings.logo and getattr(settings.logo, 'name', None):
+        logo_path = getattr(settings.logo, 'path', None)
+        if logo_path:
+            candidate_paths.append(logo_path)
+
+    candidate_paths.extend([
+        os.path.join(django_settings.STATIC_ROOT, 'main', 'images', 'ysemlogo.png'),
+        os.path.join(django_settings.BASE_DIR, 'main', 'static', 'main', 'images', 'ysemlogo.png'),
+    ])
+
+    for candidate_path in candidate_paths:
+        if candidate_path and os.path.exists(candidate_path):
+            return Path(candidate_path).resolve().as_uri()
+
+    return None
 
 
 def _prepare_annex_entries(student):
@@ -574,11 +569,3 @@ def _draw_page_footer(pdf_canvas, document):
     pdf_canvas.drawRightString(A4[0] - 1.4 * cm, 1.0 * cm, f'Page {document.page}')
     pdf_canvas.restoreState()
 
-
-def _draw_registration_certificate_footer(pdf_canvas, document, institution_name, reference):
-    pdf_canvas.saveState()
-    pdf_canvas.setFont('Helvetica', 8)
-    pdf_canvas.setFillColor(colors.HexColor('#6b7280'))
-    pdf_canvas.drawString(1.4 * cm, 1.0 * cm, f"{institution_name} — Certificat d'inscription généré à la demande")
-    pdf_canvas.drawRightString(A4[0] - 1.4 * cm, 1.0 * cm, f"Réf. {reference or '-'} · Page {document.page}")
-    pdf_canvas.restoreState()

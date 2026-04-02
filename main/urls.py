@@ -37,6 +37,9 @@ urlpatterns = [
     path('document/<int:pk>/telecharger-certificat-inscription/', registration_certificate_download, name='registration_certificate_download'),
     path('document/creation-masse/', document_bulk_create, name='document_bulk_create'),
     path('document/preview-masse/', document_bulk_preview, name='document_bulk_preview'),
+    path('document/ajax/student-search/', document_student_search, name='document_student_search'),
+    path('document/ajax/student-levels/', document_student_levels, name='document_student_levels'),
+    path('document/ajax/student-academic-years/', document_student_academic_years, name='document_student_academic_years'),
 
     # Formulaire d'inscription public
     path('inscription-externe/', PreInscriptionExterneView.as_view(), name='inscription_externe'),

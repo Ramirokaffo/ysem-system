@@ -25,6 +25,7 @@
                                         <select class="form-control" id="status" name="status">
                                             <option value="">Tous</option>
                                             <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>En attente</option>
+                                            <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Examinée & Approuvée</option>
                                             <option value="abandoned" {% if request.GET.status == 'abandoned' %}selected{% endif %}>Abandonné</option>
                                             <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejeté</option>
                                         </select>
@@ -78,11 +79,11 @@
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="date_from">Date de début:</label>
+                                        <label for="date_from">Date de début (Pré-inscription):</label>
                                         <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request.GET.date_from }}">
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="date_to">Date de fin:</label>
+                                        <label for="date_to">Date de fin (Pré-inscription):</label>
                                         <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request.GET.date_to }}">
                                     </div>
                                 </div>
@@ -163,19 +164,19 @@
                                         {{ school.name }}{% endif %}{% endfor %}</span></li>
                                     {% endif %}
                                     {% if request.GET.date_from %}
-                                    <li class="list-inline-item"><span class="badge badge-light text-uppercase">Du : {{ request.GET.date_from }}</span></li>
+                                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Du : {{ request.GET.date_from }}</span></li>
                                     {% endif %}
                                     {% if request.GET.date_to %}
-                                    <li class="list-inline-item"><span class="badge badge-light text-uppercase">Au : {{ request.GET.date_to }}</span></li>
+                                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Au : {{ request.GET.date_to }}</span></li>
                                     {% endif %}
                                     {% if request.GET.is_complete %}
-                                    <li class="list-inline-item"><span class="badge badge-light text-uppercase">Complète : {{ request.GET.is_complete }}</span></li>
+                                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Complète : {{ request.GET.is_complete }}</span></li>
                                     {% endif %}
                                     {% if request.GET.is_online_registration %}
-                                    <li class="list-inline-item"><span class="badge badge-light text-uppercase">Source : {{ request.GET.is_online_registration }}</span></li>
+                                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Source : {{ request.GET.is_online_registration }}</span></li>
                                     {% endif %}
                                     {% if request.GET.start_level %}
-                                    <li class="list-inline-item"><span class="badge badge-light text-uppercase">Niveau d'entrée : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.start_level %}{{ level.name }}{% endif %}{% endfor %}</span></li>
+                                    <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Niveau d'entrée : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.start_level %}{{ level.name }}{% endif %}{% endfor %}</span></li>
                                     {% endif %}
                                 </ul>
                             </div>
@@ -218,7 +219,7 @@
                         <tr>
                             <th>Photo</th>
                             <th>Matricule</th>
-                            <th>Nom complet</th>
+                            <th>Noms</th>
                             <th>Genre</th>
                             <th>Programme</th>
                             <th>Niveau</th>
@@ -679,13 +680,13 @@
     #filtersAccordion .accordion-button:not(.collapsed) {
         background: var(--primary-color);
         color: var(--text-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
-        border-color: var(--accent-color);
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; */
+        /* border-color: var(--accent-color); */
     }
 
     #filtersAccordion .accordion-button:focus {
-        border-color: var(--accent-color);
-        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25);
+        /* border-color: var(--accent-color); */
+        /* box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.25rem rgba(38, 40, 51, 0.25); */
         outline: none;
     }
 
