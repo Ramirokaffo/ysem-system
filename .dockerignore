@@ -1,0 +1,50 @@
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Python build artefacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.tox
+.coverage
+htmlcov
+
+# Virtualenv
+venv/
+.venv/
+env/
+env314/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+
+# Local runtime state (monté en volume en dev)
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+static/
+logs/
+
+# Env files (fournis au runtime via docker-compose)
+.env
+.env.*
+!.env.docker.example
+
+# Fichiers Docker (pas nécessaires dans l'image)
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Documentation / divers
+*.md
+*.log

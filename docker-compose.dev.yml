@@ -1,0 +1,65 @@
+# Environnement de DEV
+#   Lancement : docker compose -f docker-compose.dev.yml up --build
+#
+# Particularités :
+#   - bind-mount du code pour hot-reload avec runserver
+#   - DEBUG=True
+#   - MariaDB exposée localement pour inspection
+name: ysem-dev
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-ysem_project}
+      MARIADB_USER: ${DB_USER:-ysem}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-ysem}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data_dev:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: ysem-system:dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DEBUG: "True"
+      USE_SQLITE3: "False"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-ysem_project}
+      DB_USER: ${DB_USER:-ysem}
+      DB_PASSWORD: ${DB_PASSWORD:-ysem}
+      DJANGO_MIGRATE: "true"
+      DJANGO_COLLECTSTATIC: "false"
+    # En dev on écrase la commande pour bénéficier de l'auto-reload
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload du code source
+      - .:/app
+      # On protège les dossiers d'état pour ne pas les écraser par le bind-mount
+      - media_dev:/app/media
+      - logs_dev:/app/logs
+
+volumes:
+  db_data_dev:
+  media_dev:
+  logs_dev:
