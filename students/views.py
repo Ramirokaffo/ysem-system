@@ -52,7 +52,7 @@ class EtudiantsView(LoginRequiredMixin, TemplateView):
         if godfather_id:
             students = students.filter(godfather_id=godfather_id)
         if language:
-            students = students.filter(language=language)
+            students = students.filter(lang=language)
         if start_level_id:
             students = students.filter(start_level_id=start_level_id)
         if current_level_id:

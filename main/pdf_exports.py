@@ -58,10 +58,11 @@ def build_pre_inscriptions_pdf(students):
     return output.getvalue()
 
 
-def build_registration_certificate_pdf(official_document):
+def build_registration_certificate_pdf(official_document, request=None):
     html = render_to_string(
         'main/pdf/registration_certificate.html',
         _build_registration_certificate_context(official_document),
+        request=request
     )
     return weasyprint.HTML(string=html).write_pdf()
 
@@ -116,6 +117,7 @@ def _build_registration_certificate_context(official_document):
     settings = SystemSettings.get_settings()
     issue_date = timezone.localdate()
     full_name = f'{student.firstname} {student.lastname}'.strip()
+        # system_settings = SystemSettings.get_settings()
 
     return {
         'official_document': official_document,
@@ -123,7 +125,7 @@ def _build_registration_certificate_context(official_document):
         'logo_alt': settings.get_logo_alt(),
         'institution_name': _display_value(settings.institution_name),
         'institution_code': _display_value(settings.institution_code),
-        # 'institution_logo_uri': _build_logo_uri(settings),
+        'system_settings': settings,
         'address': _display_value(settings.address),
         'phone': _display_value(settings.phone),
         'email': _display_value(settings.email),

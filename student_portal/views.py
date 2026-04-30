@@ -251,7 +251,7 @@ def registration_certificate_download(request, pk):
         )
         return redirect('student_portal:documents')
 
-    pdf_content = build_registration_certificate_pdf(document)
+    pdf_content = build_registration_certificate_pdf(document, request=request)
     filename_reference = re.sub(
         r'[^A-Za-z0-9_-]+',
         '_',

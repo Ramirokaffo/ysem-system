@@ -1,0 +1,61 @@
+<style>
+    .header {
+        /* display: table; */
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-bottom: 2px solid #0f766e;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+    }
+
+    .logo,
+    .institution {
+        display: table-cell;
+        vertical-align: top;
+    }
+
+    .logo {
+        width: 130px;
+    }
+
+    .logo img {
+        width: 130px;
+        height: auto;
+    }
+
+    .institution {
+        margin-left: 20px;
+        padding-left: 20px;
+
+
+    }
+
+    .institution h1 {
+        margin: 0;
+        font-size: 17px;
+        text-transform: uppercase;
+        color: #0f172a;
+    }
+
+    .institution p {
+        margin: 2px 0;
+        font-size: 11px;
+    }
+</style>
+
+<div class="header">
+    <div class="logo">
+        {% if system_settings.get_logo_url %}<img
+            src="{{ request.scheme }}://{{ request.get_host }}{{ system_settings.get_logo_url }}"
+            alt="{{ system_settings.get_logo_alt }}">{% endif %}
+    </div>
+    <div class="institution">
+        {% if system_settings.institution_long_name and system_settings.institution_long_name != system_settings.institution_name %}
+        <h3>{{ system_settings.institution_long_name }}</h3>
+        {% endif %}
+        <p>Tél. : {{ system_settings.phone }}{% if system_settings.email %} • Email : {{ system_settings.email }}{% endif %}</p>
+        <p>{{ system_settings.address }} {% if system_settings.website %} • {{ system_settings.website }}{% endif %}</p>
+
+    </div>
+</div>

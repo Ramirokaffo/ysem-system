@@ -5,13 +5,13 @@
     <style>
         @page { size: A4; margin: 1.5cm 1.7cm 2cm 1.7cm; }
         body { font-family: DejaVu Sans, sans-serif; color: #111827; font-size: 12px; line-height: 1.5; }
-        .header { display: table; width: 100%; border-bottom: 2px solid #0f766e; padding-bottom: 14px; }
+        /* .header { display: table; width: 100%; border-bottom: 2px solid #0f766e; padding-bottom: 14px; }
         .logo, .institution { display: table-cell; vertical-align: top; }
         .logo { width: 120px; }
         .logo img { width: 95px; height: auto; }
         .institution { text-align: center; }
         .institution h1 { margin: 0; font-size: 18px; text-transform: uppercase; color: #0f172a; }
-        .institution p { margin: 3px 0; font-size: 11px; }
+        .institution p { margin: 3px 0; font-size: 11px; } */
         .title { text-align: center; margin: 28px 0 10px; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; text-decoration: underline; }
         .reference { text-align: right; font-size: 11px; margin-bottom: 20px; }
         .intro { text-align: justify; margin-bottom: 14px; }
@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <!-- <div class="header">
         <div class="logo">
             {% if logo_uri %}<img src="{{ logo_uri }}" alt="{{ logo_alt }}">{% endif %}
         </div>
@@ -40,7 +40,10 @@
             <p>Tél. : {{ phone }}{% if email != 'Non renseigné' %} • Email : {{ email }}{% endif %}</p>
             {% if website != 'Non renseigné' %}<p>{{ website }}</p>{% endif %}
         </div>
-    </div>
+    </div> -->
+
+        {% include 'main/pdf/default_doc_header.html' %}
+
 
     <div class="title">Certificat d'inscription</div>
     <div class="reference"><strong>Référence :</strong> {{ reference }}</div>
