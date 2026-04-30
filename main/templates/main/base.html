@@ -22,7 +22,6 @@
 
 <body>
 
-
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <!-- Toggle Button -->
@@ -173,156 +172,9 @@
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
-
-    <script>
-        // Sidebar collapse/expand functionality
-        function initSidebarToggle() {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('sidebarToggleBtn');
-            const mainContent = document.querySelector('.main-content');
-            const header = document.querySelector('.header');
-
-
-
-            // Restore sidebar state from localStorage
-            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (sidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                updateToggleIcon();
-                header.style.left = sidebar.classList.contains('collapsed') ? '80px' : '280px';
-
-            }
-
-            // Toggle sidebar on button click
-            toggleBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                sidebar.classList.toggle('collapsed');
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-                updateToggleIcon();
-                header.style.left = sidebar.classList.contains('collapsed') ? '80px' : '280px';
-                // mainContent.style.marginLeft = sidebar.classList.contains('collapsed') ? '80px' : '280px';
-            });
-
-            function updateToggleIcon() {
-                const icon = toggleBtn.querySelector('i');
-                if (sidebar.classList.contains('collapsed')) {
-                    icon.classList.remove('fa-chevron-left');
-                    icon.classList.add('fa-chevron-right');
-                } else {
-                    icon.classList.remove('fa-chevron-right');
-                    icon.classList.add('fa-chevron-left');
-                }
-            }
-        }
-
-        // Update current date
-        document.addEventListener('DOMContentLoaded', function() {
-            const now = new Date();
-            const currentDateElement = document.getElementById('current-date');
-            if (currentDateElement) {
-                currentDateElement.textContent = now.toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-            }
-
-            // Initialize sidebar toggle
-            initSidebarToggle();
-        });
-
-        // Mobile Sidebar Toggle
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('show');
-        }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const isClickInsideSidebar = sidebar.contains(event.target);
-            const isMenuButton = event.target.closest('.btn');
-
-            if (!isClickInsideSidebar && !isMenuButton && window.innerWidth <= 768) {
-                sidebar.classList.remove('show');
-            }
-        });
-
-        // Logout function
-        function logout() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                // Rediriger vers la page de déconnexion personnalisée
-                window.location.href = '{% url "authentication:logout" %}';
-            }
-        }
-
-        // Alert dismissible functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gérer la fermeture des alerts
-            document.querySelectorAll('.alert .btn-close').forEach(function(closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    const alert = this.closest('.alert');
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 300);
-                });
-            });
-
-            // Auto-dismiss des alerts après 5 secondes (optionnel)
-            document.querySelectorAll('.alert[data-auto-dismiss="true"]').forEach(function(alert) {
-                setTimeout(() => {
-                    const closeBtn = alert.querySelector('.btn-close');
-                    if (closeBtn) {
-                        closeBtn.click();
-                    }
-                }, 5000);
-            });
-
-            // User dropdown functionality
-            const userDropdown = document.getElementById('userDropdown');
-            const userDropdownMenu = document.querySelector('.user-dropdown-menu');
-
-            if (userDropdown && userDropdownMenu) {
-                // Toggle dropdown on click
-                userDropdown.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Fermer tous les autres dropdowns ouverts
-                    document.querySelectorAll('.user-dropdown-menu.show').forEach(function(menu) {
-                        if (menu !== userDropdownMenu) {
-                            menu.classList.remove('show');
-                        }
-                    });
-
-                    // Toggle le dropdown actuel
-                    userDropdownMenu.classList.toggle('show');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!e.target.closest('.user-profile')) {
-                        userDropdownMenu.classList.remove('show');
-                    }
-                });
-
-                // Close dropdown when pressing Escape
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        userDropdownMenu.classList.remove('show');
-                    }
-                });
-
-                // Prevent dropdown from closing when clicking inside it
-                userDropdownMenu.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-            }
-        });
-    </script>
+    <script src="{% static 'main/js/alerts.js' %}"></script>
+    <script src="{% static 'main/js/sidebar.js' %}"></script>
+    <script src="{% static 'main/js/base.js' %}"></script>
 
     <!-- Modal de déconnexion -->
     {% include 'components/modal_confirm.html' with modal_id="logoutModal" modal_title="Confirmer la déconnexion" modal_message="Êtes-vous sûr de vouloir vous déconnecter de votre session ?" confirm_text="Se déconnecter" cancel_text="Annuler" confirm_action="logout()" modal_icon="fas fa-sign-out-alt" %}

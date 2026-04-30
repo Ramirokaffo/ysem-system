@@ -83,6 +83,7 @@ class SystemSettings(models.Model):
         return f"Paramètres système - {self.institution_name}"
 
     def get_logo_url(self):
+        """Retourne l'URL du logo de l'institution ou une image par défaut si aucun logo n'est défini"""
         if self.logo:
             return self.logo.url
         return static('main/images/ysemlogo.png')

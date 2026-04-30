@@ -19,7 +19,13 @@ from payments.models import Payment, PaymentInstallment
 from academic.models import AcademicYear, Level, Program
 from student_portal.decorators import scholar_admin_required
 from django.utils.decorators import method_decorator
-from payments.utils import get_installment_paid_amount, get_student_installments_queryset
+from main.models import SystemSettings
+from payments.utils import (
+    amount_to_french_words,
+    build_student_financial_statement,
+    get_installment_paid_amount,
+    get_student_installments_queryset,
+)
 
 
 def _format_amount(value):
@@ -38,127 +44,8 @@ def _get_selected_academic_year_from_request(request):
     return AcademicYear.get_active_year() or AcademicYear.objects.order_by('-start_at').first()
 
 
-def _get_student_level_for_academic_year(student, academic_year):
-    if not academic_year:
-        return None
-
-    return student.student_levels.filter(
-        academic_year=academic_year,
-    ).select_related('level', 'academic_year', 'speciality').order_by(
-        '-is_active', 'level__academic_order', 'level__name'
-    ).first()
-
-
-def _get_student_installments(student, academic_year, current_level=None):
-    if not academic_year or not student.program_id:
-        return []
-
-    level_id = current_level.level_id if current_level else None
-    base_queryset = PaymentInstallment.objects.filter(
-        deleted_at__isnull=True,
-        academic_year=academic_year,
-        program=student.program,
-    ).select_related('program', 'level').order_by('order_number', 'name', 'pk')
-
-    installments = list(base_queryset.filter(level_id=level_id)) if level_id else []
-    if not installments:
-        installments = list(base_queryset.filter(level__isnull=True))
-
-    return installments
-
-
 def _build_student_financial_statement(student, academic_year):
-    current_level = _get_student_level_for_academic_year(student, academic_year)
-    installments = _get_student_installments(student, academic_year, current_level=current_level)
-    payments = list(
-        Payment.objects.filter(
-            student=student,
-            academic_year=academic_year,
-            category='frais_scolarite',
-        ).select_related(
-            'installment', 'author', 'academic_year'
-        ).order_by('-payment_date', '-created_at')
-    )
-
-    amount_paid = Decimal('0.00')
-    paid_by_installment = defaultdict(lambda: Decimal('0.00'))
-    for payment in payments:
-        payment_amount = payment.amount_paid or Decimal('0.00')
-        amount_paid += payment_amount
-        if payment.installment_id:
-            paid_by_installment[payment.installment_id] += payment_amount
-
-    today = timezone.localdate()
-    total_amount_due = Decimal('0.00')
-    overdue_amount = Decimal('0.00')
-    installment_rows = []
-
-    for installment in installments:
-        installment_amount = installment.amount or Decimal('0.00')
-        installment_paid = paid_by_installment[installment.pk]
-        remaining_amount = installment_amount - installment_paid
-        if remaining_amount < Decimal('0.00'):
-            remaining_amount = Decimal('0.00')
-
-        is_overdue = bool(
-            installment.due_date
-            and installment.due_date <= today
-            and remaining_amount > Decimal('0.00')
-        )
-
-        if remaining_amount <= Decimal('0.00'):
-            status_label = 'Soldé'
-            status_badge_class = 'bg-success text-white'
-        elif installment_paid > Decimal('0.00'):
-            status_label = 'Paiement partiel'
-            status_badge_class = 'bg-warning text-dark'
-        else:
-            status_label = 'Non soldé'
-            status_badge_class = 'bg-secondary text-white'
-
-        if is_overdue:
-            status_label = 'Échu non soldé'
-            status_badge_class = 'bg-danger text-white'
-            overdue_amount += remaining_amount
-
-        total_amount_due += installment_amount
-        installment_rows.append({
-            'installment': installment,
-            'amount': installment_amount,
-            'amount_paid': installment_paid,
-            'remaining_amount': remaining_amount,
-            'is_overdue': is_overdue,
-            'status_label': status_label,
-            'status_badge_class': status_badge_class,
-        })
-
-    remaining_amount = total_amount_due - amount_paid
-    if remaining_amount < Decimal('0.00'):
-        remaining_amount = Decimal('0.00')
-
-    completion_percentage = 0
-    if total_amount_due > Decimal('0.00'):
-        completion_percentage = min(int((amount_paid / total_amount_due) * 100), 100)
-
-    status = 'overdue' if overdue_amount > Decimal('0.00') else 'up_to_date'
-    return {
-        'current_level': current_level,
-        'installments': installment_rows,
-        'payments': payments,
-        'payments_count': len(payments),
-        'installments_count': len(installment_rows),
-        'totals': {
-            'total_amount_due': total_amount_due,
-            'amount_paid': amount_paid,
-            'remaining_amount': remaining_amount,
-            'overdue_amount': overdue_amount,
-        },
-        'status': status,
-        'status_label': 'En retard' if status == 'overdue' else 'À jour',
-        'status_badge_class': 'bg-danger text-white' if status == 'overdue' else 'bg-success text-white',
-        'completion_percentage': completion_percentage,
-        'last_payment': payments[0] if payments else None,
-    }
+    return build_student_financial_statement(student, academic_year)
 
 
 def _build_installment_summary(student, academic_year):
@@ -283,6 +170,7 @@ def _create_remaining_balance_payments(form, author):
 
     created_payments = []
     with transaction.atomic():
+        group_reference = Payment.generate_group_reference() if len(remaining_installments) > 1 else None
         for item in remaining_installments:
             created_payments.append(Payment.objects.create(
                 student=student,
@@ -294,6 +182,7 @@ def _create_remaining_balance_payments(form, author):
                 payment_date=payment_date,
                 receipt_number=receipt_number,
                 source=source,
+                group_reference=group_reference,
             ))
 
     return created_payments, remaining_total
@@ -448,6 +337,7 @@ class PaymentListView(LoginRequiredMixin, TemplateView):
                 | models.Q(student__lastname__icontains=search)
                 | models.Q(receipt_number__icontains=search)
                 | models.Q(transaction_id__icontains=search)
+                | models.Q(group_reference__icontains=search)
             )
 
         if selected_academic_year:
@@ -615,6 +505,55 @@ def payment_detail(request, pk):
         'installment_remaining_amount': installment_remaining_amount,
     }
     return render(request, 'payments/payment_detail.html', context)
+
+
+@scholar_admin_required
+def payment_receipt(request, pk):
+    """Affiche un reçu imprimable pour un paiement (consolidé si plusieurs tranches)."""
+    payment = get_object_or_404(
+        Payment.objects.select_related(
+            'student',
+            'student__program',
+            'installment',
+            'installment__program',
+            'academic_year',
+            'author',
+        ),
+        pk=pk,
+    )
+
+    settings = SystemSettings.get_settings()
+    auto_print = request.GET.get('autoprint', '1').lower() not in {'0', 'false', 'no'}
+
+    group_payments = []
+    if payment.group_reference:
+        group_payments = list(
+            Payment.objects.select_related('installment').filter(
+                group_reference=payment.group_reference,
+            ).order_by('installment__order_number', 'installment__name', 'pk')
+        )
+
+    is_group = len(group_payments) > 1
+    if is_group:
+        total_amount = sum((p.amount_paid or Decimal('0.00') for p in group_payments), Decimal('0.00'))
+    else:
+        total_amount = payment.amount_paid or Decimal('0.00')
+
+    amount_in_words = amount_to_french_words(total_amount).strip()
+    if amount_in_words:
+        amount_in_words = f'{amount_in_words[0].upper()}{amount_in_words[1:]} francs CFA'
+
+    context = {
+        'payment': payment,
+        'settings': settings,
+        'is_group': is_group,
+        'group_payments': group_payments,
+        'amount_display': _format_amount(total_amount),
+        'amount_in_words': amount_in_words,
+        'generated_on': timezone.localtime(),
+        'auto_print': auto_print,
+    }
+    return render(request, 'payments/payment_receipt.html', context)
 
 
 @scholar_admin_required

@@ -6,7 +6,7 @@
 {% block content %}
 <main>
     <!-- Section -->
-    <section class="min-vh-100 d-flex bg-primary align-items-center">
+    <section class="min-vh-100 d-flex bg-primary align-items-center mt-5">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6 justify-content-center">
@@ -61,6 +61,14 @@
                                                    aria-label="Password"
                                                    required
                                                    autocomplete="current-password">
+                                            <div class="input-group-append">
+                                                <button type="button"
+                                                        class="btn btn-outline-secondary js-toggle-password"
+                                                        data-target="password"
+                                                        aria-label="Afficher ou masquer le mot de passe">
+                                                    <span class="fas fa-eye"></span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- End of Form -->
@@ -103,6 +111,22 @@
 // Auto-focus sur le premier champ
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('matricule').focus();
+
+    // Boutons de bascule afficher/masquer pour les champs de mot de passe
+    document.querySelectorAll('.js-toggle-password').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.getAttribute('data-target'));
+            if (!input) return;
+            var icon = btn.querySelector('span');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+            } else {
+                input.type = 'password';
+                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+            }
+        });
+    });
 });
 </script>
 {% endblock %}

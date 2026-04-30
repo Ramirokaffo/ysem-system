@@ -39,6 +39,7 @@
                                 {% elif doc_type == 'transcript' %}Relevé de notes
                                 {% elif doc_type == 'diploma' %}Diplôme
                                 {% elif doc_type == 'certificate' %}Certificat de scolarité
+                                {% elif doc_type == 'registration_certificate' %}Certificat d'inscription
                                 {% else %}{{ doc_type }}{% endif %}
                             </option>
                             {% endfor %}
@@ -103,6 +104,7 @@
                                 <th><i class="fas fa-info-circle me-2 mr-1"></i>Statut</th>
                                 <th><i class="fas fa-clock me-2 mr-1"></i>Date de création</th>
                                 <th><i class="fas fa-download me-2 mr-1"></i>Date de retrait</th>
+                                <th class="text-end"><i class="fas fa-cog me-2 mr-1"></i>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -125,6 +127,26 @@
                                 <td>
                                     {% if document.withdrawn_date %}
                                         {{ document.withdrawn_date|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if document.type == 'registration_certificate' %}
+                                        {% if document.download_allowed %}
+                                            <a href="{% url 'student_portal:registration_certificate_download' document.pk %}"
+                                               class="btn btn-sm btn-secondary"
+                                               title="Télécharger le certificat d'inscription">
+                                                <i class="fas fa-download me-1"></i>Télécharger
+                                            </a>
+                                        {% else %}
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary"
+                                                    disabled
+                                                    title="{{ document.download_block_reason }} — régularisez votre situation financière auprès de la scolarité.">
+                                                <i class="fas fa-lock me-1"></i>Bloqué
+                                            </button>
+                                        {% endif %}
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}

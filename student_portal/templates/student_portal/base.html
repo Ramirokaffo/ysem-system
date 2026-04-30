@@ -12,11 +12,31 @@
     <!-- Neumorphism CSS -->
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
 
+    <link type="text/css" href="{% static 'main/css/alerts.css' %}" rel="stylesheet">
+
+    <style>
+        body { background: #e6e7ee; }
+        .header-global .navbar { background: #e6e7ee; border-radius: 0; }
+        .navbar-brand { transition: transform .15s ease; }
+        .navbar-brand:hover { transform: translateY(-1px); }
+        .portal-nav-pills { display: flex; flex-wrap: wrap; gap: .5rem; padding: .5rem; border-radius: 1rem;
+            box-shadow: inset 2px 2px 5px rgba(184,185,190,.5), inset -2px -2px 5px rgba(255,255,255,.85); background: #e6e7ee; }
+        .portal-nav-pills .nav-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .55rem 1rem;
+            border-radius: .8rem; color: #4b5563; font-weight: 500; text-decoration: none; transition: all .15s ease;
+            background: transparent; }
+        .portal-nav-pills .nav-pill:hover { color: #111827; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; }
+        .portal-nav-pills .nav-pill.active { color: #1d4ed8; background: #e6e7ee; box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; }
+        .portal-nav-pills .nav-pill i { width: 18px; text-align: center; }
+        .portal-page-head { padding: 1rem 1.25rem; border-radius: 1rem; background: #e6e7ee;
+            box-shadow: 2px 2px 6px #b8b9be, -2px -2px 6px #fff; }
+        .footer { background: transparent !important; border-top: 1px solid rgba(0,0,0,.05); }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-    {% if request.session.student_authenticated %}
+    {% if request.session.student_authenticated and not forced %}
     <!-- Header -->
     <header class="header-global">
         <nav class="navbar navbar-expand-lg shadow-soft border-light navbar-light">
@@ -49,14 +69,20 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'student_portal:dashboard' %}">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+                                    <i class="fas fa-tachometer-alt me-2 mr-1"></i>Tableau de bord
                                 </a></li>
                                 <li><a class="dropdown-item" href="{% url 'student_portal:documents' %}">
-                                    <i class="fas fa-file-alt me-2"></i>Mes documents
+                                    <i class="fas fa-file-alt me-2 mr-1"></i>Mes documents
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'student_portal:finances' %}">
+                                    <i class="fas fa-file-invoice-dollar me-2 mr-1"></i>Ma situation financière
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'student_portal:change_password' %}">
+                                    <i class="fas fa-key me-2 mr-1"></i>Changer mon mot de passe
+                                </a></li>
                                 <li><a class="dropdown-item" href="{% url 'student_portal:logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Se déconnecter
+                                    <i class="fas fa-sign-out-alt me-2 mr-1"></i>Se déconnecter
                                 </a></li>
                             </ul>
                         </li>
@@ -75,61 +101,39 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        {% if request.session.student_authenticated %}
+        {% if request.session.student_authenticated and not forced %}
+             <div class="m-2">{% include 'components/messages.html' with auto_dismiss=True %}</div>
         <div class="container-fluid px-4">
-            <div class="row">
+            <div class="row pt-4">
                 <div class="col-12">
-                    <div class="d-flex py-4 justify-content-between align-items-start align-items-lg-between flex-column flex-lg-row">
-                        <h1 class="h3 mb-0">{% block page_title %}Portail Étudiant{% endblock %}</h1>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb breadcrumb-gray">
-                                <li class="breadcrumb-item"><a href="{% url 'student_portal:dashboard' %}">Accueil</a></li>
-                                {% block breadcrumb %}{% endblock %}
-                            </ol>
-                        </nav>
+                    <div class="portal-page-head d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-3">
+                        <div>
+                            <h1 class="h4 mb-1">{% block page_title %}Portail Étudiant{% endblock %}</h1>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb breadcrumb-gray mb-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'student_portal:dashboard' %}">Accueil</a></li>
+                                    {% block breadcrumb %}{% endblock %}
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="portal-nav-pills">
+                            <a class="nav-pill {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'student_portal:dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i><span>Tableau de bord</span>
+                            </a>
+                            <a class="nav-pill {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'student_portal:documents' %}">
+                                <i class="fas fa-file-alt"></i><span>Mes documents</span>
+                            </a>
+                            <a class="nav-pill {% if request.resolver_match.url_name == 'finances' %}active{% endif %}" href="{% url 'student_portal:finances' %}">
+                                <i class="fas fa-file-invoice-dollar"></i><span>Ma situation financière</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Messages -->
-            {% if messages %}
-                <div class="row">
-                    <div class="col-12">
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                                {% if message.tags == 'success' %}
-                                    <i class="fas fa-check-circle me-2"></i>
-                                {% elif message.tags == 'error' %}
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                {% elif message.tags == 'warning' %}
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                {% else %}
-                                    <i class="fas fa-info-circle me-2"></i>
-                                {% endif %}
-                                {{ message|safe }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
         </div>
         {% else %}
-            <!-- Messages pour pages non authentifiées -->
-            {% if messages %}
-                <div class="container mt-4">
-                    <div class="row">
-                        <div class="col-12">
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                                    {{ message|safe }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+            <div class="m-2">{% include 'components/messages.html' with auto_dismiss=True %}</div>
         {% endif %}
 
         {% block content %}
@@ -141,7 +145,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="mb-0 text-muted">© 2024 YSEM - Portail Étudiant</p>
+                    <p class="mb-0 text-muted">© {{ current_year }} YSEM - Portail Étudiant</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0 text-muted">
@@ -167,9 +171,10 @@
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script> -->
     
 
-        <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+    <script src="{% static 'main/js/alerts.js' %}"></script>
 
 
     {% block extra_js %}{% endblock %}

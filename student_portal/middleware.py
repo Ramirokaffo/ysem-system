@@ -37,10 +37,36 @@ class StudentPortalSecurityMiddleware:
                 if request.path.startswith(forbidden_path):
                     # Bloquer l'accès et rediriger vers le portail étudiant
                     messages.error(
-                        request, 
+                        request,
                         "Accès interdit. Vous n'avez pas les permissions nécessaires pour accéder à cette page."
                     )
                     return redirect('student_portal:dashboard')
+
+            # Forcer le changement de mot de passe si la scolarité l'a généré
+            # ou réinitialisé (consultation en base à chaque requête pour
+            # prendre en compte une réinitialisation pendant la session).
+            change_password_url = reverse('student_portal:change_password')
+            logout_url = reverse('student_portal:logout')
+            allowed_paths = (change_password_url, logout_url)
+            if (
+                request.path not in allowed_paths
+                and not request.path.startswith('/static/')
+                and not request.path.startswith('/media/')
+            ):
+                from students.models import Student
+                matricule = request.session.get('student_matricule')
+                if matricule:
+                    must_change = Student.objects.filter(
+                        matricule=matricule,
+                        must_change_password=True,
+                    ).exists()
+                    if must_change:
+                        messages.info(
+                            request,
+                            "Vous devez définir un nouveau mot de passe avant "
+                            "de poursuivre votre navigation."
+                        )
+                        return redirect('student_portal:change_password')
         
         # Vérifier si un utilisateur admin essaie d'accéder au portail étudiant
         # (optionnel, pour éviter les conflits de session)

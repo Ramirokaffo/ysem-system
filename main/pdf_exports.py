@@ -1,23 +1,16 @@
 from io import BytesIO
 import os
 from pathlib import Path
-from urllib import request
-from xml.sax.saxutils import escape
 from django.template.loader import render_to_string
 
 from django.utils import timezone
 from django.conf import settings as django_settings
 from PIL import Image, UnidentifiedImageError
 from pypdf import PdfReader, PdfWriter
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Image as PlatypusImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-import pdfkit
-# import weasyprint
+import weasyprint
 
 from .models import SystemSettings
 
@@ -70,16 +63,51 @@ def build_registration_certificate_pdf(official_document):
         'main/pdf/registration_certificate.html',
         _build_registration_certificate_context(official_document),
     )
-    options = {
-        'page-size': 'A4',
-        'encoding': 'UTF-8',
-        'enable-local-file-access': '',
-        'quiet': '',
+    return weasyprint.HTML(string=html).write_pdf()
+
+
+def build_payment_receipt_pdf(payment, request=None):
+    """Génère un reçu de paiement (PDF) pour un paiement donné, en réutilisant le template HTML."""
+    from decimal import Decimal
+    from payments.models import Payment
+    from payments.utils import amount_to_french_words
+
+    settings = SystemSettings.get_settings()
+
+    group_payments = []
+    if payment.group_reference:
+        group_payments = list(
+            Payment.objects.select_related('installment').filter(
+                group_reference=payment.group_reference,
+            ).order_by('installment__order_number', 'installment__name', 'pk')
+        )
+
+    is_group = len(group_payments) > 1
+    if is_group:
+        total_amount = sum((p.amount_paid or Decimal('0.00') for p in group_payments), Decimal('0.00'))
+    else:
+        total_amount = payment.amount_paid or Decimal('0.00')
+
+    formatted = f"{total_amount:,.2f}".replace(',', ' ')
+    amount_display = formatted[:-3] if formatted.endswith('.00') else formatted
+
+    amount_in_words = amount_to_french_words(total_amount).strip()
+    if amount_in_words:
+        amount_in_words = f'{amount_in_words[0].upper()}{amount_in_words[1:]} francs CFA'
+
+    context = {
+        'payment': payment,
+        'settings': settings,
+        'is_group': is_group,
+        'group_payments': group_payments,
+        'amount_display': amount_display,
+        'amount_in_words': amount_in_words,
+        'generated_on': timezone.localtime(),
+        'auto_print': False,
+        'pdf': True,
     }
-    # return weasyprint.HTML(string=html).write_pdf('output.pdf')
-    # return weasyprint.HTML(string=html)
-    return
-    # return pdfkit.from_string(html, False, options=options)
+    html = render_to_string('payments/payment_receipt.html', context, request=request)
+    return weasyprint.HTML(string=html).write_pdf()
 
 
 def _build_registration_certificate_context(official_document):
@@ -91,10 +119,11 @@ def _build_registration_certificate_context(official_document):
 
     return {
         'official_document': official_document,
-        'logo_uri': _build_registration_certificate_logo_uri(settings),
+        'logo_uri': _build_logo_uri(settings),
         'logo_alt': settings.get_logo_alt(),
         'institution_name': _display_value(settings.institution_name),
         'institution_code': _display_value(settings.institution_code),
+        # 'institution_logo_uri': _build_logo_uri(settings),
         'address': _display_value(settings.address),
         'phone': _display_value(settings.phone),
         'email': _display_value(settings.email),
@@ -113,7 +142,7 @@ def _build_registration_certificate_context(official_document):
     }
 
 
-def _build_registration_certificate_logo_uri(settings):
+def _build_logo_uri(settings):
     candidate_paths = []
 
     if settings.logo and getattr(settings.logo, 'name', None):
@@ -121,15 +150,27 @@ def _build_registration_certificate_logo_uri(settings):
         if logo_path:
             candidate_paths.append(logo_path)
 
-    candidate_paths.extend([
-        os.path.join(django_settings.STATIC_ROOT, 'main', 'images', 'ysemlogo.png'),
-        os.path.join(django_settings.BASE_DIR, 'main', 'static', 'main', 'images', 'ysemlogo.png'),
-    ])
+    static_root = getattr(django_settings, 'STATIC_ROOT', None)
+    if static_root:
+        candidate_paths.append(os.path.join(static_root, 'main', 'images', 'ysemlogo.png'))
+    candidate_paths.append(
+        os.path.join(django_settings.BASE_DIR, 'main', 'static', 'main', 'images', 'ysemlogo.png')
+    )
 
     for candidate_path in candidate_paths:
         if candidate_path and os.path.exists(candidate_path):
             return Path(candidate_path).resolve().as_uri()
 
+    return None
+
+
+def _build_profile_photo_uri(student):
+    profile_photo = getattr(student, 'profile_photo', None)
+    if not profile_photo:
+        return None
+    photo_path = getattr(profile_photo, 'path', None)
+    if photo_path and os.path.exists(photo_path):
+        return Path(photo_path).resolve().as_uri()
     return None
 
 
@@ -181,24 +222,14 @@ def _prepare_annex_entries(student):
 
 
 def _build_summary_pdf(student, annex_entries):
-    buffer = BytesIO()
-    document = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.4 * cm, bottomMargin=1.4 * cm)
-    styles = _build_styles()
-    story = _build_summary_header(student, styles)
+    context = _build_summary_context(student, annex_entries)
+    html = render_to_string('main/pdf/pre_inscription_summary.html', context)
+    return weasyprint.HTML(string=html).write_pdf()
 
+
+def _build_summary_context(student, annex_entries):
+    settings = SystemSettings.get_settings()
     metadata = getattr(student, 'metadata', None)
-    story.extend(_build_section('Informations personnelles', [
-        ('Matricule', student.matricule),
-        ('Nom complet', f'{student.firstname} {student.lastname}'),
-        ('Date de naissance', _format_date(student.date_naiss)),
-        ('Genre', getattr(student, 'get_gender_display', lambda: 'Non renseigné')()),
-        ('Téléphone', student.phone_number),
-        ('Email', student.email),
-        ('Langue', getattr(student, 'get_lang_display', lambda: 'Non renseigné')()),
-        ('Statut', student.get_status_display()),
-        ('Date de pré-inscription', _format_datetime(student.created_at)),
-        ('Dernière modification', _format_datetime(student.last_updated)),
-    ], styles))
 
     levels = []
     for student_level in student.student_levels.all():
@@ -225,23 +256,8 @@ def _build_summary_pdf(student, annex_entries):
         ] if speciality
     ]
 
-    story.extend(_build_section('Informations académiques', [
-        ('Programme', getattr(student.program, 'name', None)),
-        ('École d\'origine', getattr(student.school, 'name', None)),
-        ('Spécialités souhaitées', ' ; '.join(specialities) if specialities else None),
-        ('Parrain', godfather_label),
-        ('Niveaux d\'études d\'entrée', ' ; '.join(levels) if levels else None),
-    ], styles))
-
-    story.extend(_build_section(
-        'Cursus scolaire et universitaire',
-        _build_curriculum_rows(student),
-        styles,
-    ))
-
     family_rows = []
     address_rows = []
-    dossier_rows = [('Dossier complet', 'Oui' if metadata and metadata.is_complete else 'Non')]
     if metadata:
         family_rows = [
             ('Mère - nom complet', metadata.mother_full_name),
@@ -264,144 +280,73 @@ def _build_summary_pdf(student, annex_entries):
             ('Quartier de résidence', metadata.residence_quarter),
         ]
 
-    story.extend(_build_section('Informations familiales', family_rows or [('Informations familiales', 'Non renseignées')], styles))
-    story.extend(_build_section('Adresse', address_rows or [('Adresse', 'Non renseignée')], styles))
-
     annex_rows = []
     for annex in annex_entries:
         suffix = f" — {annex['details']}" if annex['details'] else ''
         filename = annex['filename'] or 'Aucun fichier'
         annex_rows.append((annex['label'], f"{filename} ({annex['status']}){suffix}"))
 
-    story.extend(_build_section('Pièces jointes annexées au PDF', annex_rows, styles))
-    story.extend(_build_section('État du dossier', dossier_rows, styles))
+    dossier_rows = [('Dossier complet', 'Oui' if metadata and metadata.is_complete else 'Non')]
 
-    document.build(story, onFirstPage=_draw_page_footer, onLaterPages=_draw_page_footer)
-    return buffer.getvalue()
+    sections = [
+        {
+            'title': 'Informations personnelles',
+            'rows': _normalize_rows([
+                ('Matricule', student.matricule),
+                ('Nom complet', f'{student.firstname} {student.lastname}'),
+                ('Date de naissance', _format_date(student.date_naiss)),
+                ('Genre', getattr(student, 'get_gender_display', lambda: 'Non renseigné')()),
+                ('Téléphone', student.phone_number),
+                ('Email', student.email),
+                ('Langue', getattr(student, 'get_lang_display', lambda: 'Non renseigné')()),
+                ('Statut', student.get_status_display()),
+                ('Date de pré-inscription', _format_datetime(student.created_at)),
+                ('Dernière modification', _format_datetime(student.last_updated)),
+            ]),
+        },
+        {
+            'title': 'Informations académiques',
+            'rows': _normalize_rows([
+                ('Programme', getattr(student.program, 'name', None)),
+                ('École d\'origine', getattr(student.school, 'name', None)),
+                ('Spécialités souhaitées', ' ; '.join(specialities) if specialities else None),
+                ('Parrain', godfather_label),
+                ('Niveaux d\'études d\'entrée', ' ; '.join(levels) if levels else None),
+            ]),
+        },
+        {
+            'title': 'Cursus scolaire et universitaire',
+            'rows': _normalize_rows(_build_curriculum_rows(student)),
+        },
+        {
+            'title': 'Informations familiales',
+            'rows': _normalize_rows(family_rows or [('Informations familiales', 'Non renseignées')]),
+        },
+        {
+            'title': 'Adresse',
+            'rows': _normalize_rows(address_rows or [('Adresse', 'Non renseignée')]),
+        },
+        {
+            'title': 'Pièces jointes annexées au PDF',
+            'rows': _normalize_rows(annex_rows),
+        },
+        {
+            'title': 'État du dossier',
+            'rows': _normalize_rows(dossier_rows),
+        },
+    ]
 
-
-def _build_summary_header(student, styles):
-    settings = SystemSettings.get_settings()
-    logo_image = _build_logo_flowable(settings)
-
-    header_elements = []
-    if logo_image:
-        header_elements.append(logo_image)
-        header_elements.append(Spacer(1, 0.2 * cm))
-
-    header_elements.extend([
-        Paragraph('Fiche administrative de pré-inscription', styles['title']),
-        Paragraph(f"Candidat : {escape(f'{student.firstname} {student.lastname}')}", styles['subtitle']),
-    ])
-
-    header_table = Table(
-        [[
-            header_elements,
-            _build_profile_photo_cell(student, styles),
-        ]],
-        colWidths=[12.2 * cm, 4.2 * cm],
-        hAlign='LEFT',
-    )
-    header_table.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        ('TOPPADDING', (0, 0), (-1, -1), 0),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-    ]))
-    return [header_table, Spacer(1, 0.35 * cm)]
-
-
-def _build_profile_photo_cell(student, styles):
-    box_width = 3.2 * cm
-    box_height = 4.0 * cm
-    photo_content = _build_profile_photo_flowable(student, box_width - 0.35 * cm, box_height - 0.35 * cm)
-    if photo_content is None:
-        photo_content = Spacer(1, 0.1 * cm)
-
-    photo_table = Table([[photo_content]], colWidths=[box_width], rowHeights=[box_height], hAlign='RIGHT')
-    photo_table.setStyle(TableStyle([
-        ('BOX', (0, 0), (-1, -1), 0.7, colors.HexColor('#9ca3af')),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    return photo_table
-
-
-def _build_profile_photo_flowable(student, max_width, max_height):
-    profile_photo = getattr(student, 'profile_photo', None)
-    if not profile_photo:
-        return None
-
-    try:
-        with profile_photo.open('rb') as image_file:
-            image_bytes = image_file.read()
-    except FileNotFoundError:
-        return None
-
-    try:
-        with Image.open(BytesIO(image_bytes)) as image:
-            if image.mode in ('RGBA', 'LA', 'P'):
-                image = image.convert('RGB')
-            elif image.mode != 'RGB':
-                image = image.convert('RGB')
-
-            width, height = image.size
-            if not width or not height:
-                return None
-
-            scale = min(max_width / width, max_height / height)
-            rendered = BytesIO()
-            image.save(rendered, format='JPEG', quality=90)
-            rendered.seek(0)
-            return PlatypusImage(rendered, width=width * scale, height=height * scale)
-    except (UnidentifiedImageError, OSError):
-        return None
+    return {
+        'logo_uri': _build_logo_uri(settings),
+        'logo_alt': settings.get_logo_alt(),
+        'profile_photo_uri': _build_profile_photo_uri(student),
+        'full_name': f'{student.firstname} {student.lastname}',
+        'sections': sections,
+    }
 
 
-def _build_logo_flowable(settings, max_width=3.5 * cm, max_height=2.0 * cm):
-    """Charge et redimensionne le logo de l'école pour le PDF."""
-    try:
-        logo_url = settings.get_logo_url()
-        if not logo_url:
-            return None
-
-        # Télécharger l'image depuis l'URL
-        if logo_url.startswith('http'):
-            response = request.get(logo_url, timeout=5)
-            response.raise_for_status()
-            image_bytes = response.content
-        else:
-            # Si c'est un chemin local, le lire depuis le système de fichiers
-            if hasattr(settings.logo, 'open'):
-                with settings.logo.open('rb') as image_file:
-                    image_bytes = image_file.read()
-            else:
-                return None
-
-        with Image.open(BytesIO(image_bytes)) as image:
-            # Convertir en RGB si nécessaire
-            if image.mode in ('RGBA', 'LA', 'P'):
-                image = image.convert('RGB')
-            elif image.mode != 'RGB':
-                image = image.convert('RGB')
-
-            width, height = image.size
-            if not width or not height:
-                return None
-
-            # Redimensionner en respectant les proportions
-            scale = min(max_width / width, max_height / height)
-            rendered = BytesIO()
-            image.save(rendered, format='JPEG', quality=90)
-            rendered.seek(0)
-            return PlatypusImage(rendered, width=width * scale, height=height * scale)
-    except (UnidentifiedImageError, OSError, request.RequestException, Exception):
-        return None
+def _normalize_rows(rows):
+    return [(label, _display_value(value)) for label, value in rows]
 
 
 def _build_curriculum_rows(student):
@@ -448,22 +393,6 @@ def _format_university_level(university_level):
     if university_level.university:
         details.append(f'Université : {university_level.university.name}')
     return ' ; '.join(details)
-
-
-def _build_section(title, rows, styles):
-    body_rows = [[Paragraph(f'<b>{escape(label)}</b>', styles['cell_label']), Paragraph(escape(_display_value(value)), styles['cell'])] for label, value in rows]
-    table = Table(body_rows, colWidths=[5.2 * cm, 11.2 * cm], hAlign='LEFT')
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
-        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#b5b5b5')),
-        ('INNERGRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#d6d6d6')),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    return [Paragraph(title, styles['section']), Spacer(1, 0.15 * cm), table, Spacer(1, 0.35 * cm)]
 
 
 def _build_annex_cover_pdf(annex):
@@ -531,41 +460,3 @@ def _format_date(value):
 
 def _format_datetime(value):
     return value.strftime('%d/%m/%Y à %H:%M') if value else 'Non renseigné'
-
-
-def _build_styles():
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='YsemTitle', parent=styles['Heading1'], fontSize=17, leading=21, textColor=colors.HexColor('#1f2937'), spaceAfter=6))
-    styles.add(ParagraphStyle(name='YsemSubtitle', parent=styles['Normal'], fontSize=10, leading=13, textColor=colors.HexColor('#4b5563'), spaceAfter=4))
-    styles.add(ParagraphStyle(name='YsemSection', parent=styles['Heading2'], fontSize=12, leading=15, textColor=colors.HexColor('#111827'), spaceAfter=5, spaceBefore=6))
-    styles.add(ParagraphStyle(name='YsemCell', parent=styles['Normal'], fontSize=9.2, leading=11))
-    styles.add(ParagraphStyle(name='YsemCellLabel', parent=styles['Normal'], fontSize=9.2, leading=11))
-    styles.add(ParagraphStyle(name='YsemTitleCentered', parent=styles['YsemTitle'], alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name='YsemSubtitleCentered', parent=styles['YsemSubtitle'], alignment=TA_CENTER))
-    styles.add(ParagraphStyle(name='YsemCertificateTitle', parent=styles['Heading1'], fontSize=18, leading=22, alignment=TA_CENTER, textColor=colors.HexColor('#111827'), spaceAfter=5))
-    styles.add(ParagraphStyle(name='YsemCertificateReference', parent=styles['Normal'], fontSize=10.5, leading=13, alignment=TA_CENTER, textColor=colors.HexColor('#374151'), spaceAfter=6))
-    styles.add(ParagraphStyle(name='YsemBody', parent=styles['Normal'], fontSize=11, leading=17, alignment=TA_JUSTIFY, textColor=colors.HexColor('#111827'), spaceAfter=6))
-    styles.add(ParagraphStyle(name='YsemSignature', parent=styles['Normal'], fontSize=10.5, leading=14, alignment=TA_RIGHT, textColor=colors.HexColor('#111827')))
-    return {
-        'title': styles['YsemTitle'],
-        'title_centered': styles['YsemTitleCentered'],
-        'subtitle': styles['YsemSubtitle'],
-        'subtitle_centered': styles['YsemSubtitleCentered'],
-        'section': styles['YsemSection'],
-        'cell': styles['YsemCell'],
-        'cell_label': styles['YsemCellLabel'],
-        'certificate_title': styles['YsemCertificateTitle'],
-        'certificate_reference': styles['YsemCertificateReference'],
-        'body': styles['YsemBody'],
-        'signature': styles['YsemSignature'],
-    }
-
-
-def _draw_page_footer(pdf_canvas, document):
-    pdf_canvas.saveState()
-    pdf_canvas.setFont('Helvetica', 8)
-    pdf_canvas.setFillColor(colors.HexColor('#6b7280'))
-    pdf_canvas.drawString(1.4 * cm, 1.0 * cm, 'YSEM — Dossier administratif de pré-inscription')
-    pdf_canvas.drawRightString(A4[0] - 1.4 * cm, 1.0 * cm, f'Page {document.page}')
-    pdf_canvas.restoreState()
-

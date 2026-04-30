@@ -1,0 +1,370 @@
+{% extends 'student_portal/base.html' %}
+{% load static %}
+
+{% block title %}Ma situation financière - Portail Étudiant{% endblock %}
+{% block page_title %}Ma situation financière{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Ma situation financière</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+
+    <!-- En-tête : relevé + statut -->
+    <div class="row mb-4 g-3">
+        <div class="col-lg-8">
+            <div class="finance-card finance-card--accent p-4 h-100">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3 mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="finance-icon-badge mr-2"><i class="fas fa-file-invoice-dollar"></i></span>
+                        <div>
+                            <h5 class="mb-1">Relevé de compte</h5>
+                            <small class="text-muted">Synthèse de votre situation financière sur l'année académique sélectionnée.</small>
+                        </div>
+                    </div>
+                    <form method="get" class="d-flex align-items-center gap-2">
+                        <label for="academic_year" class="form-label mb-0 small text-muted text-uppercase fw-bold mr-2">Année</label>
+                        <div class="finance-select-wrap">
+                            <select name="academic_year" id="academic_year" class="finance-select" onchange="this.form.submit()">
+                                {% for year in academic_years %}
+                                <option value="{{ year.id }}" {% if selected_academic_year and selected_academic_year.id == year.id %}selected{% endif %}>{{ year.name }}</option>
+                                {% endfor %}
+                                {% if not academic_years %}
+                                <option value="">Aucune année disponible</option>
+                                {% endif %}
+                            </select>
+                            <i class="fas fa-chevron-down finance-select-caret"></i>
+                        </div>
+                    </form>
+                </div>
+
+                {% if statement %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="finance-info-tile">
+                            <div class="finance-info-label"><i class="fas fa-user-graduate me-1 mr-2"></i>Étudiant</div>
+                            <div class="finance-info-value">{{ student.firstname }} {{ student.lastname }}</div>
+                            <div class="finance-info-meta">Matricule : <strong>{{ student.matricule }}</strong></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="finance-info-tile">
+                            <div class="finance-info-label"><i class="fas fa-graduation-cap me-1 mr-2"></i>Programme &amp; niveau</div>
+                            <div class="finance-info-value">{{ student.program.name|default:'Programme non défini' }}</div>
+                            <div class="finance-info-meta">
+                                {% if statement.current_level %}{{ statement.current_level.level.name }}{% else %}Niveau non défini{% endif %}
+                                · {{ selected_academic_year.name }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="finance-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center">
+                <div class="small text-muted text-uppercase fw-bold mb-3" style="letter-spacing:.06em;">Statut global</div>
+                {% if statement %}
+                <div class="finance-ring" style="--progress: {{ statement.completion_percentage }}; --ring-color: {% if statement.status == 'overdue' %}#dc2626{% elif statement.completion_percentage >= 100 %}#16a34a{% else %}#315bff{% endif %};">
+                    <div class="finance-ring__inner">
+                        <span class="finance-ring__value">{{ statement.completion_percentage }}<small>%</small></span>
+                        <span class="finance-ring__label">réglé</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <span class="finance-status-pill finance-status-pill--{% if statement.status == 'overdue' %}danger{% elif statement.completion_percentage >= 100 %}success{% else %}info{% endif %}">
+                        <i class="fas {% if statement.status == 'overdue' %}fa-exclamation-triangle{% elif statement.completion_percentage >= 100 %}fa-check-circle{% else %}fa-shield-alt{% endif %} me-1 mr-1"></i>
+                        {{ statement.status_label }}
+                    </span>
+                </div>
+                {% else %}
+                <div class="finance-ring finance-ring--empty">
+                    <div class="finance-ring__inner">
+                        <span class="finance-ring__value">—</span>
+                    </div>
+                </div>
+                <div class="text-muted small mt-3">Aucune donnée disponible</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if statement %}
+    <!-- Tuiles de totaux -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-6 col-xl-3">
+            <div class="finance-stat finance-stat--neutral">
+                <div class="finance-stat__icon"><i class="fas fa-coins"></i></div>
+                <div>
+                    <div class="finance-stat__label">Montant total dû</div>
+                    <div class="finance-stat__value">{{ statement.totals.total_amount_due|floatformat:0 }}<small> FCFA</small></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="finance-stat finance-stat--success">
+                <div class="finance-stat__icon"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="finance-stat__label">Déjà payé</div>
+                    <div class="finance-stat__value text-success">{{ statement.totals.amount_paid|floatformat:0 }}<small> FCFA</small></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="finance-stat {% if statement.totals.remaining_amount > 0 %}finance-stat--warning{% else %}finance-stat--success{% endif %}">
+                <div class="finance-stat__icon"><i class="fas fa-hourglass-half"></i></div>
+                <div>
+                    <div class="finance-stat__label">Restant à payer</div>
+                    <div class="finance-stat__value {% if statement.totals.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ statement.totals.remaining_amount|floatformat:0 }}<small> FCFA</small></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="finance-stat {% if statement.totals.overdue_amount > 0 %}finance-stat--danger{% else %}finance-stat--success{% endif %}">
+                <div class="finance-stat__icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div>
+                    <div class="finance-stat__label">Montant échu</div>
+                    <div class="finance-stat__value {% if statement.totals.overdue_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ statement.totals.overdue_amount|floatformat:0 }}<small> FCFA</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Échéancier des tranches -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="finance-card p-4">
+                <div class="finance-section-head">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="finance-icon-badge mr-2"><i class="fas fa-layer-group"></i></span>
+                        <div>
+                            <h6 class="mb-1">Échéancier des tranches</h6>
+                            <small class="text-muted">Suivez chaque échéance, le montant restant et son statut.</small>
+                        </div>
+                    </div>
+                    <span class="finance-chip">{{ statement.installments_count }} tranche(s)</span>
+                </div>
+                {% if statement.installments %}
+                <div class="table-responsive">
+                    <table class="table finance-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tranche</th>
+                                <th>Échéance</th>
+                                <th class="text-end">Montant dû</th>
+                                <th class="text-end">Payé</th>
+                                <th class="text-end">Reste</th>
+                                <th>Progression</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in statement.installments %}
+                            {% widthratio item.amount_paid item.amount 100 as paid_pct %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ item.installment.name|default:'Tranche' }}</div>
+                                    <small class="text-muted">Ordre {{ item.installment.order_number }}</small>
+                                </td>
+                                <td><i class="far fa-calendar-alt text-muted me-1 mr-1"></i>{{ item.installment.due_date|date:"d/m/Y"|default:'—' }}</td>
+                                <td class="text-end">{{ item.amount|floatformat:0 }} FCFA</td>
+                                <td class="text-end text-success fw-bold">{{ item.amount_paid|floatformat:0 }} FCFA</td>
+                                <td class="text-end {% if item.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %} fw-bold">{{ item.remaining_amount|floatformat:0 }} FCFA</td>
+                                <td>
+                                    <div class="finance-progress" title="{{ paid_pct|default:'0' }}%">
+                                        <span style="width: {{ paid_pct|default:'0' }}%;"></span>
+                                    </div>
+                                </td>
+                                <td><span class="badge {{ item.status_badge_class }} finance-status-pill">{{ item.status_label }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="finance-empty">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucune tranche de frais de scolarité n'est configurée pour cette année académique.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- Historique des paiements -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="finance-card p-4">
+                <div class="finance-section-head">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="finance-icon-badge mr-2"><i class="fas fa-receipt"></i></span>
+                        <div>
+                            <h6 class="mb-1">Historique des paiements</h6>
+                            <small class="text-muted">Téléchargez le reçu PDF de chaque paiement effectué.</small>
+                        </div>
+                    </div>
+                    <span class="finance-chip">{{ statement.payments_count }} paiement(s)</span>
+                </div>
+                {% if statement.payments %}
+                <div class="table-responsive">
+                    <table class="table finance-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar me-1 mr-1"></i>Date</th>
+                                <th><i class="fas fa-layer-group me-1 mr-1"></i>Tranche</th>
+                                <th><i class="fas fa-hashtag me-1 mr-1"></i>Référence</th>
+                                <th><i class="fas fa-credit-card me-1 mr-1"></i>Mode</th>
+                                <th class="text-end"><i class="fas fa-coins me-1 mr-1"></i>Montant</th>
+                                <th class="text-end"><i class="fas fa-download me-1 mr-1"></i>Reçu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in statement.payments %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                                <td>{{ payment.installment.name|default:'Paiement non rattaché' }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ payment.receipt_number|default:'—' }}</div>
+                                    <small class="text-muted">{{ payment.transaction_id|default:'Sans transaction' }}</small>
+                                </td>
+                                <td><span class="finance-chip finance-chip--soft">{{ payment.get_source_display }}</span></td>
+                                <td class="text-end fw-bold text-success">+ {{ payment.amount_paid|floatformat:0 }} FCFA</td>
+                                <td class="text-end">
+                                    <a href="{% url 'student_portal:payment_receipt_download' payment.pk %}"
+                                       class="finance-btn-receipt"
+                                       title="Télécharger le reçu de paiement">
+                                        <i class="fas fa-download me-1 mr-1"></i>Reçu
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="finance-empty">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun paiement enregistré pour cette année académique.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --neu-bg: #e6e7ee;
+        --neu-text: #1f2937;
+        --neu-muted: #6b7280;
+        --neu-primary: #315bff;
+        --neu-primary-2: #00bcd4;
+        --neu-success: #16a34a;
+        --neu-danger: #dc2626;
+        --neu-warning: #f59e0b;
+        --neu-info: #0ea5e9;
+        --neu-out: 6px 6px 14px rgba(184,185,190,.55), -6px -6px 14px rgba(255,255,255,.95);
+        --neu-out-sm: 3px 3px 7px rgba(184,185,190,.6), -3px -3px 7px rgba(255,255,255,.95);
+        --neu-in: inset 2px 2px 5px rgba(184,185,190,.55), inset -2px -2px 5px rgba(255,255,255,.9);
+    }
+
+    .finance-card { background: var(--neu-bg); border-radius: 1rem; box-shadow: var(--neu-out); border: 1px solid rgba(255,255,255,.6); }
+    .finance-card--accent { position: relative; overflow: hidden; }
+    .finance-card--accent::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+        background: linear-gradient(180deg, var(--neu-primary), var(--neu-primary-2)); }
+
+    .finance-icon-badge { width: 48px; height: 48px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center;
+        background: var(--neu-bg); box-shadow: var(--neu-out-sm); color: var(--neu-primary); font-size: 1.1rem; flex: 0 0 auto; }
+
+    .finance-select-wrap { position: relative; }
+    .finance-select { appearance: none; -webkit-appearance: none; -moz-appearance: none;
+        background: var(--neu-bg); border: none; border-radius: .8rem; padding: .55rem 2.3rem .55rem 1rem;
+        font-weight: 600; color: var(--neu-text); box-shadow: var(--neu-in); min-width: 200px; }
+    .finance-select:focus { outline: none; }
+    .finance-select-caret { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+        color: var(--neu-muted); pointer-events: none; font-size: .8rem; }
+
+    .finance-info-tile { background: var(--neu-bg); border-radius: .9rem; padding: .9rem 1rem; box-shadow: var(--neu-in); height: 100%; }
+    .finance-info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--neu-muted); margin-bottom: .25rem; }
+    .finance-info-value { font-weight: 700; color: var(--neu-text); line-height: 1.25; }
+    .finance-info-meta { font-size: .82rem; color: var(--neu-muted); margin-top: .15rem; }
+
+    .finance-ring { --progress: 0; --ring-color: var(--neu-primary);
+        width: 150px; height: 150px; border-radius: 50%;
+        background: conic-gradient(var(--ring-color) calc(var(--progress) * 1%), rgba(0,0,0,.06) 0);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: var(--neu-out); position: relative; }
+    .finance-ring::after { content: ""; position: absolute; inset: 8px; border-radius: 50%;
+        background: var(--neu-bg); box-shadow: var(--neu-in); }
+    .finance-ring__inner { position: relative; z-index: 1; text-align: center; }
+    .finance-ring__value { display: block; font-size: 1.8rem; font-weight: 700; color: var(--neu-text); line-height: 1; }
+    .finance-ring__value small { font-size: 1rem; color: var(--neu-muted); font-weight: 600; }
+    .finance-ring__label { font-size: .72rem; color: var(--neu-muted); text-transform: uppercase; letter-spacing: .05em; }
+    .finance-ring--empty { background: rgba(0,0,0,.04); }
+
+    .finance-status-pill { display: inline-flex; align-items: center; padding: .5em .95em; border-radius: 999px;
+        font-weight: 600; font-size: .78rem; letter-spacing: .02em; box-shadow: var(--neu-out-sm); background: var(--neu-bg); }
+    .finance-status-pill--success { color: var(--neu-success); }
+    .finance-status-pill--danger  { color: var(--neu-danger); }
+    .finance-status-pill--info    { color: var(--neu-primary); }
+
+    .finance-stat { display: flex; align-items: center; gap: 1rem; background: var(--neu-bg);
+        border-radius: 1rem; padding: 1rem 1.1rem; box-shadow: var(--neu-in); height: 100%; transition: transform .2s ease; }
+    .finance-stat:hover { transform: translateY(-1px); }
+    .finance-stat__icon { width: 44px; height: 44px; border-radius: 12px; display: inline-flex;
+        align-items: center; justify-content: center; background: var(--neu-bg); box-shadow: var(--neu-out-sm);
+        flex: 0 0 auto; font-size: 1.05rem; }
+    .finance-stat--neutral .finance-stat__icon { color: var(--neu-primary); }
+    .finance-stat--success .finance-stat__icon { color: var(--neu-success); }
+    .finance-stat--warning .finance-stat__icon { color: var(--neu-warning); }
+    .finance-stat--danger  .finance-stat__icon { color: var(--neu-danger); }
+    .finance-stat__label { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em;
+        color: var(--neu-muted); margin-bottom: .15rem; font-weight: 600; }
+    .finance-stat__value { font-size: 1.15rem; font-weight: 700; color: var(--neu-text); line-height: 1.2; word-break: break-word; }
+    .finance-stat__value small { font-size: .7rem; color: var(--neu-muted); font-weight: 600; margin-left: 2px; }
+
+    .finance-section-head { display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: .75rem; padding-bottom: 1rem; margin-bottom: 1rem;
+        border-bottom: 1px dashed rgba(0,0,0,.08); }
+
+    .finance-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .8rem;
+        border-radius: 999px; background: var(--neu-bg); box-shadow: var(--neu-in);
+        color: var(--neu-muted); font-size: .78rem; font-weight: 600; }
+    .finance-chip--soft { box-shadow: var(--neu-out-sm); color: var(--neu-text); }
+
+    .finance-table { color: var(--neu-text); }
+    .finance-table thead th { background: transparent; border: none; color: var(--neu-muted);
+        font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: .65rem .75rem; }
+    .finance-table tbody tr td { border: none; padding: .85rem .75rem; background: transparent;
+        border-top: 1px solid rgba(0,0,0,.05); }
+    .finance-table tbody tr:hover td { background: rgba(255,255,255,.5); }
+
+    .finance-progress { width: 100%; height: 8px; border-radius: 999px; background: rgba(0,0,0,.06);
+        overflow: hidden; box-shadow: var(--neu-in); min-width: 80px; }
+    .finance-progress span { display: block; height: 100%; border-radius: 999px;
+        background: linear-gradient(90deg, var(--neu-primary) 0%, var(--neu-primary-2) 100%); transition: width .4s ease; }
+
+    .finance-btn-receipt { display: inline-flex; align-items: center; background: var(--neu-bg);
+        color: var(--neu-text); border: none; border-radius: .7rem; padding: .4rem .8rem;
+        font-size: .82rem; font-weight: 600; text-decoration: none;
+        box-shadow: var(--neu-out-sm); transition: all .15s ease; }
+    .finance-btn-receipt:hover { color: var(--neu-primary); transform: translateY(-1px); }
+    .finance-btn-receipt:active { box-shadow: var(--neu-in); }
+
+    .finance-empty { text-align: center; padding: 2rem 1rem; color: var(--neu-muted); }
+    .finance-empty i { font-size: 2rem; opacity: .6; display: block; margin-bottom: .5rem; }
+    .finance-empty p { margin: 0; }
+
+    @media (max-width: 768px) {
+        .finance-ring { width: 130px; height: 130px; }
+        .finance-stat__value { font-size: 1rem; }
+        .finance-section-head { flex-direction: column; align-items: flex-start; }
+        .finance-select { min-width: 150px; }
+    }
+</style>
+{% endblock %}

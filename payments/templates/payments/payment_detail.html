@@ -21,7 +21,7 @@
                     <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-receipt me-2 mr-1"></i>Informations du paiement</h6>
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3"><strong>Date de paiement :</strong> {{ payment.payment_date|date:"d/m/Y H:i" }}</div>
+                    <div class="mb-3"><strong>Date de paiement :</strong> {{ payment.payment_date|date:"d/m/Y" }}</div>
                     <div class="mb-3"><strong>Montant payé :</strong> {{ payment.amount_paid|floatformat:0 }} FCFA</div>
                     <div class="mb-3"><strong>Catégorie :</strong> {{ payment.get_category_display }}</div>
                     <div class="mb-3"><strong>Source :</strong> {{ payment.get_source_display }}</div>
@@ -29,6 +29,9 @@
                 <div class="col-md-6">
                     <div class="mb-3"><strong>Numéro de reçu :</strong> {{ payment.receipt_number|default:"Non renseigné" }}</div>
                     <div class="mb-3"><strong>ID de transaction :</strong> {{ payment.transaction_id|default:"Non renseigné" }}</div>
+                    {% if payment.group_reference %}
+                    <div class="mb-3"><strong>Référence de groupe :</strong> {{ payment.group_reference }}</div>
+                    {% endif %}
                     <div class="mb-3"><strong>Année académique :</strong> {{ payment.academic_year.name|default:"Non renseignée" }}</div>
                     <div class="mb-3"><strong>Enregistré par :</strong> {{ payment.author|default:"Non renseigné" }}</div>
                 </div>
@@ -84,6 +87,9 @@
 
         <div class="card-neumorphic p-4">
             <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-bolt me-2"></i>Actions</h6>
+            <a href="{% url 'payments:payment_receipt' payment.pk %}" target="_blank" rel="noopener" class="btn btn-primary w-100 mb-2">
+                <i class="fas fa-print me-2 mr-1"></i>Imprimer le reçu
+            </a>
             <a href="{% url 'payments:payments_list' %}" class="btn btn-outline-secondary w-100">
                 <i class="fas fa-list me-2 mr-1"></i>Retour à la liste des paiements
             </a>

@@ -21,7 +21,7 @@
                             <span class="fas fa-user fa-2x"></span>
                         </div>
                         {% endif %}
-                        <small class="text-muted d-block mt-2">Photo de profil</small>
+                        <!-- <small class="text-muted d-block mt-2">Photo de profil</small> -->
                     </div>
                     <div class="col-md">
                         <h2 class="h4 mb-2">Bienvenue, {{ student.firstname }} {{ student.lastname }}</h2>
@@ -35,7 +35,7 @@
                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
                         <div class="text-muted">
                             <small>Dernière connexion</small><br>
-                            <span class="fw-bold">{{ "now"|date:"d/m/Y H:i" }}</span>
+                            <span class="fw-bold">{{ student.last_login_date|date:"d/m/Y H:i" }}</span>
                         </div>
                     </div>
                 </div>
@@ -92,23 +92,82 @@
     </div>
 </div>
 
+<!-- Financial Summary -->
+{% if financial_summary %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary shadow-soft border-light p-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-2">
+                    <div>
+                        <h5 class="mb-1"><i class="fas fa-file-invoice-dollar me-2 mr-1"></i>Situation financière</h5>
+                        <small class="text-muted">
+                            {% if active_academic_year %}Année {{ active_academic_year.name }}{% endif %}
+                            · <span class="badge {{ financial_summary.status_badge_class }}">{{ financial_summary.status_label }}</span>
+                        </small>
+                    </div>
+                    <a href="{% url 'student_portal:finances' %}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-right me-1"></i>Voir le détail
+                    </a>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card bg-primary shadow-inset border-light p-3 h-100">
+                            <small class="text-muted text-uppercase">Total dû</small>
+                            <strong class="d-block mt-1">{{ financial_summary.totals.total_amount_due|floatformat:0 }} FCFA</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary shadow-inset border-light p-3 h-100">
+                            <small class="text-muted text-uppercase">Payé</small>
+                            <strong class="d-block mt-1 text-success">{{ financial_summary.totals.amount_paid|floatformat:0 }} FCFA</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary shadow-inset border-light p-3 h-100">
+                            <small class="text-muted text-uppercase">Restant</small>
+                            <strong class="d-block mt-1 {% if financial_summary.totals.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ financial_summary.totals.remaining_amount|floatformat:0 }} FCFA</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary shadow-inset border-light p-3 h-100">
+                            <small class="text-muted text-uppercase">Échu</small>
+                            <strong class="d-block mt-1 {% if financial_summary.totals.overdue_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ financial_summary.totals.overdue_amount|floatformat:0 }} FCFA</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Quick Actions -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-4">
             <div class="card-body">
-                <h5 class="mb-3"><i class="fas fa-bolt me-2"></i>Actions rapides</h5>
+                <h5 class="mb-3"><i class="fas fa-bolt me-2 mr-1"></i>Actions rapides</h5>
                 <div class="row g-3">
-                    <div class="col-md-6 mb-2 mb-lg-0">
+                    <div class="col-md-4 mb-2 mb-lg-0">
                         <a href="{% url 'student_portal:documents' %}" class="btn btn-outline-secondary w-100 py-3">
                             <i class="fas fa-file-alt fa-lg me-2"></i>
                             <div>
-                                <div class="fw-bold">Consulter mes documents</div>
+                                <div class="fw-bold">Mes documents</div>
                                 <small class="text-muted">Voir tous vos documents officiels</small>
                             </div>
                         </a>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4 mb-2 mb-lg-0">
+                        <a href="{% url 'student_portal:finances' %}" class="btn btn-outline-secondary w-100 py-3">
+                            <i class="fas fa-file-invoice-dollar fa-lg me-2"></i>
+                            <div>
+                                <div class="fw-bold">Ma situation financière</div>
+                                <small class="text-muted">Tranches, paiements et reçus</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
                         <a href="{% url 'student_portal:documents' %}?status=available" class="btn btn-outline-success w-100 py-3">
                             <i class="fas fa-download fa-lg me-2"></i>
                             <div>

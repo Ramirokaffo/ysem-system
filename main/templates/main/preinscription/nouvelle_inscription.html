@@ -528,25 +528,15 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Documents optionnels -->
-                    <h6 class="mb-2 text-secondary">Documents et frais optionnels</h6>
+                    <!-- Validation du dossier -->
+                    <h6 class="mb-2 text-secondary">Validation du dossier</h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="form-check">
-                                {{ form.photos_identite }}
-                                {{ form.photos_identite.label_tag }}
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check">
-                                {{ form.frais_etude_dossier }}
-                                {{ form.frais_etude_dossier.label_tag }}
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check">
                                 {{ form.is_complete }}
-                                {{ form.is_complete.label_tag }}
+                                <label class="form-check-label" for="{{ form.is_complete.id_for_label }}">
+                                    {{ form.is_complete.label }}
+                                </label>
                             </div>
                             {% if form.is_complete.errors %}
                             <div class="text-danger small">{{ form.is_complete.errors }}</div>

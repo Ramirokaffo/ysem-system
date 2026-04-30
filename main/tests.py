@@ -3,7 +3,7 @@ from io import BytesIO
 from tempfile import TemporaryDirectory
 from datetime import date, datetime
 from decimal import Decimal
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
 from django import forms
@@ -2123,8 +2123,8 @@ class RegistrationCertificateDownloadTests(TestCase):
         self.assertContains(response, self.download_url)
         self.assertContains(response, 'Télécharger')
 
-    @patch('main.pdf_exports.pdfkit.from_string')
-    def test_download_generates_registration_certificate_pdf_on_demand(self, pdfkit_from_string):
+    @patch('main.pdf_exports.weasyprint.HTML')
+    def test_download_generates_registration_certificate_pdf_on_demand(self, weasyprint_html):
         generated_pdf = self._build_test_pdf([
             'Institut de Test YSEM',
             'Claire Essomba',
@@ -2132,33 +2132,35 @@ class RegistrationCertificateDownloadTests(TestCase):
             'CI-2025-CERT001',
         ])
 
-        def fake_from_string(html, output_path, options=None, **kwargs):
-            self.assertFalse(output_path)
-            self.assertEqual(options['page-size'], 'A4')
-            self.assertEqual(options['encoding'], 'UTF-8')
-            self.assertIn('enable-local-file-access', options)
-            self.assertIn('quiet', options)
-            self.assertIn('Institut de Test YSEM', html)
-            self.assertIn('YSEM-TEST', html)
-            self.assertIn('Claire Essomba', html)
-            self.assertIn('CERT001', html)
-            self.assertIn('CI-2025-CERT001', html)
-            self.assertIn('Licence 1', html)
-            self.assertIn('2025/2026', html)
-            self.assertIn('Damas, Yaoundé', html)
-            self.assertIn('contact@test-ysem.local', html)
-            self.assertIn('file://', html)
-            return generated_pdf
+        captured_html = {}
 
-        pdfkit_from_string.side_effect = fake_from_string
+        def fake_html(*args, **kwargs):
+            captured_html['html'] = kwargs.get('string', args[0] if args else '')
+            instance = MagicMock()
+            instance.write_pdf.return_value = generated_pdf
+            return instance
+
+        weasyprint_html.side_effect = fake_html
 
         response = self.client.get(self.download_url)
+
+        html = captured_html['html']
+        self.assertIn('Institut de Test YSEM', html)
+        self.assertIn('YSEM-TEST', html)
+        self.assertIn('Claire Essomba', html)
+        self.assertIn('CERT001', html)
+        self.assertIn('CI-2025-CERT001', html)
+        self.assertIn('Licence 1', html)
+        self.assertIn('2025/2026', html)
+        self.assertIn('Damas, Yaoundé', html)
+        self.assertIn('contact@test-ysem.local', html)
+        self.assertIn('file://', html)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn('certificat_inscription_CI-2025-CERT001.pdf', response['Content-Disposition'])
         self.assertEqual(response.content, generated_pdf)
-        self.assertEqual(pdfkit_from_string.call_count, 1)
+        self.assertEqual(weasyprint_html.call_count, 1)
 
 
 class DocumentWithdrawalRulesTests(TestCase):

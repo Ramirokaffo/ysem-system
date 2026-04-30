@@ -149,6 +149,8 @@ class Student(models.Model):
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
     deleted_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de suppression")
     last_registration_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière inscription")
+    last_login_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière connexion")
+
 
     specialite_souhaitee_1 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 1")
     specialite_souhaitee_2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 2")
@@ -157,6 +159,7 @@ class Student(models.Model):
     # Champ pour l'authentification externe des étudiants
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe pour consultation externe")
     external_password_created_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de création du mot de passe")
+    must_change_password = models.BooleanField(default=True, verbose_name="Doit changer son mot de passe à la prochaine connexion")
 
     profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, verbose_name="Photo de profil")
 
@@ -176,9 +179,24 @@ class Student(models.Model):
         self.external_password_hash = make_password(password)
         from django.utils import timezone
         self.external_password_created_at = timezone.now()
+        self.must_change_password = True
         self.save()
 
         return password
+
+    def set_external_password(self, password):
+        """
+        Définit un mot de passe externe choisi par l'étudiant lui-même.
+        Marque le mot de passe comme n'ayant plus besoin d'être changé.
+        """
+        self.external_password_hash = make_password(password)
+        self.external_password_created_at = timezone.now()
+        self.must_change_password = False
+        self.save(update_fields=[
+            'external_password_hash',
+            'external_password_created_at',
+            'must_change_password',
+        ])
 
     def check_external_password(self, password):
         """
@@ -279,6 +297,11 @@ class Student(models.Model):
         active_level = self.get_active_level()
         return active_level.speciality if active_level else None
 
+    @property
+    def current_speciality(self):
+        active_level = self.get_active_level()
+        return active_level.speciality if active_level else None
+    
     @property
     def current_level(self):
         active_level = self.get_active_level()
