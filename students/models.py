@@ -133,7 +133,7 @@ class Student(models.Model):
     lastname = models.CharField(max_length=100, verbose_name="Nom de famille")
     date_naiss = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
     status = models.CharField(max_length=50, choices=STUDENT_STATUS_CHOICES, verbose_name="Statut de pré-inscription", default='pending')
-    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], verbose_name="Genre")
+    gender = models.CharField(max_length=10, choices=[('M', 'Masculin'), ('F', 'Féminin')], blank=True, null=True, verbose_name="Genre")
     lang = models.CharField(max_length=50, choices=[('fr', 'Français'), ('en', 'Anglais')], default='fr', verbose_name="Langue")
     phone_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Numéro de téléphone")
     email = models.EmailField(blank=True, null=True, verbose_name="Email")
@@ -151,7 +151,6 @@ class Student(models.Model):
     last_registration_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière inscription")
     last_login_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière connexion")
 
-
     specialite_souhaitee_1 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 1")
     specialite_souhaitee_2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 2")
     specialite_souhaitee_3 = models.CharField(max_length=100, blank=True, null=True, verbose_name="Spécialité souhaitée 3")
@@ -160,6 +159,12 @@ class Student(models.Model):
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe pour consultation externe")
     external_password_created_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de création du mot de passe")
     must_change_password = models.BooleanField(default=True, verbose_name="Doit changer son mot de passe à la prochaine connexion")
+    email_verified = models.BooleanField(default=False, verbose_name="Email vérifié")
+    email_verified_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de vérification de l'email")
+
+    # Progression de la pré-inscription en ligne (portail d'admission)
+    # 0 = non commencé, 1 = identification, 2 = famille, 3 = soumis (cursus complet)
+    preinscription_step = models.PositiveSmallIntegerField(default=0, verbose_name="Étape de pré-inscription atteinte")
 
     profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, verbose_name="Photo de profil")
 

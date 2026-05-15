@@ -94,12 +94,12 @@
                     </a>
                 </li>
                 {% endif %}
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'parametres' %}active{% endif %}" href="{% url 'main:parametres' %}">
                         <i class="fas fa-cog"></i>
                         <span>Paramètres</span>
                     </a>
-                </li>
+                </li> -->
             </ul>
         </div>
 
@@ -137,7 +137,7 @@
             <div class="user-profile dropdown">
                 <div class="user-details">
                     <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-                    <div class="user-role">{{ user.role|default:"Administrateur" }}</div>
+                    <div class="user-role">{{ user.role.name|default:"Administrateur" }}</div>
                 </div>
                 <div class="user-avatar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;" id="userDropdown">
                     {% if user.first_name and user.last_name %}
@@ -178,6 +178,12 @@
 
     <!-- Modal de déconnexion -->
     {% include 'components/modal_confirm.html' with modal_id="logoutModal" modal_title="Confirmer la déconnexion" modal_message="Êtes-vous sûr de vouloir vous déconnecter de votre session ?" confirm_text="Se déconnecter" cancel_text="Annuler" confirm_action="logout()" modal_icon="fas fa-sign-out-alt" %}
+
+    <script>
+        function logout() {
+            window.location.href = "{% url 'authentication:logout' %}";
+        }
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

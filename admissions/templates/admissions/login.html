@@ -1,0 +1,51 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Connexion — Portail d'admission YSEM{% endblock %}
+
+{% block hero_eyebrow %}Espace candidat{% endblock %}
+{% block hero_title %}Bon retour parmi nous.{% endblock %}
+{% block hero_lead %}Connectez-vous pour suivre votre dossier d'admission et poursuivre votre inscription en ligne.{% endblock %}
+
+{% block auth_card %}
+    <h2>Connexion</h2>
+    <p class="auth-sub">Accédez à votre espace candidat YSEM.</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom:16px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="field-error">{{ form.password.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="auth-inline">
+            <a href="{% url 'admissions:password_reset_request' %}">Mot de passe oublié ?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+    </form>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        Pas encore de compte ?
+        <a href="{% url 'admissions:signup' %}">Créer un compte candidat</a>
+    </p>
+    <p class="auth-helper auth-helper--muted">
+        Vous n'avez pas reçu l'e-mail d'activation ?
+        <a href="{% url 'admissions:resend_activation' %}">Renvoyer le lien</a>
+    </p>
+{% endblock %}

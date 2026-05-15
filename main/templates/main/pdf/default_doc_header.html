@@ -1,18 +1,11 @@
 <style>
     .header {
-        /* display: table; */
         display: flex;
         align-items: center;
         width: 100%;
         border-bottom: 2px solid #0f766e;
         padding-bottom: 14px;
         margin-bottom: 18px;
-    }
-
-    .logo,
-    .institution {
-        display: table-cell;
-        vertical-align: top;
     }
 
     .logo {
@@ -27,8 +20,6 @@
     .institution {
         margin-left: 20px;
         padding-left: 20px;
-
-
     }
 
     .institution h1 {
@@ -56,6 +47,5 @@
         {% endif %}
         <p>Tél. : {{ system_settings.phone }}{% if system_settings.email %} • Email : {{ system_settings.email }}{% endif %}</p>
         <p>{{ system_settings.address }} {% if system_settings.website %} • {{ system_settings.website }}{% endif %}</p>
-
     </div>
 </div>

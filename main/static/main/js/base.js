@@ -15,15 +15,7 @@
             // Initialize sidebar toggle
         });
 
-        
 
-        // Logout function
-        function logout() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                // Rediriger vers la page de déconnexion personnalisée
-                window.location.href = '{% url "authentication:logout" %}';
-            }
-        }
 
         // Alert dismissible functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -63,9 +55,11 @@
                     }
                 });
 
-                // Prevent dropdown from closing when clicking inside it
-                userDropdownMenu.addEventListener('click', function(e) {
-                    e.stopPropagation();
+                // Close dropdown when clicking on one of its items
+                userDropdownMenu.querySelectorAll('.dropdown-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        userDropdownMenu.classList.remove('show');
+                    });
                 });
             }
         });

@@ -1,0 +1,62 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Créer un compte — Portail d'admission YSEM{% endblock %}
+
+{% block hero_eyebrow %}Nouveau candidat{% endblock %}
+{% block hero_title %}Une étape vers votre admission.{% endblock %}
+{% block hero_lead %}Créez votre compte en moins d'une minute pour commencer votre dossier d'inscription en ligne.{% endblock %}
+
+{% block auth_card %}
+    <h2>Créer un compte</h2>
+    <p class="auth-sub">Renseignez vos informations pour ouvrir votre espace candidat.</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom:16px;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-row-2">
+            <div class="form-field">
+                <label for="{{ form.firstname.id_for_label }}">{{ form.firstname.label }}</label>
+                {{ form.firstname }}
+                {% if form.firstname.errors %}<div class="field-error">{{ form.firstname.errors|join:" " }}</div>{% endif %}
+            </div>
+            <div class="form-field">
+                <label for="{{ form.lastname.id_for_label }}">{{ form.lastname.label }}</label>
+                {{ form.lastname }}
+                {% if form.lastname.errors %}<div class="field-error">{{ form.lastname.errors|join:" " }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="field-error">{{ form.password.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="form-field">
+            <label for="{{ form.password_confirm.id_for_label }}">{{ form.password_confirm.label }}</label>
+            {{ form.password_confirm }}
+            {% if form.password_confirm.errors %}<div class="field-error">{{ form.password_confirm.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+    </form>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        Vous avez déjà un compte ?
+        <a href="{% url 'admissions:login' %}">Se connecter</a>
+    </p>
+{% endblock %}

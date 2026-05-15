@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Vérification - {{ institution_name|default:"YSEM" }}</title>
+
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'authentication/css/login.css' %}" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
+                </div>
+                <h1 class="login-title">Vérification en deux étapes</h1>
+                <p class="login-subtitle">
+                    {% if purpose == 'toggle' %}
+                        {% if requested_state %}
+                            Confirmez l'activation de la double authentification
+                        {% else %}
+                            Confirmez la désactivation de la double authentification
+                        {% endif %}
+                    {% else %}
+                        Saisissez le code de vérification envoyé par email
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle alert-icon"></i>
+                            <div class="alert-content">{{ message }}</div>
+                        </div>
+                    {% elif message.tags == 'error' %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle alert-icon"></i>
+                            <div class="alert-content">{{ message }}</div>
+                        </div>
+                    {% elif message.tags == 'warning' %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle alert-icon"></i>
+                            <div class="alert-content">{{ message }}</div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-info-circle alert-icon"></i>
+                            <div class="alert-content">{{ message }}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div class="alert alert-success" role="alert" style="background:#f9fafb;color:#374151;">
+                <i class="fas fa-envelope alert-icon"></i>
+                <div class="alert-content">
+                    Un code à 6 chiffres a été envoyé à
+                    <strong>{{ user_email }}</strong>.
+                    Vous pouvez également utiliser le lien direct contenu dans l'email.
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="code" class="form-label">Code de vérification</label>
+                    <div class="input-group">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="text"
+                               class="form-control"
+                               id="code"
+                               name="code"
+                               placeholder="123456"
+                               inputmode="numeric"
+                               pattern="[0-9]*"
+                               maxlength="6"
+                               minlength="6"
+                               autocomplete="one-time-code"
+                               required
+                               autofocus>
+                    </div>
+                    <small class="text-muted">
+                        Expire le {{ expires_at|date:"d/m/Y à H:i" }}
+                        {% if attempts_left is not None %}
+                            · {{ attempts_left }} tentative{{ attempts_left|pluralize }} restante{{ attempts_left|pluralize }}
+                        {% endif %}
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-check me-2"></i>
+                    Vérifier
+                </button>
+            </form>
+
+            {% if purpose == 'login' %}
+                <form method="post" style="margin-top:12px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resend">
+                    <button type="submit" class="btn-login" style="background:transparent;color:#374151;border:1px solid #d1d5db;">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Renvoyer un nouveau code
+                    </button>
+                </form>
+                <div class="footer-text">
+                    <p>
+                        <a href="{% url 'authentication:login' %}">Retour à la connexion</a>
+                    </p>
+                </div>
+            {% else %}
+                <div class="footer-text">
+                    <p>
+                        <a href="{% url 'main:profil' %}">Annuler et revenir au profil</a>
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

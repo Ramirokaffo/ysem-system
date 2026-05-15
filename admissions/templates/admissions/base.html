@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% block title %}Portail d'admission — {{ institution_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admissions/css/admissions.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="admissions-shell">
+        {% block layout %}
+            <header class="admissions-topbar">
+                <a href="{% url 'admissions:login' %}" class="admissions-brand">
+                    {% if institution_logo_url %}
+                        <span class="brand-mark brand-mark--logo">
+                            <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
+                        </span>
+                    {% else %}
+                        <span class="brand-mark">{{ institution_name|slice:":1" }}</span>
+                    {% endif %}
+                    <span class="brand-text">
+                        {{ institution_name }}
+                        <small>Portail d'admission</small>
+                    </span>
+                </a>
+                <nav class="admissions-nav">
+                    {% if request.session.admission_authenticated %}
+                        {% with user_name=request.session.admission_student_name|default:"Mon compte" user_email=request.session.admission_student_email %}
+                        <div class="user-menu" data-user-menu>
+                            <button type="button"
+                                    class="user-menu__toggle"
+                                    data-user-menu-toggle
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                <span class="user-menu__avatar{% if candidate_profile_photo_url %} user-menu__avatar--photo{% endif %}" aria-hidden="true">
+                                    {% if candidate_profile_photo_url %}
+                                        <img src="{{ candidate_profile_photo_url }}" alt="">
+                                    {% else %}
+                                        {{ user_name|slice:":1"|upper }}
+                                    {% endif %}
+                                </span>
+                                <span class="user-menu__name">{{ user_name }}</span>
+                                <span class="user-menu__caret" aria-hidden="true">▾</span>
+                            </button>
+                            <div class="user-menu__panel" role="menu">
+                                <div class="user-menu__header">
+                                    <strong>{{ user_name }}</strong>
+                                    {% if user_email %}<span>{{ user_email }}</span>{% endif %}
+                                </div>
+                                <a href="{% url 'admissions:dashboard' %}" class="user-menu__item" role="menuitem">
+                                    <span class="user-menu__icon" aria-hidden="true">⌂</span> Mon espace
+                                </a>
+                                <a href="{% url 'admissions:change_password' %}" class="user-menu__item" role="menuitem">
+                                    <span class="user-menu__icon" aria-hidden="true">⚿</span> Changer mon mot de passe
+                                </a>
+                                <div class="user-menu__divider"></div>
+                                <a href="{% url 'admissions:logout' %}" class="user-menu__item user-menu__item--danger" role="menuitem">
+                                    <span class="user-menu__icon" aria-hidden="true">⏻</span> Se déconnecter
+                                </a>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        <a href="{% url 'admissions:login' %}">Connexion</a>
+                        <a href="{% url 'admissions:signup' %}">Créer un compte</a>
+                    {% endif %}
+                </nav>
+            </header>
+
+            <main class="admissions-main">
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="admissions-footer">
+                © {% now "Y" %} {{ institution_name }} — Tous droits réservés.
+            </footer>
+        {% endblock %}
+    </div>
+    <script>
+        (function () {
+            var menus = document.querySelectorAll('[data-user-menu]');
+            if (!menus.length) return;
+            menus.forEach(function (menu) {
+                var toggle = menu.querySelector('[data-user-menu-toggle]');
+                if (!toggle) return;
+                toggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var isOpen = menu.classList.toggle('is-open');
+                    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+            document.addEventListener('click', function (e) {
+                menus.forEach(function (menu) {
+                    if (!menu.contains(e.target)) {
+                        menu.classList.remove('is-open');
+                        var t = menu.querySelector('[data-user-menu-toggle]');
+                        if (t) t.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                menus.forEach(function (menu) {
+                    if (menu.classList.contains('is-open')) {
+                        menu.classList.remove('is-open');
+                        var t = menu.querySelector('[data-user-menu-toggle]');
+                        if (t) {
+                            t.setAttribute('aria-expanded', 'false');
+                            t.focus();
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

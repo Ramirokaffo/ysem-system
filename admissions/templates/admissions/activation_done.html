@@ -1,0 +1,22 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Compte activé — {{ institution_name }}{% endblock %}
+
+{% block hero_eyebrow %}Compte activé{% endblock %}
+{% block hero_title %}Bienvenue chez {{ institution_name }}.{% endblock %}
+{% block hero_lead %}Votre adresse e-mail est confirmée. Vous pouvez désormais vous connecter à votre espace candidat.{% endblock %}
+
+{% block auth_card %}
+    <h2>Votre compte est activé</h2>
+    <p class="auth-sub">
+        Merci {{ student.firstname }} ! Votre adresse e-mail a bien été vérifiée.
+    </p>
+
+    <div class="alert alert-success" style="margin-top:16px;">
+        Vous pouvez maintenant vous connecter et compléter votre dossier d'admission.
+    </div>
+
+    <a href="{% url 'admissions:login' %}" class="btn btn-primary btn-block" style="margin-top:18px;">
+        Se connecter à mon espace
+    </a>
+{% endblock %}

@@ -14,9 +14,16 @@
                     <h5 class="mb-1"><i class="fas fa-file-invoice-dollar me-2 mr-2"></i>Relevé de compte étudiant</h5>
                     <small class="text-muted">Vue synthétique et chronologique de la situation financière.</small>
                 </div>
-                <a href="{{ return_url }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau
-                </a>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if statement %}
+                    <a href="{{ statement_pdf_url }}" class="btn btn-primary mr-2">
+                        <i class="fas fa-file-pdf me-2 mr-1"></i>Télécharger le relevé (PDF)
+                    </a>
+                    {% endif %}
+                    <a href="{{ return_url }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2 mr-1"></i>Retour au tableau
+                    </a>
+                </div>
             </div>
 
             <div class="statement-header">
@@ -49,10 +56,10 @@
 
         {% if statement %}
         <div class="row mb-4 g-3">
-            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Montant total dû</small><strong>{{ statement.totals.total_amount_due|floatformat:0 }} FCFA</strong></div></div>
-            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Déjà payé</small><strong class="text-success">{{ statement.totals.amount_paid|floatformat:0 }} FCFA</strong></div></div>
-            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Restant à payer</small><strong class="text-danger">{{ statement.totals.remaining_amount|floatformat:0 }} FCFA</strong></div></div>
-            <div class="col-md-6 col-xl-3"><div class="summary-tile"><small>Montant échu</small><strong class="{% if statement.totals.overdue_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ statement.totals.overdue_amount|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3 mt-1"><div class="summary-tile"><small>Montant total dû</small><strong>{{ statement.totals.total_amount_due|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3 mt-1"><div class="summary-tile"><small>Déjà payé</small><strong class="text-success">{{ statement.totals.amount_paid|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3 mt-1"><div class="summary-tile"><small>Restant à payer</small><strong class="text-danger">{{ statement.totals.remaining_amount|floatformat:0 }} FCFA</strong></div></div>
+            <div class="col-md-6 col-xl-3 mt-1"><div class="summary-tile"><small>Montant échu</small><strong class="{% if statement.totals.overdue_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ statement.totals.overdue_amount|floatformat:0 }} FCFA</strong></div></div>
         </div>
 
         <div class="card-neumorphic p-4 mb-4">
@@ -118,7 +125,7 @@
                     <tbody>
                         {% for payment in statement.payments %}
                         <tr>
-                            <td>{{ payment.payment_date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
                             <td>{{ payment.installment.name|default:'Paiement non rattaché' }}</td>
                             <td><div>{{ payment.receipt_number|default:'—' }}</div><small class="text-muted">{{ payment.transaction_id|default:'Sans transaction' }}</small></td>
                             <td>{{ payment.get_source_display }}</td>
@@ -153,8 +160,11 @@
         <div class="card-neumorphic p-4">
             <h6 class="text-dark border-bottom pb-2 mb-3"><i class="fas fa-bolt me-2"></i>Actions rapides</h6>
             <div class="d-grid gap-2">
+                {% if statement %}
+                <a href="{{ statement_pdf_url }}" class="btn btn-success mb-2"><i class="fas fa-file-pdf me-2 mr-1"></i>Télécharger le relevé (PDF)</a>
+                {% endif %}
                 <a href="{{ return_url }}" class="btn btn-outline-secondary mb-2"><i class="fas fa-table me-2 mr-1"></i>Retour au suivi</a>
-                <a href="{{ student_detail_url }}" class="btn btn-primary mb-2"><i class="fas fa-user-graduate me-2 mr-1"></i>Voir le dossier étudiant</a>
+                <a href="{{ student_detail_url }}" class="btn btn-primary mb-2"><i class="fas fa-user-graduate me-2 mr-1"></i>Voir l'étudiant</a>
                 <a href="{{ payment_list_url }}" class="btn btn-outline-secondary mb-2"><i class="fas fa-money-bill-wave me-2 mr-1"></i>Voir les paiements</a>
             </div>
         </div>

@@ -288,11 +288,15 @@ def get_filtered_pre_inscriptions_queryset(params, queryset=None):
     academic_year_id = params.get('academic_year')
     date_from = params.get('date_from') or ''
     date_to = params.get('date_to') or ''
+    include_rejected = params.get('include_rejected') == 'yes'
 
     if status:
         students = students.filter(status=status)
     else:
-        students = students.filter(status__in=PRE_INSCRIPTION_STATUSES)
+        allowed_statuses = PRE_INSCRIPTION_STATUSES
+        if not include_rejected:
+            allowed_statuses = [s for s in allowed_statuses if s != 'rejected']
+        students = students.filter(status__in=allowed_statuses)
 
     if is_online_registration:
         students = students.filter(metadata__is_online_registration=is_online_registration)
@@ -425,6 +429,8 @@ def save_secondary_diplomas(student, formset):
             continue
         if diploma_form.cleaned_data.get('DELETE'):
             continue
+        if not diploma_form.cleaned_data.get('name') or not diploma_form.cleaned_data.get('obtained_year'):
+            continue
 
         diploma = diploma_form.save(commit=False)
         diploma.student = student
@@ -445,6 +451,8 @@ def save_university_levels(student, formset):
         if not getattr(level_form, 'cleaned_data', None):
             continue
         if level_form.cleaned_data.get('DELETE'):
+            continue
+        if not level_form.cleaned_data.get('level_name'):
             continue
 
         university_level = level_form.save(commit=False)
@@ -593,6 +601,13 @@ def render_student_edit(request, student, detail_route_name, page_title, success
         metadata_form = StudentMetaDataEditForm(instance=student.metadata)
         student_level_form = StudentLevelForm(instance=student_level, student=student)
 
+    from students.views import generate_mobile_upload_token, MOBILE_UPLOAD_TOKEN_MAX_AGE
+
+    mobile_upload_token = generate_mobile_upload_token(student.matricule)
+    mobile_upload_url = request.build_absolute_uri(
+        reverse('students:mobile_file_upload', kwargs={'token': mobile_upload_token})
+    )
+
     context = {
         'student': student,
         'student_form': student_form,
@@ -609,6 +624,8 @@ def render_student_edit(request, student, detail_route_name, page_title, success
             selected_program,
             force_optional=documents_force_optional,
         ),
+        'mobile_upload_url': mobile_upload_url,
+        'mobile_upload_token_minutes': MOBILE_UPLOAD_TOKEN_MAX_AGE // 60,
     }
 
     return render(request, 'students/etudiant_edit.html', context)

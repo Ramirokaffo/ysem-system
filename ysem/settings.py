@@ -118,6 +118,7 @@ INSTALLED_APPS = [
     "audit",
     "payments",
     "scholarship",
+    "admissions",
 ]
 
 MIDDLEWARE = [
@@ -155,6 +156,7 @@ TEMPLATES = [
                 "main.context_processors.institution_branding",
                 "academic.context_processors.active_academic_year",
                 "prospection.context_processors.prospection_context",
+                "admissions.context_processors.candidate_session",
             ],
         },
     },
@@ -181,6 +183,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER', default='contact@esnrating.com')
+
 
 DATABASES = {}
 if USE_SQLITE3:

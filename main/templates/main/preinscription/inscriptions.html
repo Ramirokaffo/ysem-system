@@ -127,6 +127,15 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-3">
+                                        <label for="include_rejected">Afficher les pré-inscriptions rejetées:</label>
+                                        <select class="form-control" id="include_rejected" name="include_rejected">
+                                            <option value="no" {% if request.GET.include_rejected != 'yes' %}selected{% endif %}>Non</option>
+                                            <option value="yes" {% if request.GET.include_rejected == 'yes' %}selected{% endif %}>Oui</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="row mt-3">
                                     <div class="col-12 d-flex justify-content-end flex-wrap gap-5">
                                         <button type="submit" class="btn btn-primary px-5">Appliquer les filtres</button>
@@ -177,6 +186,9 @@
                                     {% endif %}
                                     {% if request.GET.start_level %}
                                     <li class="list-inline-item"><span class="badge badge-dark text-uppercase">Niveau d'entrée : {% for level in levels %}{% if level.pk|stringformat:'s' == request.GET.start_level %}{{ level.name }}{% endif %}{% endfor %}</span></li>
+                                    {% endif %}
+                                    {% if request.GET.include_rejected == 'yes' %}
+                                    <li class="list-inline-item"><span class="badge badge-danger text-uppercase">Rejetées incluses</span></li>
                                     {% endif %}
                                 </ul>
                             </div>

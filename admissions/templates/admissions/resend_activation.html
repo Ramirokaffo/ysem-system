@@ -1,0 +1,30 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Renvoyer le lien d'activation — {{ institution_name }}{% endblock %}
+
+{% block hero_eyebrow %}Activation du compte{% endblock %}
+{% block hero_title %}Recevez un nouveau lien.{% endblock %}
+{% block hero_lead %}Saisissez l'adresse utilisée lors de votre inscription pour recevoir un nouvel e-mail d'activation.{% endblock %}
+
+{% block auth_card %}
+    <h2>Renvoyer le lien d'activation</h2>
+    <p class="auth-sub">Indiquez votre adresse e-mail pour recevoir un nouveau lien.</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-field">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Envoyer le lien</button>
+    </form>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'admissions:login' %}">Retour à la connexion</a>
+    </p>
+{% endblock %}

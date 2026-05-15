@@ -20,7 +20,7 @@
                 </div>
             </div>
             <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
-            <p class="text-muted mb-3">{{ user.role|default:"Administrateur" }}</p>
+            <p class="text-muted mb-3">{{ user.role.name|default:"Administrateur" }}</p>
             <p class="text-muted mb-4">
                 <span class="fas fa-envelope mr-2"></span>{{ user.email }}
             </p>
@@ -77,7 +77,7 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted font-weight-bold">Rôle</label>
                         <div class="form-control shadow-inset border-light bg-primary">
-                            <span class="badge badge-primary text-secondary">{{ user.role|default:"Administrateur" }}</span>
+                            <span class="badge badge-primary text-secondary">{{ user.role.name|default:"Administrateur" }}</span>
                         </div>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -128,6 +128,46 @@
                                 <span class="text-muted">Date inconnue</span>
                             {% endif %}
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sécurité -->
+        <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="card-header bg-primary border-light pb-0">
+                <h5 class="mb-3">
+                    <span class="fas fa-shield-alt mr-2"></span>Sécurité
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label text-muted font-weight-bold">Double authentification par email</label>
+                        <div class="form-control shadow-inset border-light bg-primary">
+                            {% if user.two_factor_enabled %}
+                                <span class="badge badge-success">Activée</span>
+                                <small class="text-muted ml-2">Un code est demandé à chaque connexion.</small>
+                            {% else %}
+                                <span class="badge badge-danger">Désactivée</span>
+                                <small class="text-muted ml-2">Un code n'est demandé que lors d'une connexion depuis un appareil inconnu.</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 text-md-right">
+                        {% if user.two_factor_user_can_manage %}
+                            <button class="btn btn-primary shadow-soft" onclick="toggleTwoFactor()">
+                                {% if user.two_factor_enabled %}
+                                    <span class="fas fa-toggle-off mr-2"></span>Désactiver
+                                {% else %}
+                                    <span class="fas fa-toggle-on mr-2"></span>Activer
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <small class="text-muted">
+                                Modification réservée à l'administrateur.
+                            </small>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -198,6 +238,43 @@
     </div>
 </div>
 
+<div class="modal fade" id="twoFactorToggleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-primary shadow-soft border-light">
+            <div class="modal-header bg-primary border-light">
+                <h5 class="modal-title">
+                    {% if user.two_factor_enabled %}
+                        Désactiver la double authentification
+                    {% else %}
+                        Activer la double authentification
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'authentication:two_factor_toggle_init' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted mb-3">
+                        Pour confirmer cette opération, veuillez saisir votre mot de passe.
+                        Un code de confirmation vous sera ensuite envoyé par email à
+                        <strong>{{ user.email }}</strong>.
+                    </p>
+                    <div class="form-group mb-3">
+                        <label for="twoFactorPassword" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control shadow-inset border-light" id="twoFactorPassword" name="password" required autocomplete="current-password">
+                    </div>
+                </div>
+                <div class="modal-footer bg-primary border-light">
+                    <button type="button" class="btn btn-outline-secondary shadow-soft" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary shadow-soft">
+                        {% if user.two_factor_enabled %}Désactiver{% else %}Activer{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="changePasswordModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content bg-primary shadow-soft border-light">
@@ -242,6 +319,10 @@
 
     function changePassword() {
         $('#changePasswordModal').modal('show');
+    }
+
+    function toggleTwoFactor() {
+        $('#twoFactorToggleModal').modal('show');
     }
 
     function saveProfile() {

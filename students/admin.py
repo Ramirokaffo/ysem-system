@@ -16,7 +16,7 @@ class StudentAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations personnelles', {
-            'fields': ('matricule', 'firstname', 'lastname', 'date_naiss', 'gender', 'lang')
+            'fields': ('matricule', 'firstname', 'lastname', 'date_naiss', 'gender', 'lang', 'profile_photo', )
         }),
         ('Contact', {
             'fields': ('email', 'phone_number')

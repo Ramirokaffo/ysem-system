@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4; margin: 1.5cm 1.5cm 2cm 1.5cm; }
+        body { font-family: DejaVu Sans, sans-serif; color: #111827; font-size: 11px; line-height: 1.45; }
+        .title { text-align: center; margin: 18px 0 6px; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+        .subtitle { text-align: center; color: #6b7280; font-size: 11px; margin-bottom: 18px; }
+        .meta-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .meta-grid td { padding: 4px 6px; vertical-align: top; }
+        .meta-grid td.label { color: #6b7280; width: 22%; }
+        .meta-grid td.value { font-weight: 700; color: #111827; }
+
+        .status-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+        .status-pill.up_to_date { background: #dcfce7; color: #166534; }
+        .status-pill.overdue   { background: #fee2e2; color: #991b1b; }
+
+        .totals { width: 100%; border-collapse: collapse; margin: 6px 0 18px; }
+        .totals td { width: 25%; padding: 8px 10px; border: 1px solid #e5e7eb; background: #f9fafb; }
+        .totals .t-label { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin-bottom: 4px; }
+        .totals .t-value { display: block; font-size: 13px; font-weight: 700; }
+        .totals .t-value.success { color: #166534; }
+        .totals .t-value.danger  { color: #991b1b; }
+
+        .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #0f766e;
+            border-bottom: 1px solid #0f766e; padding-bottom: 4px; margin: 16px 0 8px; }
+
+        table.data { width: 100%; border-collapse: collapse; font-size: 10px; }
+        table.data th, table.data td { border: 1px solid #e5e7eb; padding: 5px 6px; vertical-align: top; }
+        table.data thead th { background: #f3f4f6; color: #111827; font-weight: 700; text-transform: uppercase; font-size: 9px; letter-spacing: .03em; }
+        table.data td.right, table.data th.right { text-align: right; }
+        table.data tbody tr:nth-child(even) td { background: #fafafa; }
+        .text-success { color: #166534; }
+        .text-danger  { color: #991b1b; }
+        .muted { color: #6b7280; }
+
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 9px; font-weight: 700; }
+        .badge.success   { background: #dcfce7; color: #166534; }
+        .badge.warning   { background: #fef3c7; color: #92400e; }
+        .badge.danger    { background: #fee2e2; color: #991b1b; }
+        .badge.secondary { background: #e5e7eb; color: #374151; }
+
+        .empty { padding: 10px; background: #f9fafb; border: 1px dashed #d1d5db; color: #6b7280; text-align: center; font-style: italic; }
+
+        .summary-line { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dotted #e5e7eb; }
+        .summary-line:last-child { border-bottom: 0; }
+
+        .footer-note { position: fixed; bottom: 0.4cm; left: 0; right: 0; font-size: 9px; color: #6b7280;
+            display: table; width: 100%; padding: 0 1.5cm; }
+        .footer-note div { display: table-cell; }
+        .footer-note .right { text-align: right; }
+    </style>
+</head>
+<body>
+    {% include 'main/pdf/default_doc_header.html' %}
+
+    <div class="title">Relevé de compte étudiant</div>
+    <div class="subtitle">Situation financière – Année académique {{ academic_year_name }}</div>
+
+    <table class="meta-grid">
+        <tr>
+            <td class="label">Nom et prénoms :</td>
+            <td class="value">{{ full_name }}</td>
+            <td class="label">Matricule :</td>
+            <td class="value">{{ matricule }}</td>
+        </tr>
+        <tr>
+            <td class="label">Programme :</td>
+            <td class="value">{{ program_name }}</td>
+            <td class="label">Niveau :</td>
+            <td class="value">{{ level_name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Année académique :</td>
+            <td class="value">{{ academic_year_name }}</td>
+            <td class="label">Statut global :</td>
+            <td class="value"><span class="status-pill {{ statement.status }}">{{ statement.status_label }}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Édité le :</td>
+            <td class="value">{{ generated_on|date:"d/m/Y à H:i" }}</td>
+            <td class="label">Progression :</td>
+            <td class="value">{{ statement.completion_percentage }} %</td>
+        </tr>
+    </table>
+
+    <table class="totals">
+        <tr>
+            <td><span class="t-label">Montant total dû</span><span class="t-value">{{ statement.totals.total_amount_due|floatformat:0 }} FCFA</span></td>
+            <td><span class="t-label">Déjà payé</span><span class="t-value success">{{ statement.totals.amount_paid|floatformat:0 }} FCFA</span></td>
+            <td><span class="t-label">Restant à payer</span><span class="t-value {% if statement.totals.remaining_amount > 0 %}danger{% else %}success{% endif %}">{{ statement.totals.remaining_amount|floatformat:0 }} FCFA</span></td>
+            <td><span class="t-label">Montant échu</span><span class="t-value {% if statement.totals.overdue_amount > 0 %}danger{% else %}success{% endif %}">{{ statement.totals.overdue_amount|floatformat:0 }} FCFA</span></td>
+        </tr>
+    </table>
+
+    <div class="section-title">Échéancier des tranches ({{ statement.installments_count }})</div>
+    {% if statement.installments %}
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Tranche</th>
+                <th>Échéance</th>
+                <th class="right">Montant dû</th>
+                <th class="right">Payé</th>
+                <th class="right">Reste</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in statement.installments %}
+            <tr>
+                <td>
+                    <strong>{{ item.installment.name|default:'Tranche' }}</strong><br>
+                    <span class="muted">Ordre {{ item.installment.order_number }}</span>
+                </td>
+                <td>{{ item.installment.due_date|date:"d/m/Y"|default:'—' }}</td>
+                <td class="right">{{ item.amount|floatformat:0 }} FCFA</td>
+                <td class="right text-success">{{ item.amount_paid|floatformat:0 }} FCFA</td>
+                <td class="right {% if item.remaining_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ item.remaining_amount|floatformat:0 }} FCFA</td>
+                <td>
+                    {% if item.is_overdue %}<span class="badge danger">{{ item.status_label }}</span>
+                    {% elif item.remaining_amount <= 0 %}<span class="badge success">{{ item.status_label }}</span>
+                    {% elif item.amount_paid > 0 %}<span class="badge warning">{{ item.status_label }}</span>
+                    {% else %}<span class="badge secondary">{{ item.status_label }}</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Aucune tranche de frais de scolarité n'est configurée pour cette année académique.</div>
+    {% endif %}
+
+    <div class="section-title">Historique des paiements ({{ statement.payments_count }})</div>
+    {% if statement.payments %}
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Tranche</th>
+                <th>Référence</th>
+                <th>Source</th>
+                <th class="right">Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in statement.payments %}
+            <tr>
+                <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                <td>{{ payment.installment.name|default:'Paiement non rattaché' }}</td>
+                <td>
+                    {{ payment.receipt_number|default:'—' }}<br>
+                    <span class="muted">{{ payment.transaction_id|default:'Sans transaction' }}</span>
+                </td>
+                <td>{{ payment.get_source_display }}</td>
+                <td class="right text-success">+ {{ payment.amount_paid|floatformat:0 }} FCFA</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Aucun paiement de frais de scolarité enregistré pour cette année académique.</div>
+    {% endif %}
+
+    <div class="footer-note">
+        <div>{{ institution_name }} — Relevé de compte étudiant généré le {{ generated_on|date:"d/m/Y à H:i" }}</div>
+        <!-- <div class="right">Matricule : {{ matricule }}</div> -->
+    </div>
+</body>
+</html>

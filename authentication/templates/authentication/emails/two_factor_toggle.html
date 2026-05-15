@@ -1,0 +1,74 @@
+{% block subject %}{{ institution_name }} - Confirmation de la modification de votre double authentification{% endblock %}
+
+{% block text_body %}
+Bonjour {{ user_name }},
+
+Vous avez demandé à modifier le statut de votre double authentification sur {{ institution_name }}.
+
+Pour confirmer cette modification, utilisez l'une des deux options suivantes :
+
+1) Saisissez ce code de vérification :  {{ code }}
+   (valable {{ expires_in_minutes }} minutes)
+
+2) Ou cliquez sur ce lien direct :
+   {{ direct_link }}
+
+Détails de la demande :
+- Adresse IP : {{ ip_address }}
+- Appareil : {{ device_label }}
+
+Une fois la modification confirmée, vous serez déconnecté et devrez vous
+reconnecter pour que le changement prenne effet.
+
+Si vous n'êtes pas à l'origine de cette demande, ignorez ce message et
+changez votre mot de passe sans attendre.
+
+Cordialement,
+L'équipe {{ institution_name }}
+{% endblock %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html lang="fr">
+<body style="margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#1f2937;">
+    <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e5e7eb;">
+        <h1 style="margin:0 0 16px;font-size:22px;">Modification de votre double authentification</h1>
+        <p>Bonjour <strong>{{ user_name }}</strong>,</p>
+        <p>Vous avez demandé à modifier le statut de votre double authentification sur <strong>{{ institution_name }}</strong>. Pour confirmer cette modification, utilisez l'une des deux options ci-dessous.</p>
+
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin:20px 0;text-align:center;">
+            <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Votre code de confirmation</p>
+            <p style="margin:0;font-size:32px;letter-spacing:8px;font-weight:bold;color:#111827;">{{ code }}</p>
+            <p style="margin:8px 0 0;color:#6b7280;font-size:12px;">Valable {{ expires_in_minutes }} minutes</p>
+        </div>
+
+        <p style="text-align:center;margin:24px 0;">
+            <a href="{{ direct_link }}"
+               style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;">
+                Confirmer la modification
+            </a>
+        </p>
+
+        <p style="font-size:13px;color:#6b7280;word-break:break-all;">
+            Ou copiez ce lien : {{ direct_link }}
+        </p>
+
+        <div style="background:#fef9c3;border:1px solid #facc15;border-radius:12px;padding:16px;margin-top:24px;font-size:13px;">
+            <strong>Détails de la demande</strong><br>
+            Adresse IP : {{ ip_address }}<br>
+            Appareil : {{ device_label }}
+        </div>
+
+        <p style="margin-top:16px;font-size:13px;color:#6b7280;">
+            Après confirmation, vous serez déconnecté et devrez vous reconnecter pour que le changement prenne effet.
+        </p>
+
+        <p style="margin-top:16px;font-size:13px;color:#6b7280;">
+            Si vous n'êtes pas à l'origine de cette demande, ignorez ce message et changez votre mot de passe sans attendre{% if contact_email %}, ou contactez-nous à <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>{% endif %}.
+        </p>
+
+        <p style="margin-top:24px;">Cordialement,<br>L'équipe {{ institution_name }}</p>
+    </div>
+</body>
+</html>
+{% endblock %}

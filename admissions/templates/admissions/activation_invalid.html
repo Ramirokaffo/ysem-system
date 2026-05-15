@@ -1,0 +1,30 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Lien d'activation invalide — {{ institution_name }}{% endblock %}
+
+{% block hero_eyebrow %}Lien invalide{% endblock %}
+{% block hero_title %}Ce lien n'est plus valable.{% endblock %}
+{% block hero_lead %}Le lien d'activation que vous avez utilisé est expiré ou a déjà été consommé.{% endblock %}
+
+{% block auth_card %}
+    <h2>Lien d'activation invalide</h2>
+    <p class="auth-sub">
+        Le lien que vous venez d'ouvrir n'est plus valide. Il a peut-être
+        expiré (48 heures) ou été déjà utilisé.
+    </p>
+
+    <div class="alert alert-error" style="margin-top:16px;">
+        Demandez un nouveau lien d'activation pour finaliser la création
+        de votre compte candidat.
+    </div>
+
+    <a href="{% url 'admissions:resend_activation' %}" class="btn btn-primary btn-block" style="margin-top:18px;">
+        Recevoir un nouveau lien
+    </a>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'admissions:login' %}">Retour à la connexion</a>
+    </p>
+{% endblock %}

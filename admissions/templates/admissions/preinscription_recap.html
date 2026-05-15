@@ -1,0 +1,111 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Récapitulatif — pré-inscription — {{ institution_name }}{% endblock %}
+
+{% block content %}
+<div class="wizard-shell">
+
+    {% if messages %}
+    <div class="alert-stack">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="recap-card">
+        <h1 class="wizard-title">Votre pré-inscription a bien été enregistrée</h1>
+        <p class="wizard-subtitle">
+            Référence du dossier : <strong>{{ student.matricule }}</strong>
+            — Statut : <span class="badge badge-{{ student.status }}">{{ student.get_status_display }}</span>
+        </p>
+        <p style="color:var(--ysem-muted); margin-bottom:0;">
+            Notre équipe va examiner votre dossier. Vous recevrez un courriel dès qu'une décision sera prise.
+            Vous pouvez aussi suivre l'évolution depuis votre <a href="{% url 'admissions:dashboard' %}">tableau de bord</a>.
+        </p>
+    </div>
+
+    <div class="recap-card">
+        <div class="recap-section">
+            <h2 class="recap-section-title">Identification</h2>
+            <div class="recap-grid">
+                <div class="recap-item"><div class="recap-label">Nom</div><div class="recap-value">{{ student.lastname }}</div></div>
+                <div class="recap-item"><div class="recap-label">Prénom(s)</div><div class="recap-value">{{ student.firstname }}</div></div>
+                <div class="recap-item"><div class="recap-label">Date de naissance</div><div class="recap-value">{{ student.date_naiss|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Sexe</div><div class="recap-value">{{ student.get_gender_display|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Langue</div><div class="recap-value">{{ student.get_lang_display }}</div></div>
+                <div class="recap-item"><div class="recap-label">Téléphone</div><div class="recap-value">{{ student.phone_number|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Courriel</div><div class="recap-value">{{ student.email }}</div></div>
+                <div class="recap-item"><div class="recap-label">Pays / Nationalité</div><div class="recap-value">{{ metadata.original_country|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Région</div><div class="recap-value">{{ metadata.original_region|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Département</div><div class="recap-value">{{ metadata.original_department|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Arrondissement</div><div class="recap-value">{{ metadata.original_district|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Ville de résidence</div><div class="recap-value">{{ metadata.residence_city|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Quartier</div><div class="recap-value">{{ metadata.residence_quarter|default:'—' }}</div></div>
+            </div>
+        </div>
+
+        <div class="recap-section">
+            <h2 class="recap-section-title">Famille</h2>
+            <div class="recap-grid">
+                <div class="recap-item"><div class="recap-label">Père</div><div class="recap-value">{{ metadata.father_full_name|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Téléphone du père</div><div class="recap-value">{{ metadata.father_phone_number|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Profession du père</div><div class="recap-value">{{ metadata.father_occupation|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Mère</div><div class="recap-value">{{ metadata.mother_full_name|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Téléphone de la mère</div><div class="recap-value">{{ metadata.mother_phone_number|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Profession de la mère</div><div class="recap-value">{{ metadata.mother_occupation|default:'—' }}</div></div>
+            </div>
+        </div>
+
+        <div class="recap-section">
+            <h2 class="recap-section-title">Cursus visé</h2>
+            <div class="recap-grid">
+                <div class="recap-item"><div class="recap-label">Programme</div><div class="recap-value">{{ student.program|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Niveau d'entrée</div><div class="recap-value">{{ student.start_level|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Spécialité 1</div><div class="recap-value">{{ student.specialite_souhaitee_1|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Spécialité 2</div><div class="recap-value">{{ student.specialite_souhaitee_2|default:'—' }}</div></div>
+                <div class="recap-item"><div class="recap-label">Spécialité 3</div><div class="recap-value">{{ student.specialite_souhaitee_3|default:'—' }}</div></div>
+            </div>
+        </div>
+
+        <div class="recap-section">
+            <h2 class="recap-section-title">Diplômes du secondaire</h2>
+            {% if secondary_diplomas %}
+                <ul style="margin:0;padding-left:20px;color:var(--ysem-ink);font-size:14px;">
+                    {% for d in secondary_diplomas %}
+                        <li>
+                            <strong>{{ d.name }}</strong>{% if d.serie %} — {{ d.serie }}{% endif %}
+                            ({{ d.obtained_year }}{% if d.mention %}, mention {{ d.mention }}{% endif %})
+                            {% if d.school %} — {{ d.school.name }}{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="recap-empty">Aucun diplôme du secondaire renseigné.</p>
+            {% endif %}
+        </div>
+
+        <div class="recap-section">
+            <h2 class="recap-section-title">Cursus universitaire</h2>
+            {% if university_levels %}
+                <ul style="margin:0;padding-left:20px;color:var(--ysem-ink);font-size:14px;">
+                    {% for u in university_levels %}
+                        <li>
+                            <strong>{{ u.level_name }}</strong>{% if u.diploma_name %} — {{ u.diploma_name }}{% endif %}
+                            {% if u.speciality %} — {{ u.speciality }}{% endif %}
+                            {% if u.academic_year %} ({{ u.academic_year }}){% endif %}
+                            {% if u.university %} — {{ u.university.name }}{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="recap-empty">Aucun cursus universitaire renseigné.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:18px;">
+        <a href="{% url 'admissions:dashboard' %}" class="btn btn-primary">Retour au tableau de bord</a>
+    </div>
+</div>
+{% endblock %}

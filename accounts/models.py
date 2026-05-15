@@ -20,13 +20,26 @@ class BaseUser(AbstractUser):
     )
     role = models.CharField(max_length=100, blank=True, null=True, default="student",
         choices=[
-            ('scholar', 'Scolarité'),
-            ('planning', 'Planification'),
-            ('teaching', 'Suivie des Enseignements'),
-            ("student", "Étudiant"),
-            ("super_admin", "Administrateur"),
+            ('scholar', 'Scolarité', ),
+            ('planning', 'Planification',),
+            ('teaching', 'Suivie des Enseignements',),
+            ("student", "Étudiant",),
+            ("super_admin", "Administrateur",),
             # ("agent", "Agent de prospection")
         ],
+    )
+    two_factor_enabled = models.BooleanField(
+        default=False,
+        verbose_name="Double authentification activée",
+        help_text="Si activée, un code de vérification est envoyé par email à chaque connexion.",
+    )
+    two_factor_user_can_manage = models.BooleanField(
+        default=True,
+        verbose_name="L'utilisateur peut gérer sa double authentification",
+        help_text=(
+            "Si décoché, l'utilisateur ne peut pas activer ou désactiver lui-même "
+            "la double authentification depuis son profil."
+        ),
     )
 
     class Meta:

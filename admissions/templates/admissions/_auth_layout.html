@@ -1,0 +1,50 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{% block layout %}
+    <div class="auth-split">
+        <aside class="auth-hero">
+            <div>
+                <a href="{% url 'admissions:login' %}" class="admissions-brand" style="color:#fff;">
+                    {% if institution_logo_url %}
+                        <span class="brand-mark brand-mark--logo" style="background:rgba(255,255,255,.95); border:1px solid rgba(255,255,255,.25);">
+                            <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
+                        </span>
+                    {% else %}
+                        <span class="brand-mark" style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);">{{ institution_name|slice:":1" }}</span>
+                    {% endif %}
+                    <span class="brand-text">
+                        {{ institution_name }}
+                        <small style="color:rgba(255,255,255,.7);">Portail d'admission</small>
+                    </span>
+                </a>
+                <div style="height:48px;"></div>
+                <div class="hero-eyebrow">{% block hero_eyebrow %}Inscription en ligne{% endblock %}</div>
+                <h1>{% block hero_title %}Construisez votre avenir avec YSEM.{% endblock %}</h1>
+                <p class="lead">{% block hero_lead %}Créez votre espace candidat pour déposer votre dossier, suivre l'avancement de votre admission et échanger avec la scolarité.{% endblock %}</p>
+                <ul class="hero-features">
+                    {% block hero_features %}
+                        <li>Création de compte sécurisée en quelques secondes</li>
+                        <li>Suivi en temps réel du statut de votre dossier</li>
+                        <li>Espace personnel pour vos documents d'inscription</li>
+                    {% endblock %}
+                </ul>
+            </div>
+            <div class="hero-footer">© {% now "Y" %} {{ institution_name }} — Tous droits réservés.</div>
+        </aside>
+
+        <section class="auth-panel">
+            <div class="auth-card">
+                {% if messages %}
+                    <div class="alert-stack">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block auth_card %}{% endblock %}
+            </div>
+        </section>
+    </div>
+{% endblock %}

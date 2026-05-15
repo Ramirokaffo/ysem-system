@@ -11,10 +11,16 @@ from django.http import HttpResponse, JsonResponse
 from students.models import Student, OfficialDocument
 from django.core.paginator import Paginator
 
-from main.pdf_exports import build_payment_receipt_pdf, build_registration_certificate_pdf
+from main.pdf_exports import (
+    build_payment_receipt_pdf,
+    build_registration_certificate_pdf,
+    build_student_account_statement_pdf,
+)
 from payments.models import Payment
 from payments.utils import build_student_financial_statement
 from academic.models import AcademicYear
+from authentication.models import LoginHistory
+from authentication.services import record_login, record_logout
 
 
 @never_cache
@@ -50,6 +56,18 @@ def student_login(request):
                     student.last_login_date = timezone.now()
                     student.save(update_fields=['last_login_date'])
 
+                    if not request.session.session_key:
+                        request.session.save()
+                    record_login(
+                        request,
+                        actor_type='student',
+                        actor_id=student.pk,
+                        actor_identifier=student.matricule,
+                        actor_display=f"{student.firstname} {student.lastname}",
+                        channel='student_portal',
+                        session_key=request.session.session_key or '',
+                    )
+
                     # Si le mot de passe a été généré ou réinitialisé par la
                     # scolarité, forcer l'étudiant à le changer dès la connexion
                     if student.must_change_password:
@@ -64,8 +82,26 @@ def student_login(request):
                     messages.success(request, f'Bienvenue {student.firstname} ! Vous êtes connecté avec succès.')
                     return redirect('student_portal:dashboard')
                 else:
+                    record_login(
+                        request,
+                        actor_type='student',
+                        actor_id=student.pk,
+                        actor_identifier=matricule,
+                        actor_display=f"{student.firstname} {student.lastname}",
+                        channel='student_portal',
+                        status=LoginHistory.STATUS_FAILED,
+                        failure_reason='invalid_password',
+                    )
                     messages.error(request, 'Matricule ou mot de passe incorrect.')
             except Student.DoesNotExist:
+                record_login(
+                    request,
+                    actor_type='anonymous',
+                    actor_identifier=matricule,
+                    channel='student_portal',
+                    status=LoginHistory.STATUS_FAILED,
+                    failure_reason='unknown_matricule',
+                )
                 messages.error(request, 'Matricule ou mot de passe incorrect.')
         else:
             messages.error(request, 'Veuillez remplir tous les champs.')
@@ -77,6 +113,8 @@ def student_logout(request):
     """
     Vue de déconnexion pour les étudiants
     """
+    session_key = request.session.session_key or ''
+    matricule = request.session.get('student_matricule')
     # Supprimer les données de session de l'étudiant
     if 'student_authenticated' in request.session:
         del request.session['student_authenticated']
@@ -86,6 +124,11 @@ def student_logout(request):
         del request.session['student_name']
     # if 'student_must_change_password' in request.session:
     #     del request.session['student_must_change_password']
+
+    student_id = None
+    if matricule:
+        student_id = Student.objects.filter(matricule=matricule).values_list('pk', flat=True).first()
+    record_logout(session_key=session_key, actor_type='student', actor_id=student_id)
 
     messages.success(request, 'Vous avez été déconnecté avec succès.')
     return redirect('student_portal:login')
@@ -330,6 +373,31 @@ def student_payment_receipt_download(request, pk):
 
     response = HttpResponse(pdf_content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="recu_paiement_{filename_reference}.pdf"'
+    return response
+
+
+@student_required
+def student_account_statement_download(request, academic_year_id):
+    """Permet à l'étudiant connecté de télécharger son relevé de compte (PDF)."""
+    matricule = request.session.get('student_matricule')
+    student = get_object_or_404(Student, matricule=matricule)
+    academic_year = get_object_or_404(AcademicYear, pk=academic_year_id)
+
+    statement = build_student_financial_statement(student, academic_year)
+    if not statement:
+        messages.error(request, "Impossible de générer le relevé pour cette année académique.")
+        return redirect('student_portal:finances')
+
+    pdf_content = build_student_account_statement_pdf(
+        student, academic_year, statement, request=request
+    )
+    year_suffix = academic_year.name.replace(' ', '_') if academic_year.name else ''
+    filename = f'releve_compte_{student.matricule}'
+    if year_suffix:
+        filename = f'{filename}_{year_suffix}'
+
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
     return response
 
 

@@ -1,0 +1,27 @@
+{% comment %}Étape 2 — Informations familiales{% endcomment %}
+
+<div class="form-section">
+    <h2 class="form-section-title">Père</h2>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.nom_pere %}
+        {% include 'admissions/_form_field.html' with field=form.profession_pere %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.telephone_pere %}
+        {% include 'admissions/_form_field.html' with field=form.courriel_pere %}
+    </div>
+    {% include 'admissions/_form_field.html' with field=form.ville_residence_pere %}
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Mère</h2>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.nom_mere %}
+        {% include 'admissions/_form_field.html' with field=form.profession_mere %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.telephone_mere %}
+        {% include 'admissions/_form_field.html' with field=form.courriel_mere %}
+    </div>
+    {% include 'admissions/_form_field.html' with field=form.ville_residence_mere %}
+</div>

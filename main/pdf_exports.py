@@ -13,6 +13,9 @@ from reportlab.pdfgen import canvas
 import weasyprint
 
 from .models import SystemSettings
+from decimal import Decimal
+from payments.models import Payment
+from payments.utils import amount_to_french_words
 
 
 ANNEX_FIELD_DEFINITIONS = [
@@ -69,9 +72,6 @@ def build_registration_certificate_pdf(official_document, request=None):
 
 def build_payment_receipt_pdf(payment, request=None):
     """Génère un reçu de paiement (PDF) pour un paiement donné, en réutilisant le template HTML."""
-    from decimal import Decimal
-    from payments.models import Payment
-    from payments.utils import amount_to_french_words
 
     settings = SystemSettings.get_settings()
 
@@ -108,6 +108,31 @@ def build_payment_receipt_pdf(payment, request=None):
         'pdf': True,
     }
     html = render_to_string('payments/payment_receipt.html', context, request=request)
+    return weasyprint.HTML(string=html).write_pdf()
+
+
+def build_student_account_statement_pdf(student, academic_year, statement, request=None):
+    """Génère le PDF du relevé de compte d'un étudiant pour une année académique donnée."""
+    settings = SystemSettings.get_settings()
+    full_name = f'{student.firstname} {student.lastname}'.strip()
+    level_name = None
+    if statement and statement.get('current_level') and statement['current_level'].level_id:
+        level_name = getattr(statement['current_level'].level, 'name', None)
+
+    context = {
+        'student': student,
+        'statement': statement,
+        'academic_year': academic_year,
+        'academic_year_name': _display_value(getattr(academic_year, 'name', None)),
+        'system_settings': settings,
+        'institution_name': _display_value(settings.institution_name),
+        'full_name': _display_value(full_name),
+        'matricule': _display_value(student.matricule),
+        'program_name': _display_value(getattr(student.program, 'name', None)),
+        'level_name': _display_value(level_name),
+        'generated_on': timezone.localtime(),
+    }
+    html = render_to_string('main/pdf/student_account_statement.html', context, request=request)
     return weasyprint.HTML(string=html).write_pdf()
 
 

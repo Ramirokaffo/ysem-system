@@ -13,5 +13,6 @@ urlpatterns = [
 
     path('statut-paiement/', PaymentStatusView.as_view(), name='payment_status'),
     path('statut-paiement/<str:pk>/', PaymentStatusStudentDetailView.as_view(), name='payment_status_student_detail'),
+    path('statut-paiement/<str:pk>/releve.pdf', payment_status_student_statement_pdf, name='payment_status_student_statement_pdf'),
 
 ]

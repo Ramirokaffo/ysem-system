@@ -1,0 +1,46 @@
+{% comment %}Étape 4 — Pièces justificatives et attestation de véracité{% endcomment %}
+
+
+<div class="form-section">
+    <h2 class="form-section-title">Pièces justificatives</h2>
+    <p class="auth-helper auth-helper--muted" style="text-align:left;margin-top:-4px;">
+        Formats acceptés : PNG, JPG ou PDF. Taille maximale : 5 Mo par fichier.
+        Pour les documents déjà téléversés, laissez le champ vide pour conserver le fichier actuel.
+    </p>
+    <div class="doc-list">
+        {% for entry in form.program_document_entries %}
+        <div class="doc-item{% if entry.has_file %} doc-item--has-file{% endif %}">
+            <div class="doc-head">
+                <span class="doc-label">{{ entry.label }}</span>
+                {% if entry.has_file %}
+                    <span class="doc-status doc-status--uploaded">✓ Document fourni</span>
+                {% elif entry.is_required %}
+                    <span class="doc-required">Requis</span>
+                {% endif %}
+            </div>
+            {% if entry.help_text %}<div class="doc-help">{{ entry.help_text }}</div>{% endif %}
+            {% if entry.has_file %}
+                <div class="doc-current">
+                    <span class="doc-current-icon" aria-hidden="true">📄</span>
+                    <span class="doc-current-text">
+                        Fichier actuel :
+                        {% if entry.current_file %}
+                            <a href="{{ entry.current_file.url }}" target="_blank" rel="noopener">{{ entry.current_file_name }}</a>
+                        {% else %}
+                            <strong>{{ entry.current_file_name }}</strong>
+                        {% endif %}
+                    </span>
+                    <span class="doc-current-hint">Laissez vide pour conserver, ou choisissez un nouveau fichier pour remplacer.</span>
+                </div>
+            {% endif %}
+            {{ entry.field }}
+            {% for error in entry.field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Attestation</h2>
+    {% include 'admissions/_form_field.html' with field=form.attestation_veracite %}
+</div>

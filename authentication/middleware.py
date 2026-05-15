@@ -53,7 +53,7 @@ class RoleBasedAccessMiddleware:
             '/auth/login/',
             '/auth/logout/',
             '/portail-etudiant/',
-            '/inscription-externe/',
+            '/admissions/',
             '/nouvelle_inscription/',
             '/ajax/',
             # '/',  # Page d'accueil

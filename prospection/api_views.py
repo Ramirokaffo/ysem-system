@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 
 from audit.utils import log_audit_event
+from authentication.models import LoginHistory
+from authentication.services import record_login
 from .models import Agent, SeanceProspection, Equipe
 from .authentication import AgentJWTAuthentication
 from .serializers import (
@@ -66,6 +68,15 @@ class AgentLoginView(APIView):
         
         if serializer.is_valid():
             agent = serializer.validated_data['agent']
+            record_login(
+                request,
+                actor_type='agent',
+                actor_id=agent.pk,
+                actor_identifier=agent.email or agent.matricule,
+                actor_display=getattr(agent, 'nom_complet', str(agent)),
+                channel='api',
+                extra={'auth_backend': 'jwt'},
+            )
             log_audit_event(
                 category='auth',
                 action='login',
@@ -100,6 +111,15 @@ class AgentLoginView(APIView):
                 }
             }, status=status.HTTP_200_OK)
         
+        record_login(
+            request,
+            actor_type='anonymous',
+            actor_identifier=request.data.get('email', ''),
+            channel='api',
+            status=LoginHistory.STATUS_FAILED,
+            failure_reason='invalid_credentials',
+            extra={'auth_backend': 'jwt'},
+        )
         log_audit_event(
             category='auth',
             action='login_failed',

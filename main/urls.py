@@ -41,10 +41,7 @@ urlpatterns = [
     path('document/ajax/student-levels/', document_student_levels, name='document_student_levels'),
     path('document/ajax/student-academic-years/', document_student_academic_years, name='document_student_academic_years'),
 
-    # Formulaire d'inscription public
-    path('inscription-externe/', PreInscriptionExterneView.as_view(), name='inscription_externe'),
-    path('inscription-externe/etape/<int:step>/', PreInscriptionExterneStepView.as_view(), name='inscription_externe_step'),
-    path('inscription-externe/confirmation/', PreInscriptionExterneConfirmationView.as_view(), name='inscription_externe_confirmation'),
+    # Formulaire de pré-inscription interne (administration)
     path('nouvelle_inscription/', NouvellePreInscriptionView.as_view(), name='nouvelle_inscription'),
 
     

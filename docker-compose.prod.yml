@@ -1,66 +1,61 @@
 # Environnement de PROD
 #   Lancement : docker compose -f docker-compose.prod.yml up -d --build
 #
-# Particularités :
-#   - Gunicorn (CMD par défaut de l'image)
-#   - pas de bind-mount du code : l'image est immuable
-#   - collectstatic exécuté par l'entrypoint
-#   - DB non exposée sur l'hôte
-#   - healthchecks
+
 name: ysem-prod
 
 services:
-  db:
-    image: mariadb:11
-    restart: always
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ysem-mysql
+    restart: unless-stopped
+    networks:
+      - ysem-network
     environment:
-      MARIADB_DATABASE: ${DB_NAME}
-      MARIADB_USER: ${DB_USER}
-      MARIADB_PASSWORD: ${DB_PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
     volumes:
-      - db_data_prod:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD}", "-e", "SELECT 1"]
       interval: 10s
       timeout: 5s
       retries: 10
-    # Pas de `ports:` — la DB reste interne au réseau Compose
-
+      start_period: 60s
+      
   web:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
-    image: ysem-system:prod
-    restart: always
+    image: ramirokaffo/raal:latest
+    restart: unless-stopped
+    networks:
+      - ysem-network
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      DEBUG: "False"
-      USE_SQLITE3: "False"
-      DB_HOST: db
-      DB_PORT: "3306"
-      DJANGO_MIGRATE: "true"
-      DJANGO_COLLECTSTATIC: "true"
     ports:
       - "8000:8000"
     volumes:
       - static_prod:/app/static
       - media_prod:/app/media
       - logs_prod:/app/logs
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3).status < 500 else 1)\""]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
 volumes:
-  db_data_prod:
+  mysql_data:
   static_prod:
   media_prod:
   logs_prod:
+
+networks:
+  ysem-network:
+    name: ysem-network
+    driver: bridge

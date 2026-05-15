@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Téléversement de documents - YSEM</title>
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+    <style>
+        body { background-color: #e6e7ee; color: #44476a; font-family: 'Nunito', sans-serif; padding: 16px; }
+        .upload-container { max-width: 720px; margin: 0 auto; }
+        .file-card { padding: 16px; margin-bottom: 16px; }
+        .file-card .label { font-weight: 600; }
+        .file-card .help { font-size: 0.85rem; color: #6c757d; }
+        .file-card .current { font-size: 0.85rem; }
+        .preview-thumb { max-height: 140px; border-radius: 8px; }
+        .btn-block { display: block; width: 100%; }
+        input[type="file"] { width: 100%; }
+        .header-card { padding: 16px; margin-bottom: 16px; text-align: center; }
+        .alert-mobile { padding: 12px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9rem; }
+        .alert-success { background: #d1f2dd; color: #1d6d3a; }
+        .alert-error { background: #f8d7da; color: #842029; }
+        .alert-warning { background: #fff3cd; color: #664d03; }
+        .alert-info { background: #cfe2ff; color: #084298; }
+    </style>
+</head>
+<body>
+<div class="upload-container">
+    {% if token_expired %}
+        <div class="card bg-primary shadow-soft border-light header-card">
+            <h4><span class="fas fa-clock mr-2"></span>Lien expiré</h4>
+            <p class="mb-0">Le lien de téléversement n'est plus valide. Demandez à l'administrateur de générer un nouveau QR code.</p>
+        </div>
+    {% else %}
+        <div class="card bg-primary shadow-soft border-light header-card">
+            <h4 class="mb-1"><span class="fas fa-cloud-upload-alt mr-2"></span>Téléverser les documents</h4>
+            <div class="text-muted small">Étudiant : <strong>{{ student.firstname }} {{ student.lastname }}</strong> ({{ student.matricule }})</div>
+            <div class="text-muted small mt-1">Taille maximale par fichier : {{ max_file_size_mb }} Mo</div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-mobile alert-{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                    <span class="fas fa-info-circle mr-2"></span>{{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% for field in file_fields %}
+            <div class="card bg-primary shadow-soft border-light file-card">
+                <div class="label mb-1">{{ field.label }}</div>
+                <div class="help mb-2">{{ field.help_text }}</div>
+
+                {% if field.current_file %}
+                    <div class="current mb-2">
+                        <span class="font-weight-bold">Fichier actuel :</span>
+                        {% if field.is_image %}
+                            <div class="mt-2">
+                                <img src="{{ field.current_file.url }}" alt="Aperçu" class="preview-thumb img-fluid">
+                            </div>
+                        {% else %}
+                            <a href="{{ field.current_file.url }}" target="_blank" rel="noopener">Voir le fichier</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <input type="file"
+                       name="{{ field.field_name }}"
+                       id="id_{{ field.field_name }}"
+                       accept="{{ field.accept }}"
+                       class="form-control shadow-inset border-light"
+                       data-capture="{{ field.capture }}"
+                       data-is-image="{{ field.is_image|yesno:'true,false' }}">
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% if field.is_image %}
+                    <button type="button" class="btn btn-outline-dark btn-sm shadow-soft mr-2 mb-2" data-camera-trigger="{{ field.field_name }}">
+                        <span class="fas fa-camera mr-1"></span>Prendre une photo
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-outline-dark btn-sm shadow-soft mr-2 mb-2" data-camera-trigger="{{ field.field_name }}">
+                        <span class="fas fa-camera mr-1"></span>Scanner avec la caméra
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-outline-secondary btn-sm shadow-soft mb-2" data-file-trigger="{{ field.field_name }}">
+                        <span class="fas fa-folder-open mr-1"></span>Choisir un fichier
+                    </button>
+                </div>
+
+                {% for fname, message in field_errors.items %}
+                    {% if fname == field.field_name %}
+                        <div class="text-danger small mt-2"><span class="fas fa-exclamation-triangle mr-1"></span>{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary btn-block shadow-soft mb-4">
+                <span class="fas fa-paper-plane mr-2"></span>Envoyer les fichiers
+            </button>
+        </form>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-camera-trigger]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const fieldName = button.getAttribute('data-camera-trigger');
+                const input = document.getElementById('id_' + fieldName);
+                if (!input) return;
+                input.setAttribute('capture', input.dataset.capture || 'environment');
+                input.click();
+                setTimeout(function () { input.removeAttribute('capture'); }, 500);
+            });
+        });
+        document.querySelectorAll('[data-file-trigger]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const fieldName = button.getAttribute('data-file-trigger');
+                const input = document.getElementById('id_' + fieldName);
+                if (!input) return;
+                input.removeAttribute('capture');
+                input.click();
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -21,4 +21,9 @@ urlpatterns = [
         views.student_payment_receipt_download,
         name='payment_receipt_download',
     ),
+    path(
+        'ma-situation-financiere/releve/<int:academic_year_id>/',
+        views.student_account_statement_download,
+        name='account_statement_download',
+    ),
 ]

@@ -1,0 +1,72 @@
+{% block subject %}{{ institution_name }} — Activez votre compte d'admission{% endblock %}
+
+{% block text_body %}
+Bonjour {{ student_name }},
+
+Bienvenue sur le portail d'admission de {{ institution_name }}.
+
+Pour confirmer votre adresse e-mail et activer votre compte candidat,
+veuillez cliquer sur le lien suivant (valable {{ expires_hours }} heures) :
+
+{{ activation_url }}
+
+Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer
+ce message.
+
+Cordialement,
+L'équipe {{ institution_name }}
+Email : {{ contact_email }}
+Site : {{ website }}
+{% endblock %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html lang="fr">
+<body style="margin:0;padding:24px;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+    <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e2e8f0;">
+        {% if email_logo_url %}
+            <div style="text-align:center;margin-bottom:24px;">
+                <img src="{{ email_logo_url }}" alt="Logo {{ institution_name }}" style="max-height:64px;width:auto;">
+            </div>
+        {% endif %}
+
+        <h1 style="margin:0 0 16px;font-size:22px;color:#1e3a8a;">Activez votre compte</h1>
+
+        <p>Bonjour {{ student_name }},</p>
+        <p>
+            Bienvenue sur le portail d'admission de
+            <strong>{{ institution_name }}</strong>.
+            Pour confirmer votre adresse e-mail et activer votre espace candidat,
+            cliquez sur le bouton ci-dessous.
+        </p>
+
+        <div style="text-align:center;margin:28px 0;">
+            <a href="{{ activation_url }}"
+               style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;display:inline-block;">
+                Activer mon compte
+            </a>
+        </div>
+
+        <p style="font-size:13px;color:#475569;">
+            Ce lien est valable pendant {{ expires_hours }} heures. Vous pouvez
+            aussi le copier-coller dans votre navigateur :
+        </p>
+        <p style="word-break:break-all;background:#f1f5f9;border-radius:10px;padding:12px;font-size:13px;color:#1e3a8a;">
+            {{ activation_url }}
+        </p>
+
+        <p style="font-size:13px;color:#64748b;margin-top:24px;">
+            Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.
+        </p>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+        <p style="font-size:12px;color:#64748b;margin:0;">
+            <strong>{{ institution_name }}</strong><br>
+            {% if address %}{{ address }}<br>{% endif %}
+            {% if phone %}Tél : {{ phone }}<br>{% endif %}
+            Email : {{ contact_email }} — Site : {{ website }}
+        </p>
+    </div>
+</body>
+</html>
+{% endblock %}

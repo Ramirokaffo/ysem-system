@@ -2,10 +2,11 @@ from collections import defaultdict
 from decimal import Decimal
 from urllib.parse import urlencode
 
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -20,6 +21,7 @@ from academic.models import AcademicYear, Level, Program
 from student_portal.decorators import scholar_admin_required
 from django.utils.decorators import method_decorator
 from main.models import SystemSettings
+from main.pdf_exports import build_student_account_statement_pdf
 from payments.utils import (
     amount_to_french_words,
     build_student_financial_statement,
@@ -859,6 +861,16 @@ class PaymentStatusStudentDetailView(LoginRequiredMixin, TemplateView):
         if academic_year:
             payment_list_query['academic_year'] = academic_year.pk
 
+        statement_pdf_query = {}
+        if academic_year:
+            statement_pdf_query['academic_year'] = academic_year.pk
+        statement_pdf_url = reverse(
+            'payments:payment_status_student_statement_pdf',
+            args=[student.matricule],
+        )
+        if statement_pdf_query:
+            statement_pdf_url = f"{statement_pdf_url}?{urlencode(statement_pdf_query)}"
+
         context.update({
             'page_title': 'Situation financière',
             'student': student,
@@ -867,8 +879,36 @@ class PaymentStatusStudentDetailView(LoginRequiredMixin, TemplateView):
             'return_url': self.request.GET.get('return_url') or reverse('payments:payment_status'),
             'payment_list_url': f"{reverse('payments:payments_list')}?{urlencode(payment_list_query)}",
             'student_detail_url': reverse('students:etudiant_detail', args=[student.matricule]),
+            'statement_pdf_url': statement_pdf_url,
             'generated_on': timezone.localtime(),
         })
         return context
+
+
+@login_required
+@scholar_admin_required
+def payment_status_student_statement_pdf(request, pk):
+    """Télécharge le relevé de compte étudiant au format PDF (vue scolarité)."""
+    student = get_object_or_404(
+        Student.objects.select_related('program').filter(deleted_at__isnull=True),
+        matricule=pk,
+    )
+    academic_year = _get_selected_academic_year_from_request(request)
+    statement = build_student_financial_statement(student, academic_year) if academic_year else None
+
+    if not statement:
+        messages.error(request, "Aucune année académique disponible pour générer ce relevé.")
+        return redirect('payments:payment_status_student_detail', pk=student.matricule)
+
+    pdf_content = build_student_account_statement_pdf(
+        student, academic_year, statement, request=request
+    )
+    year_suffix = academic_year.name.replace(' ', '_') if academic_year else ''
+    filename = f'releve_compte_{student.matricule}'
+    if year_suffix:
+        filename = f'{filename}_{year_suffix}'
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+    return response
 
 

@@ -23,20 +23,29 @@
                             <small class="text-muted">Synthèse de votre situation financière sur l'année académique sélectionnée.</small>
                         </div>
                     </div>
-                    <form method="get" class="d-flex align-items-center gap-2">
-                        <label for="academic_year" class="form-label mb-0 small text-muted text-uppercase fw-bold mr-2">Année</label>
-                        <div class="finance-select-wrap">
-                            <select name="academic_year" id="academic_year" class="finance-select" onchange="this.form.submit()">
-                                {% for year in academic_years %}
-                                <option value="{{ year.id }}" {% if selected_academic_year and selected_academic_year.id == year.id %}selected{% endif %}>{{ year.name }}</option>
-                                {% endfor %}
-                                {% if not academic_years %}
-                                <option value="">Aucune année disponible</option>
-                                {% endif %}
-                            </select>
-                            <i class="fas fa-chevron-down finance-select-caret"></i>
-                        </div>
-                    </form>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <form method="get" class="d-flex align-items-center gap-2 mb-0">
+                            <label for="academic_year" class="form-label mb-0 small text-muted text-uppercase fw-bold mr-2">Année</label>
+                            <div class="finance-select-wrap">
+                                <select name="academic_year" id="academic_year" class="finance-select" onchange="this.form.submit()">
+                                    {% for year in academic_years %}
+                                    <option value="{{ year.id }}" {% if selected_academic_year and selected_academic_year.id == year.id %}selected{% endif %}>{{ year.name }}</option>
+                                    {% endfor %}
+                                    {% if not academic_years %}
+                                    <option value="">Aucune année disponible</option>
+                                    {% endif %}
+                                </select>
+                                <i class="fas fa-chevron-down finance-select-caret"></i>
+                            </div>
+                        </form>
+                        {% if statement and selected_academic_year %}
+                        <a href="{% url 'student_portal:account_statement_download' selected_academic_year.id %}"
+                           class="finance-btn-receipt ml-2"
+                           title="Télécharger le relevé de compte au format PDF">
+                            <i class="fas fa-file-pdf me-1 mr-1"></i>Relevé PDF
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
 
                 {% if statement %}

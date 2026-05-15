@@ -1,0 +1,112 @@
+{% comment %}Étape 3 — Programme, spécialités et cursus{% endcomment %}
+
+<div class="form-section"
+     id="programme-section"
+     data-specialites-url="{% url 'admissions:preinscription_specialities' %}"
+     data-programme-field="{{ form.programme.id_for_label }}"
+     data-specialite-fields="{{ form.specialite_souhaitee_1.id_for_label }},{{ form.specialite_souhaitee_2.id_for_label }},{{ form.specialite_souhaitee_3.id_for_label }}">
+    <h2 class="form-section-title">Programme visé</h2>
+    {% include 'admissions/_form_field.html' with field=form.programme %}
+    {% include 'admissions/_form_field.html' with field=form.niveau %}
+    {% include 'admissions/_form_field.html' with field=form.specialite_souhaitee_1 %}
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.specialite_souhaitee_2 %}
+        {% include 'admissions/_form_field.html' with field=form.specialite_souhaitee_3 %}
+    </div>
+</div>
+
+<div class="form-section" id="formset-secondary"
+     data-prefix="{{ sd_formset.prefix }}"
+     data-total-name="{{ sd_formset.management_form.TOTAL_FORMS.html_name }}">
+    <h2 class="form-section-title">Diplômes du secondaire</h2>
+    {{ sd_formset.management_form }}
+    <div class="formset-list">
+        {% for sub in sd_formset %}
+            <div class="formset-block" data-form-index="{{ forloop.counter0 }}">
+                <p class="formset-block-title">Diplôme #{{ forloop.counter }}</p>
+                <button type="button" class="formset-remove" data-action="remove">Retirer</button>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.name %}
+                    {% include 'admissions/_form_field.html' with field=sub.serie %}
+                </div>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.obtained_year %}
+                    {% include 'admissions/_form_field.html' with field=sub.mention %}
+                </div>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.school_existant %}
+                    {% include 'admissions/_form_field.html' with field=sub.school_name %}
+                </div>
+                {% for hidden in sub.hidden_fields %}{{ hidden }}{% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <template class="formset-empty-tpl">
+        <div class="formset-block" data-form-index="__prefix__">
+            <p class="formset-block-title">Diplôme</p>
+            <button type="button" class="formset-remove" data-action="remove">Retirer</button>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.name %}
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.serie %}
+            </div>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.obtained_year %}
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.mention %}
+            </div>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.school_existant %}
+                {% include 'admissions/_form_field.html' with field=sd_formset.empty_form.school_name %}
+            </div>
+            {% for hidden in sd_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        </div>
+    </template>
+    <button type="button" class="btn btn-ghost formset-add" data-action="add">+ Ajouter un diplôme</button>
+</div>
+
+<div class="form-section" id="formset-university"
+     data-prefix="{{ ul_formset.prefix }}"
+     data-total-name="{{ ul_formset.management_form.TOTAL_FORMS.html_name }}">
+    <h2 class="form-section-title">Cursus universitaire (si applicable)</h2>
+    {{ ul_formset.management_form }}
+    <div class="formset-list">
+        {% for sub in ul_formset %}
+            <div class="formset-block" data-form-index="{{ forloop.counter0 }}">
+                <p class="formset-block-title">Niveau universitaire #{{ forloop.counter }}</p>
+                <button type="button" class="formset-remove" data-action="remove">Retirer</button>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.level_name %}
+                    {% include 'admissions/_form_field.html' with field=sub.diploma_name %}
+                </div>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.speciality %}
+                    {% include 'admissions/_form_field.html' with field=sub.academic_year %}
+                </div>
+                <div class="form-row-2">
+                    {% include 'admissions/_form_field.html' with field=sub.university_existant %}
+                    {% include 'admissions/_form_field.html' with field=sub.university_name %}
+                </div>
+                {% for hidden in sub.hidden_fields %}{{ hidden }}{% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <template class="formset-empty-tpl">
+        <div class="formset-block" data-form-index="__prefix__">
+            <p class="formset-block-title">Niveau universitaire</p>
+            <button type="button" class="formset-remove" data-action="remove">Retirer</button>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.level_name %}
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.diploma_name %}
+            </div>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.speciality %}
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.academic_year %}
+            </div>
+            <div class="form-row-2">
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.university_existant %}
+                {% include 'admissions/_form_field.html' with field=ul_formset.empty_form.university_name %}
+            </div>
+            {% for hidden in ul_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        </div>
+    </template>
+    <button type="button" class="btn btn-ghost formset-add" data-action="add">+ Ajouter un niveau</button>
+</div>

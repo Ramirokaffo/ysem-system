@@ -9,8 +9,8 @@ class BaseUserAdmin(UserAdmin):
     """
     Administration pour le modèle BaseUser étendu
     """
-    list_display = ['username', 'full_name', 'email', 'role', 'gender', 'is_active', 'date_joined']
-    list_filter = ['role', 'gender', 'is_staff', 'is_active', 'date_joined']
+    list_display = ['username', 'full_name', 'email', 'role', 'gender', 'two_factor_enabled', 'is_active', 'date_joined']
+    list_filter = ['role', 'gender', 'is_staff', 'is_active', 'two_factor_enabled', 'two_factor_user_can_manage', 'date_joined']
     search_fields = ['username', 'first_name', 'last_name', 'email', 'phone_number']
     ordering = ['-date_joined']
     list_per_page = 25
@@ -29,6 +29,9 @@ class BaseUserAdmin(UserAdmin):
         }),
         ('Informations professionnelles', {
             'fields': ('role',)
+        }),
+        ('Double authentification', {
+            'fields': ('two_factor_enabled', 'two_factor_user_can_manage'),
         }),
         ('Dates importantes', {
             'fields': ('last_login', 'date_joined'),

@@ -1,0 +1,30 @@
+{% extends 'admissions/_auth_layout.html' %}
+
+{% block title %}Activation envoyée — {{ institution_name }}{% endblock %}
+
+{% block hero_eyebrow %}Vérification de l'e-mail{% endblock %}
+{% block hero_title %}Plus qu'une étape.{% endblock %}
+{% block hero_lead %}Nous venons de vous envoyer un lien pour activer votre compte candidat.{% endblock %}
+
+{% block auth_card %}
+    <h2>{% if resent %}Lien renvoyé{% else %}Vérifiez votre boîte mail{% endif %}</h2>
+    <p class="auth-sub">
+        Un e-mail contenant un lien d'activation a été envoyé à
+        <strong>{{ email }}</strong>.
+    </p>
+
+    <div class="alert alert-info" style="margin-top:16px;">
+        Le lien est valable pendant 48 heures. Pensez à vérifier vos courriers
+        indésirables si vous ne le voyez pas.
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'admissions:login' %}">Retour à la connexion</a>
+    </p>
+    <p class="auth-helper auth-helper--muted">
+        Vous n'avez rien reçu ?
+        <a href="{% url 'admissions:resend_activation' %}">Renvoyer le lien</a>
+    </p>
+{% endblock %}

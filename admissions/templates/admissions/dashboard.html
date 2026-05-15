@@ -1,0 +1,74 @@
+{% extends 'admissions/base.html' %}
+
+{% block title %}Mon espace candidat — YSEM{% endblock %}
+
+{% block content %}
+<div class="dash-container">
+    {% if messages %}
+        <div class="alert-stack">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="dash-card">
+        <h1 class="dash-greeting">Bonjour, {{ student.firstname }}</h1>
+        <p>
+            Bienvenue dans votre espace candidat YSEM.
+            <span class="badge badge-{{ student.status }}">{{ student.get_status_display }}</span>
+        </p>
+
+        <p style="color:var(--ysem-muted); font-size:14px;">
+            Votre numéro de candidat&nbsp;:
+            <strong style="color:var(--ysem-ink);">{{ student.matricule }}</strong>
+        </p>
+
+        <div class="divider"></div>
+
+        <div class="progress-card">
+            <h3>Mon dossier d'admission</h3>
+
+            {% if preinscription.is_submitted %}
+                <p style="color:var(--ysem-blue-900); margin:0 0 6px;">
+                    Votre pré-inscription a été soumise. Notre équipe l'examine.
+                </p>
+                <div class="progress-bar"><span style="width:100%;"></span></div>
+                <p style="color:var(--ysem-muted); font-size:13px; margin:6px 0 12px;">
+                    Vous recevrez un courriel à chaque évolution du statut de votre dossier.
+                </p>
+                <a href="{% url 'admissions:preinscription_recap' %}" class="btn btn-primary">
+                    Voir mon récapitulatif
+                </a>
+            {% elif preinscription.is_started %}
+                <p style="color:var(--ysem-blue-900); margin:0 0 6px;">
+                    Étape {{ preinscription.current_step }} sur {{ preinscription.total_steps }} complétée.
+                </p>
+                <div class="progress-bar"><span style="width:{{ preinscription.percent }}%;"></span></div>
+                <p style="color:var(--ysem-muted); font-size:13px; margin:6px 0 12px;">
+                    Prochaine étape&nbsp;: <strong style="color:var(--ysem-ink);">{{ preinscription.next_step_title }}</strong>
+                </p>
+                <a href="{% url 'admissions:preinscription_step' preinscription.next_step %}" class="btn btn-primary">
+                    Continuer ma pré-inscription
+                </a>
+            {% else %}
+                <p style="color:var(--ysem-blue-900); margin:0 0 6px;">
+                    Vous n'avez pas encore commencé votre dossier de pré-inscription.
+                </p>
+                <div class="progress-bar"><span style="width:0%;"></span></div>
+                <p style="color:var(--ysem-muted); font-size:13px; margin:6px 0 12px;">
+                    Le formulaire est en quatre étapes&nbsp;: identification, famille, cursus puis pièces justificatives.
+                    Vos données sont enregistrées à chaque étape&nbsp;: vous pouvez vous interrompre et reprendre plus tard.
+                </p>
+                <a href="{% url 'admissions:preinscription_step' 1 %}" class="btn btn-primary">
+                    Commencer ma pré-inscription
+                </a>
+            {% endif %}
+        </div>
+
+        <div style="margin-top:24px;">
+            <a href="{% url 'admissions:logout' %}" class="btn btn-ghost">Se déconnecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

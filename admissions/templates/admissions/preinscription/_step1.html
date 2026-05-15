@@ -1,0 +1,50 @@
+{% comment %}Étape 1 — Identification du candidat{% endcomment %}
+
+<div class="form-section">
+    <h2 class="form-section-title">État civil</h2>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.nom %}
+        {% include 'admissions/_form_field.html' with field=form.prenom %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.date_naissance %}
+        {% include 'admissions/_form_field.html' with field=form.sexe %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.premiere_langue_officielle %}
+        {% include 'admissions/_form_field.html' with field=form.telephone %}
+    </div>
+    <div class="form-field profile-photo-field" data-profile-photo-field>
+        <label for="{{ form.profile_photo.id_for_label }}">
+            {{ form.profile_photo.label }}{% if form.profile_photo.field.required %} <span style="color:var(--ysem-danger);">*</span>{% endif %}
+        </label>
+        <div class="profile-photo-current"{% if not student.profile_photo %} hidden{% endif %} data-profile-photo-preview-wrapper>
+            <img src="{% if student.profile_photo %}{{ student.profile_photo.url }}{% endif %}"
+                 alt="Aperçu de la photo de profil"
+                 class="profile-photo-preview"
+                 data-profile-photo-preview>
+            <span class="profile-photo-note" data-profile-photo-note>
+                {% if student.profile_photo %}Photo enregistrée — laissez vide pour conserver, ou choisissez un nouveau fichier pour remplacer.{% endif %}
+            </span>
+        </div>
+        {{ form.profile_photo }}
+        {% if form.profile_photo.help_text %}<div class="help-text">{{ form.profile_photo.help_text }}</div>{% endif %}
+        {% for error in form.profile_photo.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Origine et résidence</h2>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.pays_origine %}
+        {% include 'admissions/_form_field.html' with field=form.region_origine %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.departement_origine %}
+        {% include 'admissions/_form_field.html' with field=form.arrondissement_origine %}
+    </div>
+    <div class="form-row-2">
+        {% include 'admissions/_form_field.html' with field=form.ville_residence %}
+        {% include 'admissions/_form_field.html' with field=form.quartier_residence %}
+    </div>
+</div>

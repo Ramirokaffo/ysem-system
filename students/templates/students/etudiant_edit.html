@@ -9,9 +9,14 @@
 <div class="row">
     <div class="col-12">
         <div class="card bg-primary shadow-soft border-light p-3 mb-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4><span class="fas fa-edit mr-2"></span>{{ page_title|default:"Modifier l'étudiant" }} de {{ student.firstname }} {{ student.lastname }}</h4>
-                <div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h4 class="mb-0"><span class="fas fa-edit mr-2"></span>{{ page_title|default:"Modifier l'étudiant" }} de {{ student.firstname }} {{ student.lastname }}</h4>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% if mobile_upload_url %}
+                    <button type="button" class="btn btn-outline-info shadow-soft mr-2" data-toggle="modal" data-target="#mobileUploadModal">
+                        <span class="fas fa-qrcode mr-2"></span>Téléverser via mobile
+                    </button>
+                    {% endif %}
                     <a href="{{ back_url }}" class="btn btn-outline-secondary shadow-soft">
                         <span class="fas fa-arrow-left mr-2"></span>{{ back_link_label }}
                     </a>
@@ -1054,5 +1059,87 @@
         }
     });
 </script>
+
+{% if mobile_upload_url %}
+<div class="modal fade" id="mobileUploadModal" tabindex="-1" role="dialog" aria-labelledby="mobileUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-primary border-light shadow-soft">
+            <div class="modal-header border-light">
+                <h5 class="modal-title" id="mobileUploadModalLabel">
+                    <span class="fas fa-qrcode mr-2"></span>Téléverser depuis un mobile
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="small text-muted mb-3">
+                    Scannez ce QR code avec votre téléphone pour ouvrir une page sécurisée
+                    permettant d'envoyer la photo de profil et les documents (depuis la galerie ou directement avec la caméra).
+                </p>
+                <div id="mobile-upload-qrcode" class="d-inline-block p-3 bg-white rounded shadow-soft mb-3"></div>
+                <div class="small text-muted mb-3">
+                    <span class="fas fa-clock mr-1"></span>Lien valide {{ mobile_upload_token_minutes|default:30 }} minutes.
+                    Le téléphone doit pouvoir joindre ce serveur (même réseau).
+                </div>
+                <div class="form-group mb-2">
+                    <input type="text" id="mobile-upload-url" class="form-control shadow-inset border-light text-center small" value="{{ mobile_upload_url }}" readonly>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm shadow-soft" id="mobile-upload-copy">
+                    <span class="fas fa-copy mr-1"></span>Copier le lien
+                </button>
+            </div>
+        </div>primary
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileUploadUrl = "{{ mobile_upload_url|escapejs }}";
+        const qrContainer = document.getElementById('mobile-upload-qrcode');
+
+        if (qrContainer) {
+            qrContainer.innerHTML= '';
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    new QRCode(qrContainer, {
+                        text: mobileUploadUrl,
+                        width: 220,
+                        height: 220,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch (err) {
+                    console.error('QR code generation failed:', err);
+                }
+            } else {
+                const img = document.createElement('img');
+                img.alt = 'QR code';
+                img.width = 220;
+                img.height = 220;
+                img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(mobileUploadUrl);
+                qrContainer.appendChild(img);
+            }
+        }
+
+        const copyBtn = document.getElementById('mobile-upload-copy');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function () {
+                const input = document.getElementById('mobile-upload-url');
+                if (!input) return;
+                input.select();
+                input.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    copyBtn.innerHTML = '<span class="fas fa-check mr-1"></span>Copié';
+                    setTimeout(function () {
+                        copyBtn.innerHTML = '<span class="fas fa-copy mr-1"></span>Copier le lien';
+                    }, 1500);
+                } catch (err) { /* ignore */ }
+            });
+        }
+    });
+</script>
+{% endif %}
 
 {% endblock %}
