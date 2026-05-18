@@ -87,8 +87,8 @@ class StudentLevelAdmin(admin.ModelAdmin):
 class StudentMetaDataAdmin(admin.ModelAdmin):
     """Administration des métadonnées d'étudiants"""
     list_display = [
-        'id', 'mother_full_name', 'father_full_name', 'original_country',
-        'residence_city', 'original_region', 'is_complete'
+        'student', 'original_country',
+        'residence_city', 'student_status', 'is_complete'
     ]
     list_filter = [
         'original_country', 'original_region', 'is_complete',
@@ -133,6 +133,10 @@ class StudentMetaDataAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    @admin.display(description="Statut étudiant")
+    def student_status(self, obj):
+        return obj.student.status if hasattr(obj, 'student') and obj.student else "-"
 
 
 @admin.register(OfficialDocument)
