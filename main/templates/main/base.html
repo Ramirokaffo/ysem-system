@@ -137,7 +137,7 @@
             <div class="user-profile dropdown">
                 <div class="user-details">
                     <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-                    <div class="user-role">{{ user.role.name|default:"Administrateur" }}</div>
+                    <div class="user-role">{{ user.get_role_display|default:"Administrateur" }}</div>
                 </div>
                 <div class="user-avatar" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;" id="userDropdown">
                     {% if user.first_name and user.last_name %}

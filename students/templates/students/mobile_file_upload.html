@@ -7,6 +7,7 @@
     <title>Téléversement de documents - YSEM</title>
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
     <style>
         body { background-color: #e6e7ee; color: #44476a; font-family: 'Nunito', sans-serif; padding: 16px; }
         .upload-container { max-width: 720px; margin: 0 auto; }
@@ -51,11 +52,23 @@
             {% csrf_token %}
 
             {% for field in file_fields %}
-            <div class="card bg-primary shadow-soft border-light file-card">
+            <div class="card bg-primary shadow-soft border-light file-card"
+                 {% if field.field_name == 'profile_photo' %}data-profile-photo-field{% endif %}>
                 <div class="label mb-1">{{ field.label }}</div>
                 <div class="help mb-2">{{ field.help_text }}</div>
 
-                {% if field.current_file %}
+                {% if field.field_name == 'profile_photo' %}
+                    <div class="current mb-2 profile-photo-current"
+                         {% if not field.current_file %}hidden{% endif %}
+                         data-profile-photo-preview-wrapper>
+                        <img src="{% if field.current_file %}{{ field.current_file.url }}{% endif %}"
+                             alt="Aperçu" class="profile-photo-preview"
+                             data-profile-photo-preview>
+                        <span class="profile-photo-note" data-profile-photo-note>
+                            {% if field.current_file %}Photo enregistrée — choisissez un nouveau fichier pour la remplacer.{% endif %}
+                        </span>
+                    </div>
+                {% elif field.current_file %}
                     <div class="current mb-2">
                         <span class="font-weight-bold">Fichier actuel :</span>
                         {% if field.is_image %}
@@ -129,5 +142,6 @@
         });
     });
 </script>
+<script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
 </body>
 </html>

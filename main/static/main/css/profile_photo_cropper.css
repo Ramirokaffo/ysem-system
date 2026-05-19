@@ -1,0 +1,133 @@
+/* Cropper de photo de profil (carré 1:1) — styles partagés.
+   Utilisé partout où l'utilisateur peut téléverser une photo de profil. */
+
+/* Vignette d'aperçu à côté du champ ----------------------------------- */
+.profile-photo-current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    border: 1px solid #d8dde6;
+    border-radius: 8px;
+    background: #f3f6fb;
+}
+.profile-photo-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #d8dde6;
+    background: #fff;
+    flex-shrink: 0;
+}
+.profile-photo-note {
+    color: #5f6b7c;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Modal de recadrage --------------------------------------------------- */
+.photo-cropper-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.photo-cropper-modal[hidden] { display: none; }
+.photo-cropper-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+}
+.photo-cropper-dialog {
+    position: relative;
+    background: #fff;
+    color: #1f2937;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    font-family: inherit;
+}
+.photo-cropper-header { margin-bottom: 12px; }
+.photo-cropper-title {
+    font-size: 18px;
+    margin: 0 0 6px;
+    color: #111827;
+}
+.photo-cropper-help {
+    font-size: 13px;
+    color: #5f6b7c;
+    margin: 0;
+    line-height: 1.4;
+}
+.photo-cropper-viewport {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    max-width: 100%;
+    margin: 14px auto 0;
+    background: #1a1f2c;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+.photo-cropper-viewport:active { cursor: grabbing; }
+.photo-cropper-viewport img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    pointer-events: none;
+    transform-origin: 0 0;
+}
+.photo-cropper-frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 2px dashed rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+.photo-cropper-controls { margin-top: 14px; }
+.photo-cropper-zoom-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #5f6b7c;
+}
+.photo-cropper-zoom-label input[type="range"] { flex: 1; }
+.photo-cropper-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Boutons internes (autonomes pour ne pas dépendre du framework hôte) --- */
+.photo-cropper-btn {
+    appearance: none;
+    border: 1px solid #d8dde6;
+    background: #fff;
+    color: #1f2937;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.2;
+    cursor: pointer;
+    font-family: inherit;
+}
+.photo-cropper-btn:hover { background: #f3f6fb; }
+.photo-cropper-btn--primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+.photo-cropper-btn--primary:hover { background: #1d4ed8; border-color: #1d4ed8; }

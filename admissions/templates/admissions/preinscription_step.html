@@ -72,6 +72,10 @@
 </div>
 
 {% if step == 1 or step == 3 %}
-    <script src="{% static 'admissions/js/preinscription_wizard.new.js' %}"></script>
+    <script src="{% static 'admissions/js/preinscription_wizard.js' %}"></script>
+{% endif %}
+{% if step == 1 %}
+    <link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
+    <script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
 {% endif %}
 {% endblock %}

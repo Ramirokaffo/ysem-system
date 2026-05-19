@@ -88,11 +88,13 @@ class StudentMetaDataAdmin(admin.ModelAdmin):
     """Administration des métadonnées d'étudiants"""
     list_display = [
         'student', 'original_country',
-        'residence_city', 'student_status', 'is_complete'
+        'residence_city', 'student_status', 
+        'is_complete', 'is_online_registration'
     ]
     list_filter = [
         'original_country', 'original_region', 'is_complete',
-        'mother_live_city', 'father_live_city', 'residence_city'
+        'mother_live_city', 'father_live_city', 'residence_city',
+        'is_online_registration'
     ]
     search_fields = [
         'mother_full_name', 'father_full_name', 'mother_email', 'father_email',

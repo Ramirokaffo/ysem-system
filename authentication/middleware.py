@@ -84,7 +84,7 @@ class RoleBasedAccessMiddleware:
         
         role_config = self.role_access_map[user_role]
         
-        if request.user.is_superuser:
+        if request.user.is_superuser or user_role == "super_admin":
             return self.get_response(request)
         
         # Vérifier si l'utilisateur essaie d'accéder à un chemin interdit

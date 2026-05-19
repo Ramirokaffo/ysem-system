@@ -66,8 +66,13 @@
                             <div class="text-danger small">{{ form.premiere_langue_officielle.errors }}</div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3" data-profile-photo-field>
                             {{ form.profile_photo.label_tag }}
+                            <div class="profile-photo-current" hidden data-profile-photo-preview-wrapper>
+                                <img src="" alt="Aperçu de la photo de profil"
+                                     class="profile-photo-preview" data-profile-photo-preview>
+                                <span class="profile-photo-note" data-profile-photo-note></span>
+                            </div>
                             {{ form.profile_photo }}
                             {% if form.profile_photo.errors %}
                             <div class="text-danger small">{{ form.profile_photo.errors }}</div>
@@ -846,4 +851,7 @@
         }
     });
 </script>
+
+<link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
+<script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
 {% endblock %}

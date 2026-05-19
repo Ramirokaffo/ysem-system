@@ -44,7 +44,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Preuve d'obtention du baccalauréat",
-        help_text="Copie du document attestant la réussite du baccalauréat ou équivalent (PNG/JPG/PDF, max 5Mo)"
+        help_text="Copie du document attestant la réussite du baccalauréat ou équivalent (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     acte_naissance = models.FileField(
@@ -52,7 +52,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Photocopie certifiée de l'acte de naissance",
-        help_text="Photocopie certifiée conforme de l'acte de naissance (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie certifiée conforme de l'acte de naissance (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     # anciennement relevé du baccalauréat ; aujourd'hui on accepte le relevé de la dernière classe fréquentée
@@ -61,7 +61,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Relevé de notes de la dernière classe fréquentée",
-        help_text="Photocopie du relevé de notes de la dernière classe fréquentée (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie du relevé de notes de la dernière classe fréquentée (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     justificatif_dernier_diplome = models.FileField(
@@ -69,7 +69,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Justificatif du dernier diplôme obtenu",
-        help_text="Photocopie du justificatif du dernier diplôme obtenu (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie du justificatif du dernier diplôme obtenu (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     decharge_equivalence = models.FileField(
@@ -77,7 +77,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Décharge de la demande d'équivalence pour les diplômes étrangers",
-        help_text="Photocopie de la décharge de la demande d'équivalence pour les diplômes étrangers (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie de la décharge de la demande d'équivalence pour les diplômes étrangers (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     bulletins_terminale = models.FileField(
@@ -85,7 +85,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Bulletins de la classe de terminale",
-        help_text="Photocopie des bulletins de notes de la classe de terminale (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie des bulletins de notes de la classe de terminale (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     releve_notes_master1 = models.FileField(
@@ -93,7 +93,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Relevé de notes du Master 1 ou de tout autre diplôme équivalent",
-        help_text="Relevé de notes du Master 1 ou de tout autre diplôme équivalent (PNG/JPG/PDF, max 5Mo)"
+        help_text="Relevé de notes du Master 1 ou de tout autre diplôme équivalent (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     photocopie_bts_hnd = models.FileField(
@@ -101,7 +101,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Photocopie du BTS, HND ou de tout autre diplôme équivalent",
-        help_text="Photocopie du BTS, HND ou de tout autre diplôme équivalent (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie du BTS, HND ou de tout autre diplôme équivalent (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     certificat_nationalite = models.FileField(
@@ -109,7 +109,7 @@ class StudentMetaData(models.Model):
         blank=True,
         null=True,
         verbose_name="Certificat de nationalité",
-        help_text="Photocopie certifiée conforme du certificat de nationalité (PNG/JPG/PDF, max 5Mo)"
+        help_text="Photocopie certifiée conforme du certificat de nationalité (PNG/JPG/JPEG/PDF, max 5Mo)"
     )
 
     def __str__(self):

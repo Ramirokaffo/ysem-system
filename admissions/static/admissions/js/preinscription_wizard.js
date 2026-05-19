@@ -124,6 +124,5 @@
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-prefix]').forEach(initFormset);
         document.querySelectorAll('[data-specialites-url]').forEach(initSpecialiteFilter);
-        document.querySelectorAll('[data-profile-photo-field]').forEach(initProfilePhotoCropper);
     });
 })();

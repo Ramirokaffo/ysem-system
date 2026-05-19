@@ -445,19 +445,19 @@ class PreinscriptionStepView(View):
             messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
             return self._render_step4(request, form=form)
 
-        s, m = self.student, self.metadata
+        student, meta = self.student, self.metadata
 
         with transaction.atomic():
             # Documents : on n'écrase pas un fichier existant par un champ vide.
             for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
                 uploaded = request.FILES.get(field_name)
                 if uploaded:
-                    setattr(m, field_name, uploaded)
+                    setattr(meta, field_name, uploaded)
 
-            if not partial and s.preinscription_step < 4:
-                s.preinscription_step = 4
-                s.save(update_fields=['preinscription_step'])
-            m.save()
+            if not partial and student.preinscription_step < 4:
+                student.preinscription_step = 4
+                student.save(update_fields=['preinscription_step'])
+            meta.save()
 
         if partial:
             messages.success(request, "Brouillon enregistré.")
