@@ -53,16 +53,22 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <div class="card bg-primary shadow-inset border-light p-3 mb-3">
+                            <div class="card bg-primary shadow-inset border-light p-3 mb-3" data-profile-photo-field>
                                 <div class="row align-items-center">
                                     <div class="col-md-3 text-center mb-3 mb-md-0">
-                                        {% if student.profile_photo %}
-                                            <img src="{{ student.profile_photo.url }}" alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}" class="img-fluid img-thumbnail rounded" style="max-height: 180px; object-fit: cover;">
-                                        {% else %}
+                                        <div data-profile-photo-placeholder {% if student.profile_photo %}hidden{% endif %}>
                                             <div class="icon icon-shape shadow-soft border border-light rounded-circle bg-primary text-secondary mx-auto d-flex align-items-center justify-content-center" style="width: 140px; height: 140px;">
                                                 <span class="fas fa-user fa-3x"></span>
                                             </div>
-                                        {% endif %}
+                                        </div>
+                                        <div class="profile-photo-current" {% if not student.profile_photo %}hidden{% endif %} data-profile-photo-preview-wrapper>
+                                            <img src="{% if student.profile_photo %}{{ student.profile_photo.url }}{% endif %}"
+                                                 alt="Photo de profil de {{ student.firstname }} {{ student.lastname }}"
+                                                 class="img-fluid img-thumbnail rounded profile-photo-preview"
+                                                 style="max-height: 180px; object-fit: cover;"
+                                                 data-profile-photo-preview>
+                                            <span class="profile-photo-note d-block small text-muted mt-2" data-profile-photo-note></span>
+                                        </div>
                                     </div>
                                     <div class="col-md-9">
                                         <div class="form-group mb-0">
@@ -1089,7 +1095,7 @@
                     <span class="fas fa-copy mr-1"></span>Copier le lien
                 </button>
             </div>
-        </div>primary
+        </div>
     </div>
 </div>
 
@@ -1141,5 +1147,23 @@
     });
 </script>
 {% endif %}
+
+<link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
+<script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
+<script>
+    (function () {
+        var field = document.querySelector('[data-profile-photo-field]');
+        if (!field) return;
+        var placeholder = field.querySelector('[data-profile-photo-placeholder]');
+        var wrapper = field.querySelector('[data-profile-photo-preview-wrapper]');
+        if (!placeholder || !wrapper) return;
+        function syncPlaceholder() { placeholder.hidden = !wrapper.hidden; }
+        new MutationObserver(syncPlaceholder).observe(wrapper, {
+            attributes: true,
+            attributeFilter: ['hidden']
+        });
+        syncPlaceholder();
+    })();
+</script>
 
 {% endblock %}
