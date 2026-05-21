@@ -1,0 +1,28 @@
+{% extends 'lecturers/_auth_layout.html' %}
+
+{% block title %}Renvoyer le lien d'activation — {{ institution_name }}{% endblock %}
+
+{% block auth_card %}
+    <h1>Renvoyer le lien d'activation</h1>
+    <p class="auth-sub">Indiquez votre adresse e-mail pour recevoir un nouveau lien.</p>
+
+    <form method="post" novalidate class="lec-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn-neu btn-neu--primary">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i> Envoyer le lien
+        </button>
+    </form>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'lecturers:login' %}">Retour à la connexion</a>
+    </p>
+{% endblock %}

@@ -86,13 +86,6 @@ class PreInscriptionsView(LoginRequiredMixin, TemplateView):
 
 
 
-
-# NOTE : Les anciennes vues publiques `PreInscriptionExterneView`,
-# `PreInscriptionExterneStepView` et `PreInscriptionExterneConfirmationView`
-# ont été retirées : tout le flux candidat passe désormais par le portail
-# d'admission (`/admissions/`).
-
-
 class NouvellePreInscriptionView(LoginRequiredMixin, TemplateView):
     """Vue pour le formulaire d'inscription complet (sans étapes) - PUBLIQUE"""
     template_name = 'main/preinscription/nouvelle_inscription.html'

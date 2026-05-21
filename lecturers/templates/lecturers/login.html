@@ -1,0 +1,47 @@
+{% extends 'lecturers/_auth_layout.html' %}
+
+{% block title %}Connexion — Portail enseignant {{ institution_name }}{% endblock %}
+
+{% block auth_card %}
+    <h1>Connexion</h1>
+    <p class="auth-sub">Accédez à votre espace enseignant {{ institution_name }}.</p>
+
+    <form method="post" novalidate class="lec-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="field-error">{{ form.password.errors|join:" " }}</div>{% endif %}
+        </div>
+
+        <div class="auth-inline">
+            <a href="{% url 'lecturers:password_reset_request' %}">Mot de passe oublié ?</a>
+        </div>
+
+        <button type="submit" class="btn-neu btn-neu--primary">
+            <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Se connecter
+        </button>
+    </form>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        Pas encore de compte ?
+        <a href="{% url 'lecturers:signup' %}">Créer un compte enseignant</a>
+    </p>
+    <p class="auth-helper auth-helper--muted">
+        Vous n'avez pas reçu l'e-mail d'activation ?
+        <a href="{% url 'lecturers:resend_activation' %}">Renvoyer le lien</a>
+    </p>
+{% endblock %}

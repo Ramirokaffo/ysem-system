@@ -1,0 +1,22 @@
+{% extends 'lecturers/_auth_layout.html' %}
+
+{% block title %}Compte activé — {{ institution_name }}{% endblock %}
+
+{% block auth_card %}
+    <h1>Votre compte est activé</h1>
+    <p class="auth-sub">
+        Merci {{ lecturer.firstname }} ! Votre adresse e-mail a bien été vérifiée.
+    </p>
+
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <div>
+            Vous pouvez maintenant vous connecter et déposer votre dossier de
+            candidature pour enseigner à {{ institution_name }}.
+        </div>
+    </div>
+
+    <a href="{% url 'lecturers:login' %}" class="btn-neu btn-neu--primary" style="margin-top: 18px;">
+        <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Se connecter à mon espace
+    </a>
+{% endblock %}

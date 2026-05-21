@@ -31,10 +31,29 @@ class Level(models.Model):
     """
     Modèle pour les niveaux d'études
     """
+
+    # Liste des diplomes
+    DIPLOMAS_CHOICES = [
+        ('BTS', 'BTS'),
+        ('HND', 'HND'),
+        ('Licence', 'Licence'),
+        ('Master', 'Master'),
+        ('Doctorat', 'Doctorat'),
+    ]
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     academic_order = models.IntegerField(null=True, blank=False, verbose_name="Numero d'ordre académique")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+
+    # Diplome minimum requis pour enseigner à ce niveau
+    minimum_diploma = models.CharField(
+        max_length=20,
+        choices=DIPLOMAS_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name="Diplôme minimum requis pour enseigner à ce niveau",
+        help_text="Le diplôme minimum requis pour un enseignant pour enseigner à ce niveau. Laisser vide si aucun diplôme n'est requis."
+    )
 
     def __str__(self):
         return self.name
@@ -172,15 +191,16 @@ class Course(models.Model):
     """
     Modèle pour les cours
     """
-    course_code = models.CharField(max_length=20, primary_key=True)
-    label = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    credit_count = models.IntegerField()
-    speciality = models.ForeignKey(Speciality, on_delete=models.SET_NULL, null=True, related_name='courses')
-    level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, related_name='courses')
+    course_code = models.CharField(max_length=20, primary_key=True, verbose_name="Code du cours")
+    label = models.CharField(max_length=200, verbose_name="Intitulé du cours")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")
+    credit_count = models.IntegerField(verbose_name="Nombre de crédits")
+    speciality = models.ForeignKey(Speciality, on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Spécialité")
+    subject = models.ForeignKey('Subject', on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Matière")
+    level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Niveau")
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='courses')
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Programme")
 
     def __str__(self):
         return f"{self.course_code} - {self.label}"
@@ -190,6 +210,22 @@ class Course(models.Model):
         verbose_name_plural = "Cours"
 
 
+class Subject(models.Model):
+    """
+    Modèle pour les matières
+    """
+    name = models.CharField(max_length=200, verbose_name="Nom de la matière")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")
+    # course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subjects')
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Matière"
+        verbose_name_plural = "Matières"
 
 class AcademicYear(models.Model):
     """

@@ -1,0 +1,35 @@
+{% extends 'lecturers/base.html' %}
+
+{% block title %}Mon espace enseignant — {{ institution_name }}{% endblock %}
+
+{% block content %}
+    <div class="dash-card">
+        {% if messages %}
+            <div class="alert-stack">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }}">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        <div>{{ message }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h1>Bonjour, {{ lecturer.firstname }}</h1>
+        <p>
+            Bienvenue dans votre espace enseignant {{ institution_name }}.
+        </p>
+
+        <p>
+            Votre matricule&nbsp;:
+            <span class="matricule-pill">{{ lecturer.matricule }}</span>
+        </p>
+
+        <div class="divider"></div>
+
+        <p style="opacity:.8;">
+            Le dépôt de votre dossier de candidature ainsi que les espaces pour
+            vos supports et devoirs seront prochainement disponibles ici.
+        </p>
+    </div>
+{% endblock %}

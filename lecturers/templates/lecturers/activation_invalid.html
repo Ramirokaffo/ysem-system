@@ -1,0 +1,26 @@
+{% extends 'lecturers/_auth_layout.html' %}
+
+{% block title %}Lien d'activation invalide — {{ institution_name }}{% endblock %}
+
+{% block auth_card %}
+    <h1>Lien d'activation invalide</h1>
+    <p class="auth-sub">
+        Le lien que vous venez d'ouvrir n'est plus valable. Il a peut-être
+        expiré (48 heures) ou été déjà utilisé.
+    </p>
+
+    <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        <div>Demandez un nouveau lien d'activation pour finaliser la création de votre compte.</div>
+    </div>
+
+    <a href="{% url 'lecturers:resend_activation' %}" class="btn-neu btn-neu--primary" style="margin-top: 18px;">
+        <i class="fas fa-paper-plane" aria-hidden="true"></i> Recevoir un nouveau lien
+    </a>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'lecturers:login' %}">Retour à la connexion</a>
+    </p>
+{% endblock %}

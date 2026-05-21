@@ -1,0 +1,29 @@
+{% extends 'lecturers/_auth_layout.html' %}
+
+{% block title %}Activation envoyée — {{ institution_name }}{% endblock %}
+
+{% block auth_card %}
+    <h1>{% if resent %}Lien renvoyé{% else %}Vérifiez votre boîte mail{% endif %}</h1>
+    <p class="auth-sub">
+        Un e-mail contenant un lien d'activation a été envoyé à
+        <strong>{{ email }}</strong>.
+    </p>
+
+    <div class="alert alert-info">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <div>
+            Le lien est valable pendant 48 heures. Pensez à vérifier vos
+            courriers indésirables si vous ne le voyez pas.
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="auth-helper">
+        <a href="{% url 'lecturers:login' %}">Retour à la connexion</a>
+    </p>
+    <p class="auth-helper auth-helper--muted">
+        Vous n'avez rien reçu ?
+        <a href="{% url 'lecturers:resend_activation' %}">Renvoyer le lien</a>
+    </p>
+{% endblock %}

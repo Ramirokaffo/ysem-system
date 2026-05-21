@@ -1,0 +1,147 @@
+/* Portail enseignant — design neumorphism */
+:root {
+    --neu-bg: #e6e7ee;
+    --neu-surface: #e6e7ee;
+    --neu-ink: #44476a;
+    --neu-ink-strong: #262833;
+    --neu-accent: #4d4f74;
+    --neu-shadow-dark: #b8b9be;
+    --neu-shadow-light: #ffffff;
+    --neu-danger: #dc3545;
+    --neu-success: #28a745;
+    --neu-info: #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+
+body.lecturers-body {
+    background-color: var(--neu-bg);
+    color: var(--neu-ink);
+    font-family: 'Nunito', 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.lec-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+.lec-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px;
+}
+.lec-brand { display: flex; align-items: center; gap: 14px; color: var(--neu-ink); text-decoration: none; }
+.lec-brand .brand-logo {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--neu-surface);
+    box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.lec-brand .brand-logo img { max-width: 70%; max-height: 70%; object-fit: contain; }
+.lec-brand .brand-text { font-weight: 700; font-size: 1.05rem; line-height: 1.15; }
+.lec-brand .brand-text small { display: block; font-weight: 500; opacity: .65; font-size: .78rem; }
+
+.lec-topbar nav a {
+    color: var(--neu-ink); text-decoration: none; font-weight: 600;
+    padding: 8px 14px; border-radius: 10px; font-size: .9rem;
+}
+.lec-topbar nav a:hover {
+    box-shadow: 3px 3px 8px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light);
+}
+
+.lec-main { flex: 1; padding: 24px; display: flex; align-items: center; justify-content: center; }
+
+.lec-footer {
+    padding: 18px 28px; text-align: center; font-size: .8rem; opacity: .65;
+}
+
+/* Carte centrale (formulaires d'auth) */
+.lec-card {
+    width: 100%; max-width: 480px;
+    background: var(--neu-surface);
+    border-radius: 22px;
+    box-shadow: 8px 8px 18px var(--neu-shadow-dark), -8px -8px 18px var(--neu-shadow-light);
+    padding: 40px 34px;
+}
+.lec-card h1, .lec-card h2 { margin: 0 0 6px; color: var(--neu-ink-strong); font-weight: 700; }
+.lec-card h1 { font-size: 1.55rem; }
+.lec-card h2 { font-size: 1.3rem; }
+.lec-card .auth-sub { margin: 0 0 24px; opacity: .75; font-size: .92rem; }
+
+/* Formulaires */
+.lec-form .form-group { margin-bottom: 18px; }
+.lec-form .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.lec-form label {
+    display: block; margin-bottom: 8px; font-weight: 600;
+    color: var(--neu-ink); font-size: .87rem;
+}
+.lec-form .form-control {
+    width: 100%; padding: 12px 16px; border: none; border-radius: 12px;
+    background: var(--neu-surface); color: var(--neu-ink);
+    box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+    font-size: .93rem; font-family: inherit; transition: box-shadow .2s ease;
+}
+.lec-form .form-control:focus {
+    outline: none;
+    box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+}
+.lec-form .form-control::placeholder { opacity: .5; }
+
+.field-error {
+    margin-top: 6px; font-size: .82rem; color: var(--neu-danger); font-weight: 600;
+}
+
+/* Boutons */
+.btn-neu {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px 18px;
+    background: var(--neu-surface); color: var(--neu-ink); font-weight: 700;
+    border: none; border-radius: 12px; cursor: pointer; font-size: .95rem;
+    box-shadow: 5px 5px 12px var(--neu-shadow-dark), -5px -5px 12px var(--neu-shadow-light);
+    transition: box-shadow .2s ease, transform .1s ease;
+    text-decoration: none;
+}
+.btn-neu:hover { box-shadow: 3px 3px 8px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light); }
+.btn-neu:active { box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light); transform: translateY(1px); }
+.btn-neu--primary { color: var(--neu-ink-strong); }
+
+/* Liens auxiliaires */
+.auth-helper { margin-top: 14px; text-align: center; font-size: .88rem; }
+.auth-helper a { color: var(--neu-accent); font-weight: 700; text-decoration: none; }
+.auth-helper a:hover { text-decoration: underline; }
+.auth-helper--muted { opacity: .8; }
+.auth-inline { text-align: right; margin: -4px 0 16px; }
+.auth-inline a { color: var(--neu-accent); font-size: .85rem; font-weight: 600; text-decoration: none; }
+.auth-inline a:hover { text-decoration: underline; }
+
+.divider { height: 1px; background: rgba(68, 71, 106, .12); margin: 24px 0; border-radius: 1px; }
+
+/* Alerts */
+.alert-stack { margin-bottom: 16px; }
+.alert {
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+    background: var(--neu-surface);
+    box-shadow: 3px 3px 8px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light);
+    font-size: .88rem; display: flex; align-items: center; gap: 10px;
+    border-left: 3px solid transparent;
+}
+.alert-info, .alert-debug { border-left-color: var(--neu-info); color: #1e3a8a; }
+.alert-success { border-left-color: var(--neu-success); color: #155724; }
+.alert-error, .alert-danger, .alert-warning { border-left-color: var(--neu-danger); color: #721c24; }
+
+/* Dashboard */
+.dash-card {
+    width: 100%; max-width: 760px; background: var(--neu-surface);
+    border-radius: 22px; padding: 36px 32px;
+    box-shadow: 8px 8px 18px var(--neu-shadow-dark), -8px -8px 18px var(--neu-shadow-light);
+}
+.dash-card h1 { font-size: 1.55rem; margin: 0 0 6px; color: var(--neu-ink-strong); }
+.dash-card p { margin: 0 0 12px; }
+.matricule-pill {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    background: var(--neu-surface); font-weight: 700; font-size: .82rem;
+    box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+}
+
+@media (max-width: 576px) {
+    .lec-card, .dash-card { padding: 28px 22px; border-radius: 18px; }
+    .lec-form .form-row-2 { grid-template-columns: 1fr; }
+}

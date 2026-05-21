@@ -119,6 +119,9 @@ INSTALLED_APPS = [
     "payments",
     "scholarship",
     "admissions",
+    "recruitment",
+    "lecturers"
+
 ]
 
 MIDDLEWARE = [

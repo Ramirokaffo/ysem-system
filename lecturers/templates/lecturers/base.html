@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% block title %}Portail enseignant — {{ institution_name }}{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'lecturers/css/lecturers.css' %}" rel="stylesheet">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="lecturers-body">
+    <div class="lec-shell">
+        <header class="lec-topbar">
+            <a href="{% url 'lecturers:login' %}" class="lec-brand">
+                <span class="brand-logo">
+                    {% if institution_logo_url %}
+                        <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
+                    {% else %}
+                        <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                    {% endif %}
+                </span>
+                <span class="brand-text">
+                    {{ institution_name }}
+                    <small>Portail enseignant</small>
+                </span>
+            </a>
+            <nav>
+                {% if request.session.lecturer_authenticated %}
+                    <a href="{% url 'lecturers:dashboard' %}"><i class="fas fa-th-large" aria-hidden="true"></i> Mon espace</a>
+                    <a href="{% url 'lecturers:logout' %}"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Déconnexion</a>
+                {% else %}
+                    <a href="{% url 'lecturers:login' %}">Connexion</a>
+                    <a href="{% url 'lecturers:signup' %}">Créer un compte</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <main class="lec-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="lec-footer">
+            © {% now "Y" %} {{ institution_name }} — Tous droits réservés.
+        </footer>
+    </div>
+</body>
+</html>
