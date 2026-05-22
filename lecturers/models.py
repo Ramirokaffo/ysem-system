@@ -12,6 +12,12 @@ class Lecturer(models.Model):
     """
     Modèle pour les enseignants
     """
+
+    DIPLOMAS_CHOICES = [
+        ('Licence', 'Licence'),
+        ('Master', 'Master'),
+        ('Doctorat', 'Doctorat'),
+    ]
     matricule = models.CharField(blank=True, unique=True, primary_key=True, max_length=50, verbose_name="Matricule")
     firstname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Prénom")
     lastname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Nom de famille")
@@ -40,9 +46,11 @@ class Lecturer(models.Model):
     photo = models.ImageField(upload_to='lecturers/photos/', blank=True, null=True, verbose_name="Photo de profil")
     signature = models.ImageField(upload_to='lecturers/signatures/', blank=True, null=True, verbose_name="Signature")
 
-    highest_diploma_obtained = models.CharField(blank=True, null=True, max_length=100, verbose_name="Dernier diplôme obtenu")
+    cv = models.FileField(upload_to='lecturers/cvs/', blank=True, null=True, verbose_name="Curriculum Vitae")
 
-    favorite_subjects = models.ManyToManyField(related_name='favorite_lecturers', to=Course, blank=True, verbose_name="Matières préférées")
+    highest_diploma_obtained = models.CharField(blank=True, null=True, max_length=100, verbose_name="Dernier diplôme obtenu", choices=DIPLOMAS_CHOICES)
+
+    # favorite_subjects = models.ManyToManyField(related_name='favorite_lecturers', to=LecturerSubject, blank=True, verbose_name="Matières préférées")
 
     # Champs pour l'authentification du portail enseignant
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe (portail enseignant)")
@@ -50,6 +58,11 @@ class Lecturer(models.Model):
     email_verified = models.BooleanField(default=False, verbose_name="Email vérifié")
     email_verified_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de vérification de l'email")
     last_login_date = models.DateTimeField(blank=True, null=True, verbose_name="Date dernière connexion")
+
+    # Suivi du wizard de recrutement
+    recruitment_step = models.PositiveSmallIntegerField(default=0, verbose_name="Dernière étape de recrutement complétée")
+    recruitment_submitted = models.BooleanField(default=False, verbose_name="Dossier de candidature soumis")
+    recruitment_submitted_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de soumission du dossier")
 
     def save(self, *args, **kwargs):
         # Générer automatiquement le matricule si ce n'est pas déjà fait

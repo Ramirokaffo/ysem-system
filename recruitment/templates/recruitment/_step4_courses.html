@@ -1,0 +1,100 @@
+<div class="form-section">
+    <!-- <h2 class="form-section-title">Cours proposés</h2> -->
+    <p class="form-section-hint">
+        Voici la liste des cours pour lesquels vous êtes éligible, calculée à partir
+        de votre plus haut diplôme (<strong>{{ lecturer.highest_diploma_obtained|default:'—' }}</strong>)
+        et de votre expérience par matière.
+    </p>
+
+    {% if has_no_courses %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            <div>
+                Aucun cours ne correspond aux critères actuels (diplôme + années
+                d'expérience). Vous pouvez revenir aux étapes précédentes pour
+                ajuster vos informations.
+            </div>
+        </div>
+    {% else %}
+        {% if form.courses.errors %}
+            <div class="field-error">{{ form.courses.errors|join:" " }}</div>
+        {% endif %}
+
+        <div class="course-list" role="group" aria-label="Cours éligibles">
+            {% regroup eligible_courses by subject as subject_groups %}
+            {% for group in subject_groups %}
+                <div class="course-group">
+                    <h3 class="course-group__title">
+                        <i class="fas fa-book" aria-hidden="true"></i>
+                        {{ group.grouper.name|default:'Matière non précisée' }}
+                    </h3>
+                    {% regroup group.list by level.cycle as cycle_groups %}
+                    {% for cycle in cycle_groups %}
+                        <div class="course-cycle">
+                            <p class="course-cycle__label">{{ cycle.grouper|default:'—' }}</p>
+                            <ul class="course-options">
+                                {% for course in cycle.list %}
+                                    <li class="course-option">
+                                        <label class="course-option__main">
+                                            <input type="checkbox"
+                                                   name="{{ form.courses.html_name }}"
+                                                   value="{{ course.pk }}"
+                                                   {% if course.pk in selected_course_ids %}checked{% endif %}>
+                                            <span class="course-code">{{ course.course_code }}</span>
+                                            <span class="course-label">{{ course.label }}</span>
+                                            {% if course.level %}<span class="course-level">{{ course.level.name }}</span>{% endif %}
+                                            {% if course.credit_count %}<span class="course-credits">{{ course.credit_count }} cr.</span>{% endif %}
+                                        </label>
+                                        <button type="button" class="course-info-btn"
+                                                data-action="open-course-modal"
+                                                data-course-code="{{ course.course_code }}"
+                                                data-course-label="{{ course.label }}"
+                                                data-course-level="{% if course.level %}{{ course.level.name }}{% endif %}"
+                                                data-course-subject="{{ course.subject.name|default:'' }}"
+                                                data-course-credits="{{ course.credit_count|default:'' }}"
+                                                data-course-description="{{ course.description|default:''|escape }}"
+                                                aria-label="Voir la description du cours {{ course.label }}">
+                                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                        </button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="course-modal" id="course-modal" role="dialog" aria-modal="true"
+     aria-labelledby="course-modal-title" aria-hidden="true" hidden>
+    <div class="course-modal__overlay" data-action="close-course-modal"></div>
+    <div class="course-modal__card" role="document">
+        <header class="course-modal__header">
+            <div>
+                <p class="course-modal__eyebrow">
+                    <span class="course-code" id="course-modal-code">—</span>
+                    <span class="course-modal__sep" aria-hidden="true">•</span>
+                    <span id="course-modal-subject">—</span>
+                </p>
+                <h2 class="course-modal__title" id="course-modal-title">—</h2>
+            </div>
+            <button type="button" class="course-modal__close"
+                    data-action="close-course-modal" aria-label="Fermer">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </header>
+        <div class="course-modal__meta">
+            <span class="course-level" id="course-modal-level" hidden></span>
+            <span class="course-credits" id="course-modal-credits" hidden></span>
+        </div>
+        <div class="course-modal__body" id="course-modal-description">
+            <p class="course-modal__empty">Aucune description disponible pour ce cours.</p>
+        </div>
+        <footer class="course-modal__footer">
+            <button type="button" class="btn-neu btn-neu--ghost"
+                    data-action="close-course-modal">Fermer</button>
+        </footer>
+    </div>
+</div>

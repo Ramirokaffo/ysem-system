@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
@@ -40,10 +42,16 @@ class Level(models.Model):
         ('Master', 'Master'),
         ('Doctorat', 'Doctorat'),
     ]
+    CYCLE_CHOICES = [
+        ('Licence', 'Licence'),
+        ('Master', 'Master'),
+        ('Doctorat', 'Doctorat'),
+    ]
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     academic_order = models.IntegerField(null=True, blank=False, verbose_name="Numero d'ordre académique")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+    cycle = models.CharField(max_length=20, choices=CYCLE_CHOICES, null=False, blank=True, default='Licence', verbose_name="Cycle")
 
     # Diplome minimum requis pour enseigner à ce niveau
     minimum_diploma = models.CharField(
@@ -191,7 +199,13 @@ class Course(models.Model):
     """
     Modèle pour les cours
     """
-    course_code = models.CharField(max_length=20, primary_key=True, verbose_name="Code du cours")
+    course_code = models.CharField(
+        max_length=20,
+        primary_key=True,
+        blank=True,
+        verbose_name="Code du cours",
+        help_text="Laisser vide pour générer automatiquement un code à partir de la matière/intitulé et du niveau.",
+    )
     label = models.CharField(max_length=200, verbose_name="Intitulé du cours")
     description = models.TextField(blank=True, null=True, verbose_name="Description")
     credit_count = models.IntegerField(verbose_name="Nombre de crédits")
@@ -204,6 +218,46 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.course_code} - {self.label}"
+
+    def _generate_course_code(self):
+        """Génère un code unique à partir de la matière (ou de l'intitulé) et du niveau."""
+        base = ''
+        if self.subject and self.subject.name:
+            base = self.subject.name
+        elif self.label:
+            base = self.label
+        letters = re.sub(r'[^A-Za-z]', '', base or '').upper()
+        prefix = letters[:3] if letters else 'CRS'
+
+        level_part = ''
+        if self.level_id and self.level and self.level.academic_order is not None:
+            level_part = str(self.level.academic_order)
+
+        base_code = f"{prefix}{level_part}"
+        max_length = self._meta.get_field('course_code').max_length
+
+        pattern = re.compile(r'^' + re.escape(base_code) + r'(\d+)$')
+        existing = Course.objects.filter(course_code__startswith=base_code).values_list('course_code', flat=True)
+        max_n = 0
+        for code in existing:
+            match = pattern.match(code)
+            if match:
+                try:
+                    max_n = max(max_n, int(match.group(1)))
+                except ValueError:
+                    continue
+
+        next_n = max_n + 1
+        candidate = f"{base_code}{next_n:02d}"
+        while len(candidate) > max_length and len(base_code) > 1:
+            base_code = base_code[:-1]
+            candidate = f"{base_code}{next_n:02d}"
+        return candidate
+
+    def save(self, *args, **kwargs):
+        if not self.course_code:
+            self.course_code = self._generate_course_code()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Cours"

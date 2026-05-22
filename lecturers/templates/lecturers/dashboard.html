@@ -27,9 +27,33 @@
 
         <div class="divider"></div>
 
-        <p style="opacity:.8;">
-            Le dépôt de votre dossier de candidature ainsi que les espaces pour
-            vos supports et devoirs seront prochainement disponibles ici.
-        </p>
+        <h2 class="form-section-title">Dossier de candidature</h2>
+
+        {% if lecturer.recruitment_submitted %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <div>
+                    Votre dossier a été soumis le
+                    <strong>{{ lecturer.recruitment_submitted_at|date:"d F Y" }}</strong>.
+                </div>
+            </div>
+            <a href="{% url 'recruitment:recap' %}" class="btn-neu btn-neu--primary" style="max-width:320px;">
+                <i class="fas fa-file-alt" aria-hidden="true"></i> Voir le récapitulatif
+            </a>
+        {% else %}
+            <p>
+                Progression : <strong>{{ lecturer.recruitment_step }}/{{ recruitment_total_steps }}</strong> étapes complétées.
+            </p>
+            <div class="progress-bar" aria-label="Progression du dossier">
+                <span class="progress-bar__fill" style="width: {{ recruitment_progress_pct }}%"></span>
+            </div>
+            <a href="{% url 'recruitment:step' recruitment_next_step %}" class="btn-neu btn-neu--primary" style="max-width:320px; margin-top:14px;">
+                {% if lecturer.recruitment_step == 0 %}
+                    <i class="fas fa-play" aria-hidden="true"></i> Commencer ma candidature
+                {% else %}
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i> Reprendre à l'étape {{ recruitment_next_step }}
+                {% endif %}
+            </a>
+        {% endif %}
     </div>
 {% endblock %}

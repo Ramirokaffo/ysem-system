@@ -18,7 +18,9 @@ class LecturerAdmin(admin.ModelAdmin):
             'fields': ('firstname', 'lastname', 'date_naiss', 'place_of_birth', 'gender', 'address', 'photo', 'signature'),
         }),
         ('Informations professionnelles', {
-            'fields': ('grade', 'lang', 'marital_status', 'has_health_problem', 'health_problem_description',  'favorite_subjects')
+            'fields': ('grade', 'lang', 'marital_status', 'has_health_problem', 'health_problem_description'  
+                    #    'favorite_subjects'
+                       )
         }),
         ('Contact', {
             'fields': ('email', 'phone_number', 'phone_number_2')

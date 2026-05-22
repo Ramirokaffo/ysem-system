@@ -17,6 +17,7 @@ from .decorators import (
 from .emails import send_activation_email, send_password_reset_email
 from .forms import (
     LecturerLoginForm,
+    LecturerPasswordChangeForm,
     LecturerSignupForm,
     PasswordResetConfirmForm,
     PasswordResetRequestForm,
@@ -128,13 +129,25 @@ def lecturer_logout(request):
 class LecturerDashboardView(View):
     template_name = 'lecturers/dashboard.html'
 
+    RECRUITMENT_TOTAL_STEPS = 4
+
     def get(self, request):
         lecturer = Lecturer.objects.filter(
             pk=request.session.get(SESSION_LECTURER_ID)
         ).first()
         if not lecturer:
             return redirect('lecturers:logout')
-        return render(request, self.template_name, {'lecturer': lecturer})
+
+        next_step = min(lecturer.recruitment_step + 1, self.RECRUITMENT_TOTAL_STEPS)
+        progress_pct = int(
+            lecturer.recruitment_step / self.RECRUITMENT_TOTAL_STEPS * 100
+        )
+        return render(request, self.template_name, {
+            'lecturer': lecturer,
+            'recruitment_total_steps': self.RECRUITMENT_TOTAL_STEPS,
+            'recruitment_next_step': next_step,
+            'recruitment_progress_pct': progress_pct,
+        })
 
 
 @method_decorator([never_cache], name='dispatch')
@@ -256,3 +269,40 @@ class PasswordResetConfirmView(View):
             lecturer.save(update_fields=['email_verified', 'email_verified_at'])
 
         return render(request, 'lecturers/password_reset_done.html', {'lecturer': lecturer})
+
+
+@method_decorator([never_cache, csrf_protect, lecturer_required], name='dispatch')
+class LecturerPasswordChangeView(View):
+    """Permet à un enseignant connecté de changer son mot de passe."""
+
+    template_name = 'lecturers/password_change.html'
+
+    def _get_lecturer(self, request):
+        return Lecturer.objects.filter(
+            pk=request.session.get(SESSION_LECTURER_ID)
+        ).first()
+
+    def get(self, request):
+        lecturer = self._get_lecturer(request)
+        if not lecturer:
+            return redirect('lecturers:logout')
+        return render(request, self.template_name, {
+            'form': LecturerPasswordChangeForm(lecturer=lecturer),
+            'lecturer': lecturer,
+        })
+
+    def post(self, request):
+        lecturer = self._get_lecturer(request)
+        if not lecturer:
+            return redirect('lecturers:logout')
+
+        form = LecturerPasswordChangeForm(request.POST, lecturer=lecturer)
+        if not form.is_valid():
+            return render(request, self.template_name, {
+                'form': form,
+                'lecturer': lecturer,
+            })
+
+        lecturer.set_external_password(form.cleaned_data['password'])
+        messages.success(request, "Votre mot de passe a bien été mis à jour.")
+        return redirect('lecturers:dashboard')

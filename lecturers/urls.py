@@ -17,4 +17,5 @@ urlpatterns = [
 
     path('mot-de-passe-oublie/', views.PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('reinitialiser/<str:token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('changer-mot-de-passe/', views.LecturerPasswordChangeView.as_view(), name='password_change'),
 ]

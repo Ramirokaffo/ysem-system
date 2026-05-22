@@ -1,0 +1,83 @@
+{% extends 'lecturers/base.html' %}
+
+{% block title %}Récapitulatif de candidature — {{ institution_name }}{% endblock %}
+
+{% block content %}
+<div class="wizard-shell">
+    {% if messages %}
+        <div class="alert-stack">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <div>{{ message }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="dash-card">
+        <h1>
+            <i class="fas fa-check-circle" aria-hidden="true" style="color: var(--neu-success);"></i>
+            Dossier de candidature soumis
+        </h1>
+        <p>
+            Merci {{ lecturer.firstname }}. Votre dossier a été soumis le
+            <strong>{{ lecturer.recruitment_submitted_at|date:"d F Y à H:i" }}</strong>.
+            Notre équipe en accusera réception puis examinera les cours
+            sélectionnés pour validation.
+        </p>
+
+        <div class="divider"></div>
+
+        <h2 class="form-section-title">Plus haut diplôme</h2>
+        <p><strong>{{ lecturer.highest_diploma_obtained|default:'—' }}</strong></p>
+        {% if lecturer.cv %}
+            <p><a href="{{ lecturer.cv.url }}" target="_blank"><i class="fas fa-file-pdf"></i> Consulter mon CV</a></p>
+        {% endif %}
+
+        <h2 class="form-section-title">Matières déclarées</h2>
+        {% if subjects %}
+            <ul class="recap-list">
+                {% for ls in subjects %}
+                    <li>
+                        <strong>{{ ls.subject.name }}</strong>
+                        — pratique : {{ ls.practice_experience_years }} an{{ ls.practice_experience_years|pluralize }},
+                        enseignement : {{ ls.teaching_experience_years }} an{{ ls.teaching_experience_years|pluralize }}
+                        {% if ls.proof_document %}
+                            — <a href="{{ ls.proof_document.url }}" target="_blank">justificatif</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="auth-helper--muted">Aucune matière déclarée.</p>
+        {% endif %}
+
+        <h2 class="form-section-title">Cours candidatés</h2>
+        {% if courses %}
+            <ul class="recap-list">
+                {% for lc in courses %}
+                    <li>
+                        <span class="course-code">{{ lc.course.course_code }}</span>
+                        {{ lc.course.label }}
+                        {% if lc.course.level %}<em>({{ lc.course.level.name }})</em>{% endif %}
+                        {% if lc.is_validated %}
+                            <span class="badge badge--success">Validé</span>
+                        {% else %}
+                            <span class="badge badge--pending">En attente</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="auth-helper--muted">Aucun cours candidaté.</p>
+        {% endif %}
+
+        <div class="divider"></div>
+
+        <a href="{% url 'lecturers:dashboard' %}" class="btn-neu btn-neu--primary" style="max-width:260px;">
+            <i class="fas fa-th-large" aria-hidden="true"></i> Retour au tableau de bord
+        </a>
+    </div>
+</div>
+{% endblock %}

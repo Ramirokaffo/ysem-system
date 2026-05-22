@@ -36,6 +36,12 @@ class SystemSettings(models.Model):
     allow_program_change = models.BooleanField(default=False, verbose_name="Autoriser le changement de programme")
     require_program_validation = models.BooleanField(default=True, verbose_name="Exiger la validation de programme")
 
+    # Paramètres de recruitement des enseignants
+    teacher_recruitment_open = models.BooleanField(default=True, verbose_name="Recrutement des enseignants ouvert")
+    require_experience_for_licence_to_teach_licence = models.PositiveIntegerField(default=5, verbose_name="Nombre d'années d'expérience requis pour les enseignants ayant une Licence à enseigner en Licence")
+    require_experience_for_masters_to_teach_masters = models.PositiveIntegerField(default=5, verbose_name="Nombre d'années d'expérience requis pour les enseignants ayant un Master à enseigner en Master")
+    require_experience_for_doctors_to_teach_doctors = models.PositiveIntegerField(default=5, verbose_name="Nombre d'années d'expérience requis pour les enseignants ayant un Doctorat à enseigner en Doctorat")
+
     # Paramètres utilisateurs
     default_role = models.CharField(max_length=20, default="student", verbose_name="Rôle par défaut")
     session_timeout = models.IntegerField(default=30, verbose_name="Délai d'expiration de session (minutes)")

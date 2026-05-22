@@ -1,0 +1,21 @@
+{% comment %}
+    Rendu d'un champ de formulaire pour le wizard de recrutement.
+    Usage : {% include 'recruitment/_form_field.html' with field=form.firstname %}
+{% endcomment %}
+{% if field.field.widget.input_type == 'checkbox' %}
+    <div class="form-group form-group--checkbox">
+        {{ field }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+{% else %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+{% endif %}

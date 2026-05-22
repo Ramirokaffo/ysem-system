@@ -1,4 +1,4 @@
-{% load static %}
+{% load static lecturer_extras %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -19,8 +19,10 @@
 </head>
 <body class="lecturers-body">
     <div class="lec-shell">
-        <header class="lec-topbar">
-            <a href="{% url 'lecturers:login' %}" class="lec-brand">
+        {% with is_auth=request.session.lecturer_authenticated %}
+        <header class="lec-topbar" role="banner">
+            <a href="{% if is_auth %}{% url 'lecturers:dashboard' %}{% else %}{% url 'lecturers:login' %}{% endif %}"
+               class="lec-brand">
                 <span class="brand-logo">
                     {% if institution_logo_url %}
                         <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}">
@@ -29,20 +31,66 @@
                     {% endif %}
                 </span>
                 <span class="brand-text">
-                    {{ institution_name }}
-                    <small>Portail enseignant</small>
+                    <span class="brand-name">{{ institution_name }}</span>
+                    <span class="brand-tag">Portail enseignant</span>
                 </span>
             </a>
-            <nav>
-                {% if request.session.lecturer_authenticated %}
-                    <a href="{% url 'lecturers:dashboard' %}"><i class="fas fa-th-large" aria-hidden="true"></i> Mon espace</a>
-                    <a href="{% url 'lecturers:logout' %}"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Déconnexion</a>
+
+            <nav class="lec-nav" aria-label="Navigation principale">
+                {% if is_auth %}
+                    {% with name=request.session.lecturer_name email=request.session.lecturer_email matricule=request.session.lecturer_matricule %}
+                    <div class="lec-userbox" data-userbox>
+                        <button type="button" class="lec-userbtn"
+                                aria-haspopup="menu" aria-expanded="false"
+                                aria-controls="lec-usermenu" data-userbtn>
+                            <span class="lec-avatar" aria-hidden="true">{{ name|initials|default:'EN' }}</span>
+                            <span class="lec-userbtn__text">
+                                <span class="lec-userbtn__name">{{ name|default:'Enseignant' }}</span>
+                                <span class="lec-userbtn__sub">{{ matricule }}</span>
+                            </span>
+                            <i class="fas fa-chevron-down lec-userbtn__caret" aria-hidden="true"></i>
+                        </button>
+
+                        <div class="lec-usermenu" id="lec-usermenu" role="menu" hidden>
+                            <div class="lec-usermenu__header">
+                                <span class="lec-avatar lec-avatar--lg" aria-hidden="true">{{ name|initials|default:'EN' }}</span>
+                                <div class="lec-usermenu__ident">
+                                    <p class="lec-usermenu__name">{{ name|default:'Enseignant' }}</p>
+                                    {% if email %}<p class="lec-usermenu__email">{{ email }}</p>{% endif %}
+                                    {% if matricule %}<p class="lec-usermenu__matricule">Matricule&nbsp;: <strong>{{ matricule }}</strong></p>{% endif %}
+                                </div>
+                            </div>
+                            <ul class="lec-usermenu__list">
+                                <li role="none">
+                                    <a role="menuitem" href="{% url 'lecturers:dashboard' %}" class="lec-usermenu__item">
+                                        <i class="fas fa-th-large" aria-hidden="true"></i>
+                                        <span>Mon espace</span>
+                                    </a>
+                                </li>
+                                <li role="none">
+                                    <a role="menuitem" href="{% url 'lecturers:password_change' %}" class="lec-usermenu__item">
+                                        <i class="fas fa-key" aria-hidden="true"></i>
+                                        <span>Changer mon mot de passe</span>
+                                    </a>
+                                </li>
+                                <li role="separator" class="lec-usermenu__sep"></li>
+                                <li role="none">
+                                    <a role="menuitem" href="{% url 'lecturers:logout' %}" class="lec-usermenu__item lec-usermenu__item--danger">
+                                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                                        <span>Se déconnecter</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endwith %}
                 {% else %}
-                    <a href="{% url 'lecturers:login' %}">Connexion</a>
-                    <a href="{% url 'lecturers:signup' %}">Créer un compte</a>
+                    <a href="{% url 'lecturers:login' %}" class="lec-nav__link">Connexion</a>
+                    <a href="{% url 'lecturers:signup' %}" class="lec-nav__link lec-nav__link--cta">Créer un compte</a>
                 {% endif %}
             </nav>
         </header>
+        {% endwith %}
 
         <main class="lec-main">
             {% block content %}{% endblock %}
@@ -52,5 +100,9 @@
             © {% now "Y" %} {{ institution_name }} — Tous droits réservés.
         </footer>
     </div>
+
+    {% if request.session.lecturer_authenticated %}
+        <script src="{% static 'lecturers/js/userbox.js' %}"></script>
+    {% endif %}
 </body>
 </html>

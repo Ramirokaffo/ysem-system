@@ -1,0 +1,27 @@
+<div class="form-section">
+    <h2 class="form-section-title">Plus haut diplôme</h2>
+    <p class="form-section-hint">
+        Le diplôme indiqué déterminera les cours qui pourront vous être proposés
+        à l'étape suivante.
+    </p>
+    {% include 'recruitment/_form_field.html' with field=form.highest_diploma_obtained %}
+    {% include 'recruitment/_form_field.html' with field=form.grade %}
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Curriculum Vitae</h2>
+    {% if lecturer.cv %}
+        <p class="current-file">
+            <i class="fas fa-file-pdf"></i>
+            CV actuellement déposé : <a href="{{ lecturer.cv.url }}" target="_blank">le consulter</a>
+        </p>
+        <p class="form-section-hint">
+            Vous pouvez téléverser un nouveau fichier pour remplacer le CV actuel.
+        </p>
+    {% else %}
+        <p class="form-section-hint">
+            Formats acceptés : PDF, DOC, DOCX.
+        </p>
+    {% endif %}
+    {% include 'recruitment/_form_field.html' with field=form.cv %}
+</div>

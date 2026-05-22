@@ -1,0 +1,88 @@
+{% extends 'lecturers/base.html' %}
+{% load static %}
+
+{% block title %}Recrutement — étape {{ step }}/{{ total_steps }} — {{ institution_name }}{% endblock %}
+
+{% block content %}
+<div class="wizard-shell">
+
+    {% if messages %}
+        <div class="alert-stack">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i>
+                    <div>{{ message }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <nav class="wizard-stepper" aria-label="Progression du recrutement">
+        {% for s in steps %}
+            {% if s.accessible %}
+                <a href="{{ s.url }}"
+                   class="wizard-step{% if s.current %} is-current{% elif s.reached %} is-reached{% endif %}">
+                    <span class="step-index">{{ s.index }}</span>
+                    <span class="step-label">{{ s.title }}</span>
+                </a>
+            {% else %}
+                <span class="wizard-step is-locked" aria-disabled="true">
+                    <span class="step-index">{{ s.index }}</span>
+                    <span class="step-label">{{ s.title }}</span>
+                </span>
+            {% endif %}
+        {% endfor %}
+    </nav>
+
+    <form method="post" enctype="multipart/form-data" class="wizard-card" novalidate>
+        {% csrf_token %}
+
+        <h1 class="wizard-title">{{ step_title }}</h1>
+        <p class="wizard-subtitle">{{ step_subtitle }}</p>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% if step == 1 %}{% include 'recruitment/_step1_profile.html' %}{% endif %}
+        {% if step == 2 %}{% include 'recruitment/_step2_diploma.html' %}{% endif %}
+        {% if step == 3 %}{% include 'recruitment/_step3_subjects.html' %}{% endif %}
+        {% if step == 4 %}{% include 'recruitment/_step4_courses.html' %}{% endif %}
+
+        <div class="wizard-actions">
+            <a href="{% url 'lecturers:dashboard' %}" class="wizard-link">
+                ← Quitter, je continuerai plus tard
+            </a>
+            <div class="wizard-actions__right">
+                <button type="submit" name="save_action" value="save_draft" class="btn-neu btn-neu--ghost">
+                    <i class="fas fa-save" aria-hidden="true"></i> Enregistrer le brouillon
+                </button>
+                {% if step < total_steps %}
+                    <button type="submit" name="save_action" value="next" class="btn-neu btn-neu--primary">
+                        Étape suivante <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                {% else %}
+                    <button type="submit" name="save_action" value="next" class="btn-neu btn-neu--primary">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Soumettre mon dossier
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+    <p class="auth-helper auth-helper--muted">
+        Vos informations sont enregistrées à chaque étape : vous pouvez vous déconnecter et revenir plus tard.
+    </p>
+</div>
+
+{% if step == 1 %}
+<link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
+<script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
+{% endif %}
+{% if step == 3 %}
+<script src="{% static 'recruitment/js/subject_formset.js' %}"></script>
+{% endif %}
+{% if step == 4 %}
+<script src="{% static 'recruitment/js/course_modal.js' %}"></script>
+{% endif %}
+{% endblock %}

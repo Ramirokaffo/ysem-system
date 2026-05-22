@@ -1,0 +1,80 @@
+{% load static %}
+
+<div class="form-section" id="subject-formset"
+     data-prefix="{{ formset.prefix }}"
+     data-total-name="{{ formset.management_form.TOTAL_FORMS.html_name }}">
+    <h2 class="form-section-title">Matières et expérience</h2>
+    <p class="form-section-hint">
+        Pour chaque matière, précisez vos années d'expérience pratique
+        (sur le terrain) et, le cas échéant, vos années d'expérience d'enseignement.
+        Vous pouvez joindre un justificatif (PDF ou image).
+    </p>
+
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+        <div class="alert alert-error">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <div class="formset-list">
+        {% for sub in formset %}
+            <div class="formset-block" data-form-index="{{ forloop.counter0 }}">
+                <div class="formset-block__header">
+                    <p class="formset-block__title">Matière #{{ forloop.counter }}</p>
+                    <button type="button" class="formset-remove" data-action="remove">
+                        <i class="fas fa-times" aria-hidden="true"></i> Retirer
+                    </button>
+                </div>
+
+                {% for hidden in sub.hidden_fields %}{{ hidden }}{% endfor %}
+
+                {% include 'recruitment/_form_field.html' with field=sub.subject %}
+                <div class="form-row-2">
+                    {% include 'recruitment/_form_field.html' with field=sub.practice_experience_years %}
+                    {% include 'recruitment/_form_field.html' with field=sub.teaching_experience_years %}
+                </div>
+                {% if sub.instance.pk and sub.instance.proof_document %}
+                    <p class="current-file">
+                        <i class="fas fa-paperclip"></i>
+                        Justificatif actuel : <a href="{{ sub.instance.proof_document.url }}" target="_blank">le consulter</a>
+                    </p>
+                {% endif %}
+                {% include 'recruitment/_form_field.html' with field=sub.proof_document %}
+
+                {% if formset.can_delete and sub.instance.pk %}
+                    <div class="formset-delete-toggle">
+                        {{ sub.DELETE }} <label for="{{ sub.DELETE.id_for_label }}">Supprimer cette matière</label>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" class="btn-neu btn-neu--ghost" data-action="add-subject" style="margin-top:14px;">
+        <i class="fas fa-plus" aria-hidden="true"></i> Ajouter une matière
+    </button>
+</div>
+
+<template id="formset-empty-template">
+    <div class="formset-block" data-form-index="__prefix__">
+        <div class="formset-block__header">
+            <p class="formset-block__title">Nouvelle matière</p>
+            <button type="button" class="formset-remove" data-action="remove">
+                <i class="fas fa-times" aria-hidden="true"></i> Retirer
+            </button>
+        </div>
+        {{ formset.empty_form.subject.label_tag }}
+        {{ formset.empty_form.subject }}
+        <div class="form-row-2">
+            <div class="form-group">
+                {{ formset.empty_form.practice_experience_years.label_tag }}
+                {{ formset.empty_form.practice_experience_years }}
+            </div>
+            <div class="form-group">
+                {{ formset.empty_form.teaching_experience_years.label_tag }}
+                {{ formset.empty_form.teaching_experience_years }}
+            </div>
+        </div>
+        {{ formset.empty_form.proof_document.label_tag }}
+        {{ formset.empty_form.proof_document }}
+    </div>
+</template>

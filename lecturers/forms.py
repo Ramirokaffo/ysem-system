@@ -166,3 +166,62 @@ class PasswordResetConfirmForm(forms.Form):
                 self.add_error('password', exc)
 
         return cleaned
+
+
+class LecturerPasswordChangeForm(forms.Form):
+    """Changement de mot de passe par un enseignant connecté."""
+
+    current_password = forms.CharField(
+        label="Mot de passe actuel",
+        widget=forms.PasswordInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Votre mot de passe actuel',
+            'autocomplete': 'current-password',
+        }),
+    )
+    password = forms.CharField(
+        label="Nouveau mot de passe",
+        widget=forms.PasswordInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Au moins 8 caractères',
+            'autocomplete': 'new-password',
+        }),
+    )
+    password_confirm = forms.CharField(
+        label="Confirmer le nouveau mot de passe",
+        widget=forms.PasswordInput(attrs={
+            'class': _INPUT_CLASS,
+            'placeholder': 'Retapez votre nouveau mot de passe',
+            'autocomplete': 'new-password',
+        }),
+    )
+
+    def __init__(self, *args, lecturer=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lecturer = lecturer
+
+    def clean_current_password(self):
+        value = self.cleaned_data.get('current_password') or ''
+        if not self.lecturer or not self.lecturer.check_external_password(value):
+            raise ValidationError("Le mot de passe actuel est incorrect.")
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        password = cleaned.get('password')
+        confirm = cleaned.get('password_confirm')
+        current = cleaned.get('current_password')
+
+        if password and confirm and password != confirm:
+            self.add_error('password_confirm', "Les deux mots de passe ne correspondent pas.")
+
+        if password and current and password == current:
+            self.add_error('password', "Le nouveau mot de passe doit être différent de l'actuel.")
+
+        if password:
+            try:
+                validate_password(password)
+            except ValidationError as exc:
+                self.add_error('password', exc)
+
+        return cleaned

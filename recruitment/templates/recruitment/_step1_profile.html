@@ -1,0 +1,73 @@
+{% load static %}
+
+<div class="form-section">
+    <h2 class="form-section-title">État civil</h2>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.firstname %}
+        {% include 'recruitment/_form_field.html' with field=form.lastname %}
+    </div>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.date_naiss %}
+        {% include 'recruitment/_form_field.html' with field=form.place_of_birth %}
+    </div>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.gender %}
+        {% include 'recruitment/_form_field.html' with field=form.nationality %}
+    </div>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.marital_status %}
+        {% include 'recruitment/_form_field.html' with field=form.number_of_dependent_children %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Coordonnées</h2>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.phone_number %}
+        {% include 'recruitment/_form_field.html' with field=form.phone_number_2 %}
+    </div>
+    {% include 'recruitment/_form_field.html' with field=form.address %}
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.nic %}
+        {% include 'recruitment/_form_field.html' with field=form.niu %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Santé</h2>
+    {% include 'recruitment/_form_field.html' with field=form.has_health_problem %}
+    {% include 'recruitment/_form_field.html' with field=form.health_problem_description %}
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Contact d'urgence</h2>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.emergency_contact_name %}
+        {% include 'recruitment/_form_field.html' with field=form.emergency_contact_relationship %}
+    </div>
+    <div class="form-row-2">
+        {% include 'recruitment/_form_field.html' with field=form.emergency_contact_phone %}
+        {% include 'recruitment/_form_field.html' with field=form.emergency_contact_email %}
+    </div>
+</div>
+
+<div class="form-section">
+    <h2 class="form-section-title">Photo de profil</h2>
+    <div class="form-group profile-photo-field" data-profile-photo-field>
+        <label for="{{ form.photo.id_for_label }}">
+            {{ form.photo.label }}{% if form.photo.field.required %} <span class="req">*</span>{% endif %}
+        </label>
+        <div class="profile-photo-current"{% if not lecturer.photo %} hidden{% endif %} data-profile-photo-preview-wrapper>
+            <img src="{% if lecturer.photo %}{{ lecturer.photo.url }}{% endif %}"
+                 alt="Aperçu de la photo de profil"
+                 class="profile-photo-preview"
+                 data-profile-photo-preview>
+            <span class="profile-photo-note" data-profile-photo-note>
+                {% if lecturer.photo %}Photo enregistrée — laissez vide pour conserver, ou choisissez un nouveau fichier pour remplacer.{% endif %}
+            </span>
+        </div>
+        {{ form.photo }}
+        {% if form.photo.help_text %}<div class="help-text">{{ form.photo.help_text }}</div>{% endif %}
+        {% for error in form.photo.errors %}<div class="field-error">{{ error }}</div>{% endfor %}
+    </div>
+</div>

@@ -145,7 +145,7 @@ class CourseAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('course_code', 'label', 'level', 'subject', 'program')
+            'fields': ('course_code', 'label', 'level', 'subject', 'program', 'description')
         }),
         ('Crédits', {
             'fields': ('credit_count',)

@@ -21,6 +21,9 @@ class SystemSettingsAdmin(admin.ModelAdmin):
             'fields': ('auto_level_progression', 'allow_level_change', 'require_level_validation',
                       'allow_program_change', 'require_program_validation')
         }),
+        ('Recrutement des enseignants', {
+            'fields': ('teacher_recruitment_open', 'require_experience_for_licence_to_teach_licence', 'require_experience_for_masters_to_teach_masters', 'require_experience_for_doctors_to_teach_doctors')
+        }),
         ('Utilisateurs', {
             'fields': ('default_role', 'session_timeout', 'view_documents', 'download_docs',
                       'update_profile', 'view_statistics')
