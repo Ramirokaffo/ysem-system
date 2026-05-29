@@ -61,6 +61,7 @@ class Lecturer(models.Model):
 
     is_permanent = models.BooleanField(default=False, verbose_name="Enseignant permanent ?")
     status = models.CharField(max_length=20, choices=LECTURERS_STATUS_CHOICES, default='draft', verbose_name="Statut du dossier")
+    can_be_resubmitted = models.BooleanField(default=True, verbose_name="Peut être resoumis (après refus)")
 
     # Champs pour l'authentification du portail enseignant
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe (portail enseignant)")

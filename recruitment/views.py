@@ -289,8 +289,9 @@ class RecruitmentStepView(View):
             if action != 'save_draft':
                 self.lecturer.recruitment_submitted = True
                 self.lecturer.recruitment_submitted_at = timezone.now()
+                self.lecturer.status = 'pending'  # Passage en statut "En attente de validation" à la soumission
                 self.lecturer.save(update_fields=[
-                    'recruitment_submitted', 'recruitment_submitted_at',
+                    'recruitment_submitted', 'recruitment_submitted_at', 'status'
                 ])
 
         if action == 'save_draft':

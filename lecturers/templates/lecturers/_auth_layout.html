@@ -1,7 +1,24 @@
-{% extends 'lecturers/base.html' %}
+{% load static lecturer_extras %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% block title %}Portail enseignant — {{ institution_name }}{% endblock %}</title>
 
-{% block content %}
-    <div class="lec-card">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'lecturers/css/lecturers.css' %}" rel="stylesheet">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="d-flex justify-content-center align-items-center p-4" >
+
         {% if messages %}
             <div class="alert-stack">
                 {% for message in messages %}
@@ -14,5 +31,5 @@
         {% endif %}
 
         {% block auth_card %}{% endblock %}
-    </div>
-{% endblock %}
+</body>
+</html>

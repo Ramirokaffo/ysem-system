@@ -18,7 +18,7 @@ class LecturerAdmin(admin.ModelAdmin):
             'fields': ('firstname', 'lastname', 'date_naiss', 'place_of_birth', 'gender', 'address', 'photo', 'signature'),
         }),
         ('Informations professionnelles', {
-            'fields': ('grade', 'lang', 'marital_status', 'has_health_problem', 'health_problem_description'  
+            'fields': ('is_permanent', 'status', 'grade', 'lang', 'marital_status', 'has_health_problem', 'health_problem_description'  
                     #    'favorite_subjects'
                        )
         }),
@@ -28,7 +28,12 @@ class LecturerAdmin(admin.ModelAdmin):
         ('Informations complémentaires', {
             'fields': ('nic', 'niu', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_email', 'emergency_contact_relationship'),
         }),
-        
+            ('Diplômes et CV', {
+                'fields': ('highest_diploma_obtained', 'cv'),
+            }),
+            ('Recrutement', {
+                'fields': ('recruitment_step', 'recruitment_submitted', 'can_be_resubmitted', 'recruitment_submitted_at'),
+            }),
     )
 
     def full_name(self, obj):

@@ -22,5 +22,7 @@ urlpatterns = [
     path('changer-mot-de-passe/', views.LecturerPasswordChangeView.as_view(), name='password_change'),
 
     path('home/', admin_views.admin_dashboard, name='home'),
+    path('dossiers/', admin_views.lecturer_dossiers, name='dossiers'),
+    path('dossiers/<str:matricule>/', admin_views.lecturer_dossier_detail, name='dossier_detail'),
 
 ]

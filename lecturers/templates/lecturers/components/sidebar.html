@@ -7,5 +7,11 @@
             <span>Accueil</span>
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'dossiers' %}active{% endif %}" href="{% url 'lecturers:dossiers' %}">
+            <i class="fas fa-folder-open"></i>
+            <span>Dossier Enseignant</span>
+        </a>
+    </li>
 </ul>
 

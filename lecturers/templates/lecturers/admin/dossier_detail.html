@@ -1,0 +1,393 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Dossier de {{ lecturer.firstname }} {{ lecturer.lastname }} - YSEM{% endblock %}
+{% block page_title %}Dossier enseignant{% endblock %}
+
+{% block content %}
+<!-- Navigation -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <a href="{% url 'lecturers:dossiers' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2 mr-2"></i>Retour aux dossiers
+                </a>
+                <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
+                    {{ lecturer.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- En-tête profil -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-4">
+            <div class="d-flex align-items-center flex-wrap gap-4">
+                <div class="profile-photo-wrap">
+                    {% if lecturer.photo %}
+                        <img src="{{ lecturer.photo.url }}" alt="Photo de {{ lecturer.firstname }}" class="profile-photo">
+                    {% else %}
+                        <div class="profile-photo profile-photo--placeholder">
+                            {{ lecturer.firstname|slice:":1" }}{{ lecturer.lastname|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1 mx-3">
+                    <h3 class="mb-1">{{ lecturer.firstname }} {{ lecturer.lastname }}</h3>
+                    <div class="text-muted mb-2">
+                        <i class="fas fa-id-badge me-1 mr-1"></i>{{ lecturer.matricule }}
+                        {% if lecturer.grade %}<span class="mx-2">•</span><i class="fas fa-user-graduate me-1 mr-1"></i>{{ lecturer.grade }}{% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if lecturer.is_permanent %}
+                            <span class="badge bg-success text-white">Permanent</span>
+                        {% else %}
+                            <span class="badge bg-secondary text-white">Vacataire</span>
+                        {% endif %}
+                        {% if lecturer.highest_diploma_obtained %}
+                            <span class="badge bg-info text-primary">{{ lecturer.get_highest_diploma_obtained_display }}</span>
+                        {% endif %}
+                        {% if lecturer.email_verified %}
+                            <span class="badge bg-success text-white"><i class="fas fa-check-circle me-1 mr-1"></i>Email vérifié</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-exclamation-circle me-1 mr-1"></i>Email non vérifié</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations personnelles & Contact -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-user me-2 mr-2"></i>Informations personnelles</h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Genre</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.get_gender_display|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Date de naissance</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.date_naiss|date:"d/m/Y"|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Lieu de naissance</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.place_of_birth|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Nationalité</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.nationality|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Statut marital</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.get_marital_status_display|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Enfants à charge</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.number_of_dependent_children|default:"0" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Langue</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.get_lang_display|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Adresse de résidence</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.address|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">N° CNI</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.nic|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">N° Identifiant Unique (NIU)</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.niu|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Problème de santé</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if lecturer.has_health_problem %}
+                            <span class="badge bg-warning text-dark">Oui</span>
+                            {% if lecturer.health_problem_description %}<div class="mt-2">{{ lecturer.health_problem_description }}</div>{% endif %}
+                        {% else %}
+                            <span class="badge bg-success text-white">Aucun</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-address-book me-2 mr-2"></i>Coordonnées</h4>
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold">Adresse email</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.email|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Téléphone</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.phone_number|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Téléphone secondaire</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.phone_number_2|default:"Non renseigné" }}</div>
+                </div>
+            </div>
+
+            <h5 class="mt-3 mb-3 border-bottom pb-2"><i class="fas fa-phone-volume me-2 mr-2"></i>Contact d'urgence</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Nom</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.emergency_contact_name|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Relation</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.emergency_contact_relationship|default:"Non renseignée" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Téléphone</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.emergency_contact_phone|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.emergency_contact_email|default:"Non renseigné" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations professionnelles -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-4">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-briefcase me-2 mr-2"></i>Informations professionnelles</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Grade / Titre</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.grade|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Diplôme le plus élevé</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.get_highest_diploma_obtained_display|default:"Non renseigné" }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Type d'enseignant</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.is_permanent|yesno:"Permanent,Vacataire" }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Dossier de candidature</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if lecturer.recruitment_submitted %}
+                            <span class="badge bg-success text-white">Soumis le {{ lecturer.recruitment_submitted_at|date:"d/m/Y" }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary text-white">Étape {{ lecturer.recruitment_step }} / 4</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Dernière connexion</label>
+                    <div class="p-2 bg-light rounded">{{ lecturer.last_login_date|date:"d/m/Y à H:i"|default:"Jamais" }}</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">CV</label>
+                    <div class="p-2 bg-light rounded">
+                        {% if lecturer.cv %}
+                            <a href="{{ lecturer.cv.url }}" target="_blank" class="text-secondary"><i class="fas fa-file-download me-1 mr-1"></i>Télécharger le CV</a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Matières & Cours enseignés -->
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-book me-2 mr-2"></i>Matières enseignées</h4>
+            {% if lecturer_subjects %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Matière</th>
+                            <th class="text-center">Exp. pratique</th>
+                            <th class="text-center">Exp. enseignement</th>
+                            <th class="text-center">Justificatif</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ls in lecturer_subjects %}
+                        <tr>
+                            <td>{{ ls.subject.name }}</td>
+                            <td class="text-center">{{ ls.practice_experience_years }} an(s)</td>
+                            <td class="text-center">{{ ls.teaching_experience_years }} an(s)</td>
+                            <td class="text-center">
+                                {% if ls.proof_document %}
+                                    <a href="{{ ls.proof_document.url }}" target="_blank" title="Voir le justificatif"><i class="fas fa-paperclip"></i></a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-3 bg-light rounded text-muted">Aucune matière renseignée.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-chalkboard-teacher me-2 mr-2"></i>Cours proposés</h4>
+            {% if lecturer_courses %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Cours</th>
+                            <th>Niveau</th>
+                            <th class="text-center">Validé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lc in lecturer_courses %}
+                        <tr>
+                            <td>{{ lc.course.label }}</td>
+                            <td>{{ lc.course.level.name|default:"—" }}</td>
+                            <td class="text-center">
+                                {% if lc.is_validated %}
+                                    <span class="badge bg-success text-white"><i class="fas fa-check"></i></span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-3 bg-light rounded text-muted">Aucun cours renseigné.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Documents -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-4">
+            <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-folder-open me-2 mr-2"></i>Documents & pièces</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Photo de profil</label>
+                    <div class="p-2 bg-light rounded text-center">
+                        {% if lecturer.photo %}
+                            <a href="{{ lecturer.photo.url }}" target="_blank"><img src="{{ lecturer.photo.url }}" alt="Photo" class="doc-thumb"></a>
+                        {% else %}
+                            <span class="text-muted">Non fournie</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Signature</label>
+                    <div class="p-2 bg-light rounded text-center">
+                        {% if lecturer.signature %}
+                            <a href="{{ lecturer.signature.url }}" target="_blank"><img src="{{ lecturer.signature.url }}" alt="Signature" class="doc-thumb"></a>
+                        {% else %}
+                            <span class="text-muted">Non fournie</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Curriculum Vitae</label>
+                    <div class="p-2 bg-light rounded text-center">
+                        {% if lecturer.cv %}
+                            <a href="{{ lecturer.cv.url }}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-file-pdf me-1 mr-1"></i>Ouvrir le CV</a>
+                        {% else %}
+                            <span class="text-muted">Non fourni</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-label {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .bg-light {
+        background: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+
+    .btn {
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+        border: none;
+    }
+
+    .btn:hover { box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; }
+
+    .badge { border-radius: 20px; padding: 0.5em 1em; }
+
+    .table { background: transparent; }
+    .table th {
+        border-top: none;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .table td { border-top: 1px solid rgba(0,0,0,0.05); vertical-align: middle; }
+    .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.02); }
+
+    .profile-photo {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 4px 4px 10px #b8b9be, -4px -4px 10px #fff;
+    }
+
+    .profile-photo--placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #fff;
+        background: var(--accent-color, #4a6cf7);
+        text-transform: uppercase;
+    }
+
+    .doc-thumb {
+        max-height: 90px;
+        max-width: 100%;
+        border-radius: 8px;
+        box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    }
+</style>
+{% endblock %}

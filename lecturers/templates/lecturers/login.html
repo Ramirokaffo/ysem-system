@@ -1,8 +1,20 @@
 {% extends 'lecturers/_auth_layout.html' %}
 
 {% block title %}Connexion — Portail enseignant {{ institution_name }}{% endblock %}
-
 {% block auth_card %}
+
+<div class="lec-card">
+    {% if messages %}
+    <div class="alert-stack">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }}">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            <div>{{ message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <h1>Connexion</h1>
     <p class="auth-sub">Accédez à votre espace enseignant {{ institution_name }}.</p>
 
@@ -10,7 +22,7 @@
         {% csrf_token %}
 
         {% if form.non_field_errors %}
-            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        <div class="alert alert-error">{{ form.non_field_errors }}</div>
         {% endif %}
 
         <div class="form-group">
@@ -44,4 +56,5 @@
         Vous n'avez pas reçu l'e-mail d'activation ?
         <a href="{% url 'lecturers:resend_activation' %}">Renvoyer le lien</a>
     </p>
+</div>
 {% endblock %}

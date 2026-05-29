@@ -36,13 +36,13 @@ MODULE_CONFIG = {
         'dashboard_url': 'prospection:dashboard',
         'path_prefixes': ['/prospection/'],
     },
-    MODULE_PAYMENTS: {
-        'label': 'Paiements',
-        'description': 'Gestion des paiements, reçus et statuts financiers.',
-        'icon': 'fas fa-money-check-alt',
-        'dashboard_url': 'payments:payments_list',
-        'path_prefixes': ['/paiements/'],
-    },
+    # MODULE_PAYMENTS: {
+    #     'label': 'Paiements',
+    #     'description': 'Gestion des paiements, reçus et statuts financiers.',
+    #     'icon': 'fas fa-money-check-alt',
+    #     'dashboard_url': 'payments:payments_list',
+    #     'path_prefixes': ['/paiements/'],
+    # },
     MODULE_LECTURER_MANAGEMENT: {
         'label': 'Gestion des enseignants',
         'description': 'Recrutement, validation des dossiers et gestion des enseignants.',
