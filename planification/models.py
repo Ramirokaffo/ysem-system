@@ -25,6 +25,7 @@ class Floor(models.Model):
         verbose_name_plural = "Etages"
         ordering = ['number']
 
+
 class Building(models.Model):
     """
     Modèle pour les batiments
@@ -40,6 +41,7 @@ class Building(models.Model):
         verbose_name_plural = "Batiments"
         ordering = ['code']
 
+
 class Equipment(models.Model):
     """
     Modèle pour les équipements
@@ -54,6 +56,7 @@ class Equipment(models.Model):
         verbose_name = "Equipement"
         verbose_name_plural = "Equipements"
         ordering = ['code', 'name']
+
 
 class Classroom(models.Model):
     """

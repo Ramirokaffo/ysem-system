@@ -1,0 +1,63 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-md-6 col-xl-4 mb-4">
+            <div class="card card-neumorphic shadow-soft p-4 h-100">
+                <div class="d-flex align-items-center">
+                    <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3">
+                        <i class="fas fa-user-tie"></i>
+                    </span>
+                    <div>
+                        <div class="h3 mb-0">{{ submitted_count }}</div>
+                        <div class="text-gray font-small">Candidatures soumises</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4 mb-4">
+            <div class="card card-neumorphic shadow-soft p-4 h-100">
+                <div class="d-flex align-items-center">
+                    <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3">
+                        <i class="fas fa-clipboard-check"></i>
+                    </span>
+                    <div>
+                        <div class="h3 mb-0">{{ pending_courses_count }}</div>
+                        <div class="text-gray font-small">Cours à valider</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-neumorphic shadow-soft p-4">
+        <h2 class="h5 mb-3">Dernières candidatures</h2>
+        {% if recent_candidates %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Enseignant</th>
+                            <th>Diplôme</th>
+                            <th>Soumis le</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in recent_candidates %}
+                            <tr>
+                                <td>{{ candidate.full_name|default:candidate }}</td>
+                                <td>{{ candidate.highest_diploma_obtained|default:"—" }}</td>
+                                <td>{{ candidate.recruitment_submitted_at|date:"d/m/Y H:i"|default:"—" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray mb-0">Aucune candidature soumise pour le moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

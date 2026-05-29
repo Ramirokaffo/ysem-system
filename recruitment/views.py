@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import redirect, render
@@ -315,4 +316,5 @@ class RecruitmentRecapView(View):
             'courses': LecturerCourse.objects.filter(lecturer=lecturer)
                 .select_related('course', 'course__subject', 'course__level').all(),
         })
+
 

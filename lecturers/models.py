@@ -18,6 +18,15 @@ class Lecturer(models.Model):
         ('Master', 'Master'),
         ('Doctorat', 'Doctorat'),
     ]
+    LECTURERS_STATUS_CHOICES = [
+        ('draft', 'Brouillon'),
+        ('pending', 'En attente de validation'),
+        ('hired', 'Recruté'),
+        ('refused', 'Refusé'),
+        ('licensed', 'Licencié'),
+        ('resigned', 'Démissionnaire'),
+    ]
+
     matricule = models.CharField(blank=True, unique=True, primary_key=True, max_length=50, verbose_name="Matricule")
     firstname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Prénom")
     lastname = models.CharField(blank=True, null=True, max_length=100, verbose_name="Nom de famille")
@@ -50,7 +59,8 @@ class Lecturer(models.Model):
 
     highest_diploma_obtained = models.CharField(blank=True, null=True, max_length=100, verbose_name="Dernier diplôme obtenu", choices=DIPLOMAS_CHOICES)
 
-    # favorite_subjects = models.ManyToManyField(related_name='favorite_lecturers', to=LecturerSubject, blank=True, verbose_name="Matières préférées")
+    is_permanent = models.BooleanField(default=False, verbose_name="Enseignant permanent ?")
+    status = models.CharField(max_length=20, choices=LECTURERS_STATUS_CHOICES, default='draft', verbose_name="Statut du dossier")
 
     # Champs pour l'authentification du portail enseignant
     external_password_hash = models.CharField(max_length=128, blank=True, null=True, verbose_name="Mot de passe (portail enseignant)")

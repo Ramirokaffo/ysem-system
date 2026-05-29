@@ -157,6 +157,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "main.context_processors.institution_branding",
+                "accounts.context_processors.accessible_modules",
                 "academic.context_processors.active_academic_year",
                 "prospection.context_processors.prospection_context",
                 "admissions.context_processors.candidate_session",

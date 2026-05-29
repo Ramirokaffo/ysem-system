@@ -1,5 +1,42 @@
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+
+from .access_modules import ALL_MODULE_CODES, MODULE_CHOICES, MODULE_CONFIG, ROLE_MODULES_MAP
+
+
+
+class AccessModule(models.Model):
+    """Module applicatif auquel un utilisateur peut avoir accès."""
+
+    code = models.CharField(max_length=50, primary_key=True, choices=MODULE_CHOICES)
+    name = models.CharField(max_length=100, verbose_name="Nom")
+    description = models.TextField(blank=True, verbose_name="Description")
+    icon_class = models.CharField(max_length=100, blank=True, verbose_name="Icône")
+    is_active = models.BooleanField(default=True, verbose_name="Actif")
+
+    class Meta:
+        verbose_name = "Module d'accès"
+        verbose_name_plural = "Modules d'accès"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class BaseUserManager(UserManager):
+    """Manager avec compatibilité temporaire pour l'ancien mot-clé role."""
+
+    def _create_user(self, username, email, password, **extra_fields):
+        legacy_role = extra_fields.pop('role', None)
+        user = super()._create_user(username, email, password, **extra_fields)
+        module_codes = ROLE_MODULES_MAP.get(legacy_role or '', [])
+        if module_codes:
+            modules = AccessModule.objects.filter(code__in=module_codes, is_active=True)
+            user.accessible_modules.add(*modules)
+            if not user.last_accessed_module:
+                user.last_accessed_module = module_codes[0]
+                user.save(update_fields=['last_accessed_module'])
+        return user
 
 
 class BaseUser(AbstractUser):
@@ -18,15 +55,18 @@ class BaseUser(AbstractUser):
         blank=True,
         null=True
     )
-    role = models.CharField(max_length=100, blank=True, null=True, default="student",
-        choices=[
-            ('scholar', 'Scolarité', ),
-            ('planning', 'Planification',),
-            ('teaching', 'Suivie des Enseignements',),
-            ("student", "Étudiant",),
-            ("super_admin", "Administrateur",),
-            # ("agent", "Agent de prospection")
-        ],
+    accessible_modules = models.ManyToManyField(
+        AccessModule,
+        blank=True,
+        related_name='users',
+        verbose_name="Modules accessibles",
+    )
+    last_accessed_module = models.CharField(
+        max_length=50,
+        choices=MODULE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Dernier module accédé",
     )
     two_factor_enabled = models.BooleanField(
         default=False,
@@ -47,14 +87,46 @@ class BaseUser(AbstractUser):
         verbose_name = "Utilisateur"
         verbose_name_plural = "Utilisateurs"
 
+    objects = BaseUserManager()
+
+    def get_accessible_module_codes(self):
+        """Retourne les codes modules autorisés pour l'utilisateur."""
+        if self.is_superuser:
+            return list(ALL_MODULE_CODES)
+
+        if self.pk:
+            codes = list(
+                self.accessible_modules.filter(is_active=True).values_list('code', flat=True)
+            )
+            if codes:
+                return codes
+
+        return []
+
+    def has_module_access(self, module_code):
+        return module_code in self.get_accessible_module_codes()
+
+    def get_accessible_modules_data(self):
+        return [
+            {'code': code, **MODULE_CONFIG[code]}
+            for code in self.get_accessible_module_codes()
+            if code in MODULE_CONFIG
+        ]
+
+    def get_default_module_code(self):
+        codes = self.get_accessible_module_codes()
+        if self.last_accessed_module in codes:
+            return self.last_accessed_module
+        return codes[0] if codes else None
+
     def is_scholar_admin(self):
-        return self.role == "scholar"
+        return self.has_module_access("scholar")
 
     def is_study_admin(self):
-        return self.role == "teaching"
+        return self.has_module_access("teaching")
 
     def is_planning_admin(self):
-        return self.role == "planning"
+        return self.has_module_access("planning")
 
 
 class Godfather(models.Model):

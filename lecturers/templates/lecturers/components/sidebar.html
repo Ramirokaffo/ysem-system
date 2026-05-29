@@ -1,0 +1,11 @@
+
+<!-- Navigation Menu -->
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'lecturers:home' %}">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+    </li>
+</ul>
+

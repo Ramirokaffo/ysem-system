@@ -162,8 +162,8 @@ body {
     border-radius: 10px;
     padding: 12px 15px;
     margin-bottom: 20px;
-    background: var(--primary-color);
-    box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff;
+    /* background: var(--primary-color); */
+    /* box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; */
     display: flex;
     align-items: center;
     font-size: 0.85rem;
@@ -181,7 +181,7 @@ body {
 
 .alert-danger {
     color: #721c24;
-    border-left: 3px solid #dc3545;
+    /* border-left: 3px solid #dc3545; */
 }
 
 .alert-danger .alert-icon {
@@ -190,7 +190,7 @@ body {
 
 .alert-success {
     color: #155724;
-    border-left: 3px solid #28a745;
+    /* border-left: 3px solid #28a745; */
 }
 
 .alert-success .alert-icon {

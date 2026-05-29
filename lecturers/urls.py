@@ -1,5 +1,7 @@
 from django.urls import path
 
+from lecturers import admin_views
+
 from . import views
 
 
@@ -18,4 +20,7 @@ urlpatterns = [
     path('mot-de-passe-oublie/', views.PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('reinitialiser/<str:token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('changer-mot-de-passe/', views.LecturerPasswordChangeView.as_view(), name='password_change'),
+
+    path('home/', admin_views.admin_dashboard, name='home'),
+
 ]

@@ -24,6 +24,7 @@ urlpatterns = [
     path("admissions/", include("admissions.urls")),
     path("enseignants/", include("lecturers.urls")),
     path("enseignants/recrutement/", include("recruitment.urls")),
+    path("gestion-enseignants/", include("recruitment.admin_urls")),
     path("etudiants/", include("students.urls")),
 
     # URLs pour la gestion des paiements

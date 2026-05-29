@@ -177,7 +177,7 @@ def super_admin_required(view_func):
             )
             return redirect('authentication:login')
 
-        if getattr(request.user, 'role', '') != 'super_admin':
+        if not request.user.is_superuser:
             messages.error(
                 request,
                 "Accès interdit. Cette page est réservée aux super administrateurs."
@@ -199,8 +199,8 @@ def super_admin_required(view_func):
 
 def role_required(*allowed_roles):
     """
-    Décorateur générique pour vérifier les rôles autorisés
-    Usage: @role_required('scholar', 'super_admin')
+    Décorateur générique historique, désormais basé sur les modules autorisés.
+    Usage: @role_required('scholar', 'planning')
     """
     def decorator(view_func):
         @wraps(view_func)
@@ -221,12 +221,14 @@ def role_required(*allowed_roles):
                 )
                 return redirect('authentication:login')
 
-            # Vérifier le rôle de l'utilisateur
-            user_role = getattr(request.user, 'role', 'student')
-            if user_role not in allowed_roles:
+            # Vérifier le module de l'utilisateur
+            if not request.user.is_superuser and not any(
+                request.user.has_module_access(module_code)
+                for module_code in allowed_roles
+            ):
                 messages.error(
                     request,
-                    f"Accès interdit. Votre rôle ne permet pas d'accéder à cette page."
+                    "Accès interdit. Vos modules ne permettent pas d'accéder à cette page."
                 )
                 # Rediriger vers le dashboard approprié selon le rôle
                 if request.user.is_scholar_admin():

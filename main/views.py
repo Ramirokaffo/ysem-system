@@ -645,8 +645,8 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
         user = self.request.user
         context['user'] = user
 
-        # Statistiques personnelles si l'utilisateur est un administrateur
-        if hasattr(user, 'role'):
+        # Statistiques personnelles si l'utilisateur a accès au module scolarité
+        if user.has_module_access('scholar'):
             # Nombre d'étudiants gérés récemment
             from datetime import datetime, timedelta
             thirty_days_ago = datetime.now() - timedelta(days=30)

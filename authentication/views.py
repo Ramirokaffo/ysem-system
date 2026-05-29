@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
-from academic.models import AcademicYear
+from accounts.access_modules import MODULE_CONFIG, get_module_dashboard, get_module_for_path
 from audit.utils import log_audit_event
 from .models import LoginHistory, TwoFactorChallenge
 from .services import record_login, record_logout
@@ -21,6 +21,46 @@ from .two_factor import (
 User = get_user_model()
 PENDING_2FA_SESSION_KEY = "pending_2fa"
 PENDING_2FA_TOGGLE_SESSION_KEY = "pending_2fa_toggle"
+CURRENT_MODULE_SESSION_KEY = "current_module"
+
+
+def _set_last_accessed_module(request, user, module_code):
+    """Mémorise le dernier module consulté en session et en base."""
+    if module_code not in MODULE_CONFIG:
+        return
+    request.session[CURRENT_MODULE_SESSION_KEY] = module_code
+    if getattr(user, 'last_accessed_module', None) != module_code:
+        user.last_accessed_module = module_code
+        user.save(update_fields=['last_accessed_module'])
+
+
+def _redirect_to_module(request, user, module_code):
+    dashboard_url = get_module_dashboard(module_code)
+    if not dashboard_url:
+        return redirect('authentication:select_module')
+    _set_last_accessed_module(request, user, module_code)
+    return redirect(dashboard_url)
+
+
+def _redirect_after_authentication(request, user, next_url=''):
+    """Redirige après connexion selon les modules accessibles."""
+    if next_url:
+        if user_can_access_url(user, next_url):
+            module_code = get_module_for_path(next_url)
+            if module_code:
+                _set_last_accessed_module(request, user, module_code)
+            return redirect(next_url)
+        messages.warning(
+            request,
+            "Redirection vers vos modules. Vous n'avez pas accès à la page demandée."
+        )
+
+    module_codes = user.get_accessible_module_codes()
+    if not module_codes:
+        return redirect('authentication:select_module')
+    if len(module_codes) == 1:
+        return _redirect_to_module(request, user, module_codes[0])
+    return redirect('authentication:select_module')
 
 
 @never_cache
@@ -31,7 +71,7 @@ def login_view(request):
     """
     # Si l'utilisateur est déjà connecté, rediriger vers le dashboard
     if request.user.is_authenticated:
-        return redirect('main:dashboard')
+        return _redirect_after_authentication(request, request.user, request.GET.get('next') or '')
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -80,7 +120,7 @@ def login_view(request):
                             )
                         return redirect('authentication:two_factor_login_challenge')
 
-                    return _finalize_login(request, user, request.GET.get('next'))
+                    return _finalize_login(request, user, request.GET.get('next') or '')
                 else:
                     record_login(
                         request,
@@ -147,27 +187,38 @@ def logout_view(request):
 
 def user_can_access_url(user, url):
     """
-    Vérifie si un utilisateur peut accéder à une URL donnée basé sur son rôle
+    Vérifie si un utilisateur peut accéder à une URL donnée via ses modules.
     """
-    user_role = getattr(user, 'role', 'student')
+    if not url.startswith('/'):
+        return False
+    if url.startswith(('/auth/', '/admin/')):
+        return True
+    module_code = get_module_for_path(url)
+    return bool(module_code and user.has_module_access(module_code))
 
-    # Définir les accès par rôle
-    role_access = {
-        'scholar': ['/scholar/', '/auth/', '/admin/'],
-        'teaching': ['/teach/', '/auth/', '/admin/'],
-        'planning': ['/planning/', '/auth/', '/admin/'],
-        'super_admin': ['/scholar/', '/teach/', '/planning/', '/prospection/', '/auth/', '/admin/'],
-        'student': ['/portail-etudiant/', '/auth/logout/']
-    }
 
-    allowed_paths = role_access.get(user_role, [])
+@never_cache
+@csrf_protect
+@login_required
+def select_module_view(request):
+    """Page de choix du module lorsque l'utilisateur a plusieurs accès."""
+    module_codes = request.user.get_accessible_module_codes()
+    # if not module_codes:
+    #     return redirect('student_portal:login')
+    if len(module_codes) == 1:
+        return _redirect_to_module(request, request.user, module_codes[0])
 
-    # Vérifier si l'URL commence par un des chemins autorisés
-    for allowed_path in allowed_paths:
-        if url.startswith(allowed_path):
-            return True
+    if request.method == 'POST':
+        module_code = request.POST.get('module') or ''
+        if request.user.has_module_access(module_code):
+            return _redirect_to_module(request, request.user, module_code)
+        messages.error(request, "Vous n'avez pas accès au module demandé.")
 
-    return False
+    modules = request.user.get_accessible_modules_data()
+    return render(request, 'authentication/select_module.html', {
+        'modules': modules,
+        'last_accessed_module': request.user.last_accessed_module,
+    })
 
 
 def _finalize_login(request, user, next_url):
@@ -192,25 +243,7 @@ def _finalize_login(request, user, next_url):
         message='Connexion web réussie.',
     )
 
-    user_role = getattr(user, 'role', 'student')
-    role_default_urls = {
-        'scholar': 'main:dashboard',
-        'teaching': 'teaching:Teaching',
-        'planning': 'planification:dashboard',
-        'super_admin': 'main:dashboard',
-        'student': 'student_portal:login',
-    }
-
-    if next_url:
-        if user_can_access_url(user, next_url):
-            return redirect(next_url)
-        messages.warning(
-            request,
-            "Redirection vers votre dashboard. Votre rôle ne permet pas d'accéder à la page demandée."
-        )
-
-    default_url = role_default_urls.get(user_role, 'main:dashboard')
-    return redirect(default_url)
+    return _redirect_after_authentication(request, user, next_url)
 
 
 def _load_pending_challenge(request, session_key, purpose):
@@ -321,28 +354,21 @@ def two_factor_login_confirm_link_view(request, token):
 @login_required
 def roles_info_view(request):
     """
-    Vue pour afficher les informations sur les rôles et permissions
+    Vue pour afficher les informations sur les modules et permissions
     Accessible uniquement aux super administrateurs
     """
     # Vérifier que l'utilisateur est un super administrateur
-    if getattr(request.user, 'role', '') != 'super_admin':
+    if not request.user.is_superuser:
         messages.error(
             request,
             "Accès interdit. Cette page est réservée aux super administrateurs."
         )
-        # Rediriger vers le dashboard approprié selon le rôle
-        if request.user.is_scholar_admin():
-            return redirect('main:dashboard')
-        elif request.user.is_study_admin():
-            return redirect('teaching:Teaching')
-        elif request.user.is_planning_admin():
-            return redirect('planification:dashboard')
-        else:
-            return redirect('main:dashboard')
+        return _redirect_after_authentication(request, request.user)
 
     context = {
-        'page_title': 'Gestion des Rôles et Permissions',
-        'current_user_role': getattr(request.user, 'role', 'unknown'),
+        'page_title': 'Gestion des Modules et Permissions',
+        'current_user_modules': request.user.get_accessible_modules_data(),
+        'modules': MODULE_CONFIG,
     }
 
     return render(request, 'authentication/roles_info.html', context)

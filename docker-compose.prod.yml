@@ -49,6 +49,25 @@ services:
       - media_prod:/app/media
       - logs_prod:/app/logs
 
+  # phpMyAdmin - MySQL Administration
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ysem-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "8086:80"
+    networks:
+      - ysem-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
 volumes:
   mysql_data:
   static_prod:

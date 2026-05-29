@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Choisir un module - YSEM Dashboard</title>
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+</head>
+<body>
+    <main>
+        <section class="min-vh-100 d-flex bg-primary align-items-center py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-10 col-xl-9">
+                        <div class="card bg-primary shadow-soft border-light p-4">
+                            <div class="card-header text-center pb-0">
+                                <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}" class="img-fluid mb-4" width="110">
+                                <h1 class="h4">Choisir un module</h1>
+                                <p class="text-gray mb-0">Sélectionnez l'espace de travail auquel vous souhaitez accéder.</p>
+                            </div>
+                            <div class="card-body">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags|default:'info' }} shadow-soft" role="alert">
+                                            <span class="alert-inner--icon mr-2"><span class="fas fa-info-circle"></span></span>
+                                            <span class="alert-inner--text">{{ message }}</span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                <div class="row mt-2">
+                                    {% for module in modules %}
+                                        <div class="col-12 col-md-6 col-lg-4 mb-4">
+                                            <form method="post" class="h-100">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="module" value="{{ module.code }}">
+                                                <button type="submit" class="btn btn-primary shadow-soft btn-block text-center h-100 d-flex flex-column align-items-center p-4 animate-up-2">
+                                                    {% if module.code == last_accessed_module %}
+                                                        <span class="badge badge-pill badge-secondary shadow-soft align-self-end mb-2">
+                                                            <span class="fas fa-history mr-1"></span> Dernier utilisé
+                                                        </span>
+                                                    {% endif %}
+                                                    <span class="icon icon-shape icon-shape-sm bg-primary shadow-inset rounded-circle text-dark mb-4">
+                                                        <i class="{{ module.icon }}"></i>
+                                                    </span>
+                                                    <span class="d-block h5 mb-2">{{ module.label }}</span>
+                                                    <span class="d-block text-gray font-small mb-4">{{ module.description }}</span>
+                                                    <span class="d-block text-dark font-weight-bold font-small mt-auto">
+                                                        Accéder <span class="fas fa-arrow-right ml-1"></span>
+                                                    </span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% empty %}
+                                        <div class="col-12">
+                                            <div class="alert alert-secondary shadow-soft text-center" role="alert">
+                                                <span class="alert-inner--text">Aucun module disponible pour vous. Veuillez contacter l'administrateur.</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'authentication:logout' %}" class="text-gray font-weight-bold">
+                                        <span class="fas fa-sign-out-alt mr-1"></span> Se déconnecter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'neumorphism-ui-v1.0.0/html&css/assets/js/neumorphism.js' %}"></script>
+</body>
+</html>

@@ -30,6 +30,7 @@ class StudentPortalSecurityMiddleware:
         ]
     
     def __call__(self, request):
+        print(f"Middleware de sécurité du portail étudiant : path={request.path}, user={request.user}, authenticated={request.user.is_authenticated}, student_auth={request.session.get('student_authenticated')}")
         # Vérifier si l'utilisateur est un étudiant connecté au portail
         if request.session.get('student_authenticated'):
             # Vérifier si l'étudiant essaie d'accéder à une zone interdite
@@ -48,6 +49,7 @@ class StudentPortalSecurityMiddleware:
             change_password_url = reverse('student_portal:change_password')
             logout_url = reverse('student_portal:logout')
             allowed_paths = (change_password_url, logout_url)
+            
             if (
                 request.path not in allowed_paths
                 and not request.path.startswith('/static/')

@@ -1,0 +1,29 @@
+{% comment %}
+Sélecteur de module : permet de basculer en 1 clic vers un autre espace de
+travail auquel l'utilisateur a accès. Affiché uniquement si l'utilisateur
+dispose d'au moins deux modules. Les variables proviennent du context
+processor accounts.context_processors.accessible_modules.
+{% endcomment %}
+{% if has_multiple_modules %}
+<div class="module-switcher dropdown mr-3">
+    <button class="btn btn-primary shadow-soft dropdown-toggle d-flex align-items-center" type="button"
+            id="moduleSwitcherDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+            title="Changer de module">
+        <i class="fas fa-th-large mr-2"></i>
+        <span class="d-none d-md-inline">Changer de module</span>
+    </button>
+    <div class="dropdown-menu dropdown-menu-right shadow-soft" aria-labelledby="moduleSwitcherDropdown">
+        <h6 class="dropdown-header">Vos espaces de travail</h6>
+        {% for module in accessible_modules %}
+            <a class="dropdown-item d-flex align-items-center {% if module.code == current_module_code %}active{% endif %}"
+               href="{% url module.dashboard_url %}">
+                <i class="{{ module.icon }} mr-2"></i>
+                <span>{{ module.label }}</span>
+                {% if module.code == current_module_code %}
+                    <i class="fas fa-check ml-auto"></i>
+                {% endif %}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
