@@ -301,6 +301,35 @@ class RecruitmentStepView(View):
         return redirect('recruitment:recap')
 
 
+@method_decorator([never_cache, csrf_protect, lecturer_required], name='dispatch')
+class RecruitmentReopenView(View):
+    """Rouvre le wizard de recrutement après un refus autorisant la resoumission."""
+
+    def post(self, request):
+        lecturer = _get_lecturer_or_logout(request)
+        if not lecturer:
+            return redirect('lecturers:logout')
+
+        if lecturer.status != 'refused' or not lecturer.can_be_resubmitted:
+            messages.error(
+                request,
+                "Votre dossier ne peut pas être modifié pour le moment.",
+            )
+            return redirect('lecturers:dashboard')
+
+        lecturer.recruitment_submitted = False
+        lecturer.recruitment_submitted_at = None
+        lecturer.status = 'draft'
+        lecturer.save(update_fields=[
+            'recruitment_submitted', 'recruitment_submitted_at', 'status',
+        ])
+        messages.info(
+            request,
+            "Vous pouvez désormais modifier votre dossier puis le resoumettre.",
+        )
+        return redirect('recruitment:step', step=1)
+
+
 @method_decorator([never_cache, lecturer_required], name='dispatch')
 class RecruitmentRecapView(View):
     template_name = 'recruitment/recap.html'

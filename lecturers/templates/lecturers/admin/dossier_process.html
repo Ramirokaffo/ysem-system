@@ -1,0 +1,299 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Traiter le dossier de {{ lecturer.firstname }} {{ lecturer.lastname }} - YSEM{% endblock %}
+{% block page_title %}Traiter le dossier enseignant{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'lecturers:dossier_process' lecturer.matricule %}">
+    {% csrf_token %}
+
+    <!-- Navigation -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <a href="{% url 'lecturers:dossier_detail' lecturer.matricule %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2 mr-2"></i>Retour au dossier
+                    </a>
+                    <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
+                        {{ lecturer.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- En-tête profil -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <div class="d-flex align-items-center flex-wrap gap-4">
+                    <div class="profile-photo-wrap">
+                        {% if lecturer.photo %}
+                            <img src="{{ lecturer.photo.url }}" alt="Photo" class="profile-photo">
+                        {% else %}
+                            <div class="profile-photo profile-photo--placeholder">{{ lecturer.firstname|slice:":1" }}{{ lecturer.lastname|slice:":1" }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 mx-3">
+                        <h3 class="mb-1">{{ lecturer.firstname }} {{ lecturer.lastname }}</h3>
+                        <div class="text-muted">
+                            <i class="fas fa-id-badge me-1 mr-1"></i>{{ lecturer.matricule }}
+                            <span class="mx-2">•</span><i class="fas fa-envelope me-1 mr-1"></i>{{ lecturer.email|default:"—" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations du candidat -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-user me-2 mr-2"></i>Informations du candidat</h4>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Grade / Titre</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.grade|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Diplôme le plus élevé</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.get_highest_diploma_obtained_display|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Date de naissance</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.date_naiss|date:"d/m/Y"|default:"Non renseignée" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Genre</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.get_gender_display|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Nationalité</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.nationality|default:"Non renseignée" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Langue</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.get_lang_display|default:"Non renseignée" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Statut marital</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.get_marital_status_display|default:"Non renseigné" }}</div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Enfants à charge</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.number_of_dependent_children|default:"0" }}</div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold">Adresse de résidence</label>
+                        <div class="p-2 bg-light rounded">{{ lecturer.address|default:"Non renseignée" }}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Problème de santé</label>
+                        <div class="p-2 bg-light rounded">
+                            {% if lecturer.has_health_problem %}
+                                <span class="badge bg-warning text-dark">Oui</span>
+                                {% if lecturer.health_problem_description %}<div class="mt-2">{{ lecturer.health_problem_description }}</div>{% endif %}
+                            {% else %}
+                                <span class="badge bg-success text-white">Aucun</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Curriculum Vitae</label>
+                        <div class="p-2 bg-light rounded">
+                            {% if lecturer.cv %}
+                                <a href="{{ lecturer.cv.url }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-pdf me-1 mr-1"></i>Ouvrir le CV</a>
+                            {% else %}
+                                <span class="text-muted">Non fourni</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique des refus -->
+    {% if refusal_reasons %}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-3 border-bottom pb-2"><i class="fas fa-history me-2 mr-2"></i>Historique des refus</h4>
+                {% for r in refusal_reasons %}
+                <div class="p-3 mb-2 bg-light rounded">
+                    <div class="text-muted small mb-1">{{ r.created_at|date:"d/m/Y à H:i" }}{% if r.created_by %} — {{ r.created_by.get_full_name|default:r.created_by.username }}{% endif %}</div>
+                    <div>{{ r.reason }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Validation des matières -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-book me-2 mr-2"></i>Matières à valider</h4>
+                {% if lecturer_subjects %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width:80px;">Valider</th>
+                                <th>Matière</th>
+                                <th class="text-center">Exp. pratique</th>
+                                <th class="text-center">Exp. enseignement</th>
+                                <th class="text-center">Justificatif</th>
+                                <th class="text-center">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ls in lecturer_subjects %}
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="validated_subjects" value="{{ ls.pk }}" {% if ls.is_validated %}checked{% endif %}>
+                                </td>
+                                <td>{{ ls.subject.name }}</td>
+                                <td class="text-center">{{ ls.practice_experience_years }} an(s)</td>
+                                <td class="text-center">{{ ls.teaching_experience_years }} an(s)</td>
+                                <td class="text-center">
+                                    {% if ls.proof_document %}
+                                        <a href="{{ ls.proof_document.url }}" target="_blank" title="Justificatif"><i class="fas fa-paperclip"></i></a>
+                                    {% else %}<span class="text-muted">—</span>{% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-info" title="Voir la description"
+                                            data-toggle="modal" data-target="#descriptionModal"
+                                            data-desc-title="{{ ls.subject.name }}"
+                                            data-desc-text="{{ ls.subject.description|default:''|escape }}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3 bg-light rounded text-muted">Aucune matière renseignée.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation des cours -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-chalkboard-teacher me-2 mr-2"></i>Cours à valider</h4>
+                {% if lecturer_courses %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width:80px;">Valider</th>
+                                <th>Cours</th>
+                                <th>Niveau</th>
+                                <th class="text-center">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lc in lecturer_courses %}
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="validated_courses" value="{{ lc.pk }}" {% if lc.is_validated %}checked{% endif %}>
+                                </td>
+                                <td>{{ lc.course.label }}</td>
+                                <td>{{ lc.course.level.name|default:"—" }}</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-info" title="Voir la description"
+                                            data-toggle="modal" data-target="#descriptionModal"
+                                            data-desc-title="{{ lc.course.label }}"
+                                            data-desc-text="{{ lc.course.description|default:''|escape }}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-3 bg-light rounded text-muted">Aucun cours renseigné.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'lecturers/admin/_dossier_process_actions.html' %}
+</form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-label { color: var(--text-color); font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .bg-light {
+        background: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+    .btn { border-radius: 10px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; border: none; }
+    .btn:hover { box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; }
+    .badge { border-radius: 20px; padding: 0.5em 1em; }
+    .table { background: transparent; }
+    .table th { border-top: none; border-bottom: 2px solid rgba(0,0,0,0.1); font-weight: 600; color: var(--text-color); }
+    .table td { border-top: 1px solid rgba(0,0,0,0.05); vertical-align: middle; }
+    .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.02); }
+    .profile-photo {
+        width: 90px; height: 90px; border-radius: 50%; object-fit: cover;
+        box-shadow: 4px 4px 10px #b8b9be, -4px -4px 10px #fff;
+    }
+    .profile-photo--placeholder {
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.7rem; font-weight: bold; color: #fff;
+        background: var(--accent-color, #4a6cf7); text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Modal description matière / cours -->
+<div class="modal fade" id="descriptionModal" tabindex="-1" role="dialog" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content card-neumorphic">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="descriptionModalLabel"><i class="fas fa-info-circle text-info me-2 mr-2"></i>Description</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6 class="fw-bold mb-2" id="descriptionModalTitle"></h6>
+                <p id="descriptionModalText" class="mb-0" style="white-space:pre-line;"></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#descriptionModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var title = button.data('desc-title') || '—';
+        var text = (button.data('desc-text') || '').toString().trim();
+        var modal = $(this);
+        modal.find('#descriptionModalTitle').text(title);
+        if (text) {
+            modal.find('#descriptionModalText').text(text);
+        } else {
+            modal.find('#descriptionModalText').html('<span class="text-muted">Aucune description disponible.</span>');
+        }
+    });
+</script>
+{% endblock %}

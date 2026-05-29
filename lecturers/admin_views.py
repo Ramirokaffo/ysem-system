@@ -1,11 +1,18 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
+from lecturers.emails import (
+    send_recruitment_accepted_email,
+    send_recruitment_refused_email,
+)
 from lecturers.models import Lecturer
-from recruitment.models import LecturerCourse
+from recruitment.models import LecturerCourse, LecturerRefusalReason
 
 
 
@@ -109,3 +116,101 @@ def lecturer_dossier_detail(request, matricule):
         'lecturer_courses': lecturer.lecturer_courses.all(),
     }
     return render(request, 'lecturers/admin/dossier_detail.html', context)
+
+
+@never_cache
+@login_required
+def lecturer_dossier_process(request, matricule):
+    """Traite le dossier d'un enseignant : validation ou refus de la candidature."""
+    lecturer = get_object_or_404(
+        Lecturer.objects.prefetch_related(
+            'lecturer_subjects__subject',
+            'lecturer_courses__course__level',
+            'refusal_reasons',
+        ),
+        pk=matricule,
+    )
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'accept':
+            return _process_accept(request, lecturer)
+        if action == 'refuse':
+            return _process_refuse(request, lecturer)
+
+        messages.error(request, "Action inconnue.")
+        return redirect('lecturers:dossier_process', matricule=matricule)
+
+    context = {
+        'lecturer': lecturer,
+        'lecturer_subjects': lecturer.lecturer_subjects.all(),
+        'lecturer_courses': lecturer.lecturer_courses.all(),
+        'refusal_reasons': lecturer.refusal_reasons.all(),
+    }
+    return render(request, 'lecturers/admin/dossier_process.html', context)
+
+
+def _process_accept(request, lecturer):
+    """Valide les matières/cours sélectionnés et marque le dossier comme recruté."""
+    validated_subject_ids = set(request.POST.getlist('validated_subjects'))
+    validated_course_ids = set(request.POST.getlist('validated_courses'))
+    now = timezone.now()
+
+    with transaction.atomic():
+        for ls in lecturer.lecturer_subjects.all():
+            should_validate = str(ls.pk) in validated_subject_ids
+            ls.is_validated = should_validate
+            ls.validated_by = request.user if should_validate else None
+            ls.validated_at = now if should_validate else None
+            ls.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+
+        for lc in lecturer.lecturer_courses.all():
+            should_validate = str(lc.pk) in validated_course_ids
+            lc.is_validated = should_validate
+            lc.validated_by = request.user if should_validate else None
+            lc.validated_at = now if should_validate else None
+            lc.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+
+        lecturer.status = 'hired'
+        lecturer.can_be_resubmitted = False
+        lecturer.save(update_fields=['status', 'can_be_resubmitted'])
+
+    send_recruitment_accepted_email(lecturer, request=request)
+    messages.success(
+        request,
+        f"Le dossier de {lecturer.full_name()} a été accepté. Un email de "
+        "confirmation a été envoyé à l'enseignant.",
+    )
+    return redirect('lecturers:dossier_detail', matricule=lecturer.pk)
+
+
+def _process_refuse(request, lecturer):
+    """Enregistre un motif de refus et notifie l'enseignant."""
+    reason = (request.POST.get('reason') or '').strip()
+    can_be_resubmitted = request.POST.get('can_be_resubmitted') == 'on'
+
+    if not reason:
+        messages.error(request, "Veuillez préciser le motif du refus.")
+        return redirect('lecturers:dossier_process', matricule=lecturer.pk)
+
+    with transaction.atomic():
+        LecturerRefusalReason.objects.create(
+            lecturer=lecturer,
+            reason=reason,
+            can_be_resubmitted=can_be_resubmitted,
+            created_by=request.user,
+        )
+        lecturer.status = 'refused'
+        lecturer.can_be_resubmitted = can_be_resubmitted
+        lecturer.save(update_fields=['status', 'can_be_resubmitted'])
+
+    send_recruitment_refused_email(
+        lecturer, reason, can_be_resubmitted=can_be_resubmitted, request=request,
+    )
+    messages.success(
+        request,
+        f"Le dossier de {lecturer.full_name()} a été refusé. Un email a été "
+        "envoyé à l'enseignant.",
+    )
+    return redirect('lecturers:dossier_detail', matricule=lecturer.pk)

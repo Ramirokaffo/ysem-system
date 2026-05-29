@@ -29,12 +29,44 @@
 
         <h2 class="form-section-title">Dossier de candidature</h2>
 
-        {% if lecturer.recruitment_submitted %}
+        {% if lecturer.status == 'hired' %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <div>
+                    Félicitations&nbsp;! Votre candidature a été <strong>acceptée</strong>.
+                    Bienvenue dans l'équipe de {{ institution_name }}.
+                </div>
+            </div>
+            <a href="{% url 'recruitment:recap' %}" class="btn-neu btn-neu--primary" style="max-width:320px;">
+                <i class="fas fa-file-alt" aria-hidden="true"></i> Voir le récapitulatif
+            </a>
+        {% elif lecturer.status == 'refused' %}
+            <div class="alert alert-danger">
+                <i class="fas fa-times-circle" aria-hidden="true"></i>
+                <div>
+                    Votre candidature n'a pas été retenue.
+                    {% if latest_refusal %}
+                        <div class="mt-2"><strong>Motif&nbsp;:</strong></div>
+                        <div style="white-space:pre-line;">{{ latest_refusal.reason }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if lecturer.can_be_resubmitted %}
+                <p>Vous pouvez modifier votre dossier et le soumettre à nouveau.</p>
+                <form method="post" action="{% url 'recruitment:reopen' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-neu btn-neu--primary" style="max-width:320px;">
+                        <i class="fas fa-pen" aria-hidden="true"></i> Modifier et resoumettre mon dossier
+                    </button>
+                </form>
+            {% endif %}
+        {% elif lecturer.recruitment_submitted %}
             <div class="alert alert-success">
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
                 <div>
                     Votre dossier a été soumis le
                     <strong>{{ lecturer.recruitment_submitted_at|date:"d F Y" }}</strong>.
+                    Il est en cours d'examen.
                 </div>
             </div>
             <a href="{% url 'recruitment:recap' %}" class="btn-neu btn-neu--primary" style="max-width:320px;">

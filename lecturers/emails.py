@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 ACTIVATION_TEMPLATE = 'lecturers/emails/account_activation.html'
 PASSWORD_RESET_TEMPLATE = 'lecturers/emails/password_reset.html'
+RECRUITMENT_ACCEPTED_TEMPLATE = 'lecturers/emails/recruitment_accepted.html'
+RECRUITMENT_REFUSED_TEMPLATE = 'lecturers/emails/recruitment_refused.html'
 
 
 def _lecturer_display_name(lecturer):
@@ -129,3 +131,43 @@ def send_password_reset_email(lecturer, token, request=None):
         **branding,
     }
     return _send(PASSWORD_RESET_TEMPLATE, recipient, context)
+
+
+def send_recruitment_accepted_email(lecturer, request=None):
+    """Notifie l'enseignant que sa candidature a été acceptée."""
+    recipient = (lecturer.email or '').strip()
+    if not recipient:
+        return False
+
+    branding = _branding_context(request=request)
+    relative_url = reverse('lecturers:dashboard')
+    dashboard_url = _build_absolute_url(branding['base_url'], relative_url)
+
+    context = {
+        'lecturer': lecturer,
+        'lecturer_name': _lecturer_display_name(lecturer),
+        'dashboard_url': dashboard_url,
+        **branding,
+    }
+    return _send(RECRUITMENT_ACCEPTED_TEMPLATE, recipient, context)
+
+
+def send_recruitment_refused_email(lecturer, reason, can_be_resubmitted=False, request=None):
+    """Notifie l'enseignant que sa candidature a été refusée."""
+    recipient = (lecturer.email or '').strip()
+    if not recipient:
+        return False
+
+    branding = _branding_context(request=request)
+    relative_url = reverse('lecturers:dashboard')
+    dashboard_url = _build_absolute_url(branding['base_url'], relative_url)
+
+    context = {
+        'lecturer': lecturer,
+        'lecturer_name': _lecturer_display_name(lecturer),
+        'reason': reason,
+        'can_be_resubmitted': can_be_resubmitted,
+        'dashboard_url': dashboard_url,
+        **branding,
+    }
+    return _send(RECRUITMENT_REFUSED_TEMPLATE, recipient, context)

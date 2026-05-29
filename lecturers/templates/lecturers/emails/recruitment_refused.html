@@ -1,0 +1,71 @@
+{% block subject %}{{ institution_name }} — Suite à votre candidature{% endblock %}
+
+{% block text_body %}
+Bonjour {{ lecturer_name }},
+
+Après examen de votre dossier de candidature enseignant auprès de
+{{ institution_name }}, nous sommes au regret de vous informer que
+celui-ci n'a pas été retenu.
+
+Motif :
+{{ reason }}
+
+{% if can_be_resubmitted %}Vous avez la possibilité de modifier et de resoumettre votre dossier
+depuis votre espace enseignant :
+
+{{ dashboard_url }}
+{% endif %}
+
+Cordialement,
+L'équipe {{ institution_name }}
+Email : {{ contact_email }}
+Site : {{ website }}
+{% endblock %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html lang="fr">
+<body style="margin:0;padding:24px;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+    <div style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;border:1px solid #e2e8f0;">
+        {% if email_logo_url %}
+            <div style="text-align:center;margin-bottom:24px;">
+                <img src="{{ email_logo_url }}" alt="Logo {{ institution_name }}" style="max-height:64px;width:auto;">
+            </div>
+        {% endif %}
+
+        <h1 style="margin:0 0 16px;font-size:22px;color:#b91c1c;">Suite à votre candidature</h1>
+
+        <p>Bonjour {{ lecturer_name }},</p>
+        <p>
+            Après examen de votre dossier de candidature enseignant auprès de
+            <strong>{{ institution_name }}</strong>, nous sommes au regret de
+            vous informer que celui-ci n'a pas été retenu.
+        </p>
+
+        <p style="font-weight:600;margin-bottom:6px;">Motif :</p>
+        <p style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:10px;padding:12px 14px;color:#7f1d1d;white-space:pre-line;">{{ reason }}</p>
+
+        {% if can_be_resubmitted %}
+        <p>
+            Vous avez la possibilité de modifier et de resoumettre votre dossier
+            depuis votre espace enseignant.
+        </p>
+        <div style="text-align:center;margin:28px 0;">
+            <a href="{{ dashboard_url }}"
+               style="background:#1d4ed8;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;display:inline-block;">
+                Modifier mon dossier
+            </a>
+        </div>
+        {% endif %}
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+        <p style="font-size:12px;color:#64748b;margin:0;">
+            <strong>{{ institution_name }}</strong><br>
+            {% if address %}{{ address }}<br>{% endif %}
+            {% if phone %}Tél : {{ phone }}<br>{% endif %}
+            Email : {{ contact_email }} — Site : {{ website }}
+        </p>
+    </div>
+</body>
+</html>
+{% endblock %}

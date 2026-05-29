@@ -1,0 +1,52 @@
+{% comment %}Boutons d'action (valider / refuser) + modal de motif de refus.{% endcomment %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card-neumorphic p-4">
+            <h4 class="mb-2"><i class="fas fa-gavel me-2 mr-2"></i>Décision</h4>
+            <p class="text-muted mb-4">
+                Cochez les matières et cours que vous souhaitez valider, puis acceptez le
+                dossier. Vous pouvez aussi le refuser en précisant un motif.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                <button type="submit" name="action" value="accept" class="btn btn-success">
+                    <i class="fas fa-check-circle me-2 mr-2"></i>Accepter le dossier
+                </button>
+                <button type="button" class="btn btn-danger mx-2" data-toggle="modal" data-target="#refuseModal">
+                    <i class="fas fa-times-circle me-2 mr-2"></i>Refuser le dossier
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal motif de refus -->
+<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content card-neumorphic">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="refuseModalLabel"><i class="fas fa-times-circle text-danger me-2 mr-2"></i>Refuser le dossier</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="refuseReason" class="form-label fw-bold">Motif du refus <span class="text-danger">*</span></label>
+                    <textarea name="reason" id="refuseReason" class="form-control" rows="4" placeholder="Précisez la raison du refus (visible par l'enseignant)…"></textarea>
+                </div>
+                <div class="form-check mt-3">
+                    <input type="checkbox" class="form-check-input" name="can_be_resubmitted" id="canResubmit" checked>
+                    <label class="form-check-label" for="canResubmit">
+                        Autoriser l'enseignant à modifier et resoumettre son dossier
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                <button type="submit" name="action" value="refuse" class="btn btn-danger">
+                    <i class="fas fa-paper-plane me-2 mr-2"></i>Confirmer le refus
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

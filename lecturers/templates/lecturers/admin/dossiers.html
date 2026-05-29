@@ -147,6 +147,9 @@
                                     <a href="{% url 'lecturers:dossier_detail' lecturer.matricule %}" class="btn btn-sm btn-outline-secondary" title="Voir le dossier">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <a href="{% url 'lecturers:dossier_process' lecturer.matricule %}" class="btn btn-sm btn-outline-primary" title="Traiter le dossier">
+                                        <i class="fas fa-gavel"></i>
+                                    </a>
                                 </td>
                             </tr>
                         {% empty %}

@@ -142,11 +142,13 @@ class LecturerDashboardView(View):
         progress_pct = int(
             lecturer.recruitment_step / self.RECRUITMENT_TOTAL_STEPS * 100
         )
+        latest_refusal = lecturer.refusal_reasons.first()
         return render(request, self.template_name, {
             'lecturer': lecturer,
             'recruitment_total_steps': self.RECRUITMENT_TOTAL_STEPS,
             'recruitment_next_step': next_step,
             'recruitment_progress_pct': progress_pct,
+            'latest_refusal': latest_refusal,
         })
 
 
