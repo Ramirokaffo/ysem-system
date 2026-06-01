@@ -25,5 +25,6 @@ urlpatterns = [
     path('dossiers/', admin_views.lecturer_dossiers, name='dossiers'),
     path('dossiers/<str:matricule>/', admin_views.lecturer_dossier_detail, name='dossier_detail'),
     path('dossiers/<str:matricule>/traiter/', admin_views.lecturer_dossier_process, name='dossier_process'),
+    path('dossiers/<str:matricule>/pdf/', admin_views.lecturer_dossier_pdf, name='dossier_pdf'),
 
 ]

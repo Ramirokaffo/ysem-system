@@ -2,10 +2,16 @@ from django import forms
 from .models import Lecturer, Evaluation, TeachingMonitoring
 from students.models import Student
 from academic.models import Course, Level, AcademicYear
+from main.validators import validate_phone_number
 
 
 #formulaire pour l'ajout des enseignants
 class EnseignantForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'phone_number' in self.fields:
+            self.fields['phone_number'].validators.append(validate_phone_number)
+
     class Meta:
         model = Lecturer
         fields = '__all__'

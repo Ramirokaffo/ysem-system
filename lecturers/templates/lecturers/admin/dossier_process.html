@@ -16,9 +16,14 @@
                     <a href="{% url 'lecturers:dossier_detail' lecturer.matricule %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2 mr-2"></i>Retour au dossier
                     </a>
-                    <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
-                        {{ lecturer.get_status_display }}
-                    </span>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <a href="{% url 'lecturers:dossier_pdf' lecturer.matricule %}" target="_blank" class="btn btn-outline-dark mr-2">
+                            <i class="fas fa-file-pdf me-2 mr-2"></i>Exporter en PDF
+                        </a>
+                        <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
+                            {{ lecturer.get_status_display }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

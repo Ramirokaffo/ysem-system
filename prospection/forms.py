@@ -4,6 +4,7 @@ from django.utils import timezone
 from .models import Agent, Campagne, Equipe, Prospect, SeanceProspection
 from academic.models import AcademicYear
 from schools.models import School
+from main.validators import validate_phone_number
 
 
 class AgentForm(forms.ModelForm):
@@ -24,6 +25,11 @@ class AgentForm(forms.ModelForm):
             'adresse': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Adresse complète'}),
         }
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'telephone' in self.fields:
+            self.fields['telephone'].validators.append(validate_phone_number)
+
     def clean_matricule(self):
         matricule = self.cleaned_data['matricule']
         if Agent.objects.filter(matricule=matricule).exclude(pk=self.instance.pk).exists():
@@ -164,6 +170,10 @@ class ProspectForm(forms.ModelForm):
 
         # Filtrer les agents actifs
         self.fields['agent_collecteur'].queryset = Agent.objects.filter(statut='actif')
+
+        for field_name in ('telephone', 'telephone_pere', 'telephone_mere'):
+            if field_name in self.fields:
+                self.fields[field_name].validators.append(validate_phone_number)
 
 
 class AgentSearchForm(forms.Form):

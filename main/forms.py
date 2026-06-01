@@ -1,5 +1,4 @@
 from django import forms
-from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from students.forms import SchoolChoiceField
@@ -13,15 +12,8 @@ from academic.document_requirements import (
 from schools.models import School, SecondaryDiploma, UniversityLevel
 from .models import SystemSettings
 from .program_documents import build_program_document_entries
+from .validators import validate_file_size, validate_phone_number
 
-
-
-def validate_file_size(value):
-    """Validateur pour la taille des fichiers (max 5Mo)"""
-    filesize = value.size
-    if filesize > 5 * 1024 * 1024:  # 5MB
-        raise ValidationError("La taille du fichier ne doit pas dépasser 5 Mo.")
-    return value
 
 
 def validate_document_file(value):
@@ -309,13 +301,8 @@ class InscriptionCompleteForm(forms.Form):
         })
     )
 
-    phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$',
-        message="Le numéro de téléphone doit être au format: '+999999999'. Jusqu'à 15 chiffres autorisés."
-    )
-
     telephone = forms.CharField(
-        validators=[phone_regex],
+        validators=[validate_phone_number],
         max_length=17,
         label="Téléphone",
         widget=forms.TextInput(attrs={
@@ -457,6 +444,7 @@ class InscriptionCompleteForm(forms.Form):
     )
 
     telephone_pere = forms.CharField(
+        validators=[validate_phone_number],
         max_length=17,
         label="Téléphone du père",
         widget=forms.TextInput(attrs={
@@ -507,6 +495,7 @@ class InscriptionCompleteForm(forms.Form):
     )
 
     telephone_mere = forms.CharField(
+        validators=[validate_phone_number],
         max_length=17,
         label="Téléphone de la mère",
         widget=forms.TextInput(attrs={
@@ -566,6 +555,7 @@ class InscriptionCompleteForm(forms.Form):
     )
 
     telephone_tuteur = forms.CharField(
+        validators=[validate_phone_number],
         max_length=17,
         label="Téléphone du tuteur/parrain",
         widget=forms.TextInput(attrs={
@@ -596,6 +586,7 @@ class InscriptionCompleteForm(forms.Form):
     )
 
     telephone_urgence = forms.CharField(
+        validators=[validate_phone_number],
         max_length=17,
         label="Téléphone d'urgence",
         widget=forms.TextInput(attrs={

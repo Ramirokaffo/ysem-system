@@ -7,6 +7,7 @@ import re
 from .models import Classroom, TimeSlot, CourseSession, Schedule, LecturerAvailability, ScheduleSession
 from Teaching.models import Lecturer
 from academic.models import Course, Level, AcademicYear
+from main.validators import validate_phone_number
 
 
 class ClassroomForm(forms.ModelForm):
@@ -324,13 +325,7 @@ class LecturerForm(forms.ModelForm):
         phone = self.cleaned_data.get('phone_number')
         if phone:
             phone = phone.strip()
-
-            # Supprimer les espaces et caractères spéciaux pour la validation
-            phone_digits = re.sub(r'[^\d+]', '', phone)
-
-            # Vérifier le format basique
-            if not re.match(r'^\+?[\d\s\-\(\)]{8,20}$', phone):
-                raise ValidationError("Format de numéro de téléphone invalide.")
+            validate_phone_number(phone)
 
         return phone
 

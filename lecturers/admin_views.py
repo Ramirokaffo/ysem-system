@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
@@ -12,6 +13,7 @@ from lecturers.emails import (
     send_recruitment_refused_email,
 )
 from lecturers.models import Lecturer
+from main.pdf_exports import build_lecturer_dossier_pdf
 from recruitment.models import LecturerCourse, LecturerRefusalReason
 
 
@@ -120,6 +122,25 @@ def lecturer_dossier_detail(request, matricule):
 
 @never_cache
 @login_required
+def lecturer_dossier_pdf(request, matricule):
+    """Génère le dossier complet d'un enseignant au format PDF."""
+    lecturer = get_object_or_404(
+        Lecturer.objects.prefetch_related(
+            'lecturer_subjects__subject',
+            'lecturer_courses__course__level',
+            'refusal_reasons__created_by',
+        ),
+        pk=matricule,
+    )
+
+    pdf_content = build_lecturer_dossier_pdf(lecturer, request=request)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="dossier_{lecturer.matricule}.pdf"'
+    return response
+
+
+@never_cache
+@login_required
 def lecturer_dossier_process(request, matricule):
     """Traite le dossier d'un enseignant : validation ou refus de la candidature."""
     lecturer = get_object_or_404(
@@ -138,6 +159,8 @@ def lecturer_dossier_process(request, matricule):
             return _process_accept(request, lecturer)
         if action == 'refuse':
             return _process_refuse(request, lecturer)
+        if action == 'save_progress':
+            return _process_save_progress(request, lecturer)
 
         messages.error(request, "Action inconnue.")
         return redirect('lecturers:dossier_process', matricule=matricule)
@@ -151,26 +174,47 @@ def lecturer_dossier_process(request, matricule):
     return render(request, 'lecturers/admin/dossier_process.html', context)
 
 
-def _process_accept(request, lecturer):
-    """Valide les matières/cours sélectionnés et marque le dossier comme recruté."""
+def _apply_validation_selection(request, lecturer):
+    """Met à jour l'état de validation des matières/cours selon les cases cochées."""
     validated_subject_ids = set(request.POST.getlist('validated_subjects'))
     validated_course_ids = set(request.POST.getlist('validated_courses'))
     now = timezone.now()
 
-    with transaction.atomic():
-        for ls in lecturer.lecturer_subjects.all():
-            should_validate = str(ls.pk) in validated_subject_ids
-            ls.is_validated = should_validate
-            ls.validated_by = request.user if should_validate else None
-            ls.validated_at = now if should_validate else None
-            ls.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+    for ls in lecturer.lecturer_subjects.all():
+        should_validate = str(ls.pk) in validated_subject_ids
+        ls.is_validated = should_validate
+        ls.validated_by = request.user if should_validate else None
+        ls.validated_at = now if should_validate else None
+        ls.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
 
-        for lc in lecturer.lecturer_courses.all():
-            should_validate = str(lc.pk) in validated_course_ids
-            lc.is_validated = should_validate
-            lc.validated_by = request.user if should_validate else None
-            lc.validated_at = now if should_validate else None
-            lc.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+    for lc in lecturer.lecturer_courses.all():
+        should_validate = str(lc.pk) in validated_course_ids
+        lc.is_validated = should_validate
+        lc.validated_by = request.user if should_validate else None
+        lc.validated_at = now if should_validate else None
+        lc.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+
+
+def _process_save_progress(request, lecturer):
+    """Enregistre l'avancement de la validation sans accepter ni refuser le dossier.
+
+    Permet à l'administration de reprendre le traitement du dossier plus tard.
+    """
+    with transaction.atomic():
+        _apply_validation_selection(request, lecturer)
+
+    messages.success(
+        request,
+        "L'avancement du traitement a été enregistré. Vous pourrez reprendre le "
+        "traitement de ce dossier plus tard.",
+    )
+    return redirect('lecturers:dossier_process', matricule=lecturer.pk)
+
+
+def _process_accept(request, lecturer):
+    """Valide les matières/cours sélectionnés et marque le dossier comme recruté."""
+    with transaction.atomic():
+        _apply_validation_selection(request, lecturer)
 
         lecturer.status = 'hired'
         lecturer.can_be_resubmitted = False

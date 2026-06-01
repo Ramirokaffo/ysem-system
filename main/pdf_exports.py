@@ -61,6 +61,24 @@ def build_pre_inscriptions_pdf(students):
     return output.getvalue()
 
 
+def build_lecturer_dossier_pdf(lecturer, request=None):
+    """Construit le dossier complet d'un enseignant (fiche + pièces jointes)."""
+    annex_entries = _prepare_lecturer_annex_entries(lecturer)
+    writer = PdfWriter()
+
+    _append_pdf_bytes(writer, _build_lecturer_summary_pdf(lecturer, annex_entries, request=request))
+
+    for annex in annex_entries:
+        if not annex['pdf_bytes']:
+            continue
+        _append_pdf_bytes(writer, _build_annex_cover_pdf(annex, header='Annexe du dossier enseignant'))
+        _append_pdf_bytes(writer, annex['pdf_bytes'])
+
+    output = BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
 def build_registration_certificate_pdf(official_document, request=None):
     html = render_to_string(
         'main/pdf/registration_certificate.html',
@@ -248,6 +266,182 @@ def _prepare_annex_entries(student):
     return entries
 
 
+def _build_lecturer_summary_pdf(lecturer, annex_entries, request=None):
+    context = _build_lecturer_summary_context(lecturer, annex_entries)
+    html = render_to_string('main/pdf/lecturer_dossier_summary.html', context, request=request)
+    return weasyprint.HTML(string=html).write_pdf()
+
+
+def _build_lecturer_summary_context(lecturer, annex_entries):
+    settings = SystemSettings.get_settings()
+    full_name = f'{lecturer.firstname or ""} {lecturer.lastname or ""}'.strip()
+
+    subject_rows = []
+    for ls in lecturer.lecturer_subjects.all():
+        details = (
+            f"Exp. pratique : {ls.practice_experience_years} an(s) ; "
+            f"Exp. enseignement : {ls.teaching_experience_years} an(s) ; "
+            f"Validée : {'Oui' if ls.is_validated else 'Non'}"
+        )
+        subject_rows.append((ls.subject.name, details))
+
+    course_rows = []
+    for lc in lecturer.lecturer_courses.all():
+        level_name = getattr(lc.course.level, 'name', None) or '—'
+        details = f"Niveau : {level_name} ; Validé : {'Oui' if lc.is_validated else 'Non'}"
+        course_rows.append((lc.course.label, details))
+
+    refusal_rows = []
+    for refusal in lecturer.refusal_reasons.all():
+        resubmit = 'Resoumission autorisée' if refusal.can_be_resubmitted else 'Resoumission non autorisée'
+        refusal_rows.append((_format_datetime(refusal.created_at), f"{refusal.reason} ({resubmit})"))
+
+    annex_rows = []
+    for annex in annex_entries:
+        suffix = f" — {annex['details']}" if annex['details'] else ''
+        filename = annex['filename'] or 'Aucun fichier'
+        annex_rows.append((annex['label'], f"{filename} ({annex['status']}){suffix}"))
+
+    sections = [
+        {
+            'title': 'Informations personnelles',
+            'rows': _normalize_rows([
+                ('Matricule', lecturer.matricule),
+                ('Nom complet', full_name),
+                ('Date de naissance', _format_date(lecturer.date_naiss)),
+                ('Lieu de naissance', lecturer.place_of_birth),
+                ('Genre', lecturer.get_gender_display() if lecturer.gender else None),
+                ('Nationalité', lecturer.nationality),
+                ('Langue', lecturer.get_lang_display() if lecturer.lang else None),
+                ('Statut marital', lecturer.get_marital_status_display() if lecturer.marital_status else None),
+                ('Enfants à charge', lecturer.number_of_dependent_children),
+                ('Grade / Titre', lecturer.grade),
+                ('Diplôme le plus élevé', lecturer.get_highest_diploma_obtained_display() if lecturer.highest_diploma_obtained else None),
+                ('Numéro de CNI', lecturer.nic),
+                ('Numéro d\'Identification Unique', lecturer.niu),
+            ]),
+        },
+        {
+            'title': 'Coordonnées',
+            'rows': _normalize_rows([
+                ('Email', lecturer.email),
+                ('Téléphone', lecturer.phone_number),
+                ('Téléphone secondaire', lecturer.phone_number_2),
+                ('Adresse de résidence', lecturer.address),
+            ]),
+        },
+        {
+            'title': 'Contact d\'urgence',
+            'rows': _normalize_rows([
+                ('Nom', lecturer.emergency_contact_name),
+                ('Téléphone', lecturer.emergency_contact_phone),
+                ('Email', lecturer.emergency_contact_email),
+                ('Relation', lecturer.emergency_contact_relationship),
+            ]),
+        },
+        {
+            'title': 'Santé',
+            'rows': _normalize_rows([
+                ('Problème de santé', 'Oui' if lecturer.has_health_problem else 'Aucun'),
+                ('Description', lecturer.health_problem_description if lecturer.has_health_problem else None),
+            ]),
+        },
+        {
+            'title': 'Statut du dossier',
+            'rows': _normalize_rows([
+                ('Statut', lecturer.get_status_display()),
+                ('Enseignant permanent', 'Oui' if lecturer.is_permanent else 'Non'),
+                ('Resoumission autorisée', 'Oui' if lecturer.can_be_resubmitted else 'Non'),
+                ('Dossier soumis le', _format_datetime(lecturer.recruitment_submitted_at)),
+            ]),
+        },
+        {
+            'title': 'Matières enseignées',
+            'rows': _normalize_rows(subject_rows or [('Matières', 'Aucune matière renseignée')]),
+        },
+        {
+            'title': 'Cours enseignés',
+            'rows': _normalize_rows(course_rows or [('Cours', 'Aucun cours renseigné')]),
+        },
+        {
+            'title': 'Pièces jointes annexées au PDF',
+            'rows': _normalize_rows(annex_rows or [('Pièces jointes', 'Aucune')]),
+        },
+    ]
+
+    if refusal_rows:
+        sections.append({
+            'title': 'Historique des refus',
+            'rows': _normalize_rows(refusal_rows),
+        })
+
+    return {
+        'logo_uri': _build_logo_uri(settings),
+        'logo_alt': settings.get_logo_alt(),
+        'profile_photo_uri': _build_media_uri(getattr(lecturer, 'photo', None)),
+        'full_name': full_name,
+        'sections': sections,
+    }
+
+
+def _prepare_lecturer_annex_entries(lecturer):
+    annex_sources = [('Curriculum Vitae', getattr(lecturer, 'cv', None))]
+    for ls in lecturer.lecturer_subjects.all():
+        if ls.proof_document:
+            annex_sources.append((f'Justificatif — {ls.subject.name}', ls.proof_document))
+
+    entries = []
+    for label, file_field in annex_sources:
+        entry = {
+            'label': label,
+            'filename': '',
+            'status': 'Non fourni',
+            'details': '',
+            'pdf_bytes': None,
+        }
+        if file_field and getattr(file_field, 'name', None):
+            entry['filename'] = os.path.basename(file_field.name)
+            _attach_annex_file(entry, file_field)
+        entries.append(entry)
+
+    return entries
+
+
+def _attach_annex_file(entry, file_field):
+    """Lit un fichier annexe et le convertit en PDF si nécessaire."""
+    try:
+        with file_field.open('rb') as stored_file:
+            file_bytes = stored_file.read()
+    except FileNotFoundError:
+        entry['status'] = 'Introuvable'
+        entry['details'] = 'Fichier absent du stockage'
+        return
+
+    extension = os.path.splitext(file_field.name)[1].lower()
+    if extension == '.pdf':
+        entry['status'] = 'Inclus'
+        entry['pdf_bytes'] = file_bytes
+    elif extension in {'.png', '.jpg', '.jpeg'}:
+        try:
+            entry['status'] = 'Inclus'
+            entry['pdf_bytes'] = _image_to_pdf(file_bytes)
+        except (UnidentifiedImageError, OSError):
+            entry['status'] = 'Erreur'
+            entry['details'] = 'Image illisible ou corrompue'
+    else:
+        entry['status'] = 'Ignoré'
+        entry['details'] = f'Format non pris en charge ({extension or "inconnu"})'
+
+
+def _build_media_uri(file_field):
+    if not file_field or not getattr(file_field, 'name', None):
+        return None
+    file_path = getattr(file_field, 'path', None)
+    if file_path and os.path.exists(file_path):
+        return Path(file_path).resolve().as_uri()
+    return None
+
+
 def _build_summary_pdf(student, annex_entries):
     context = _build_summary_context(student, annex_entries)
     html = render_to_string('main/pdf/pre_inscription_summary.html', context)
@@ -422,13 +616,13 @@ def _format_university_level(university_level):
     return ' ; '.join(details)
 
 
-def _build_annex_cover_pdf(annex):
+def _build_annex_cover_pdf(annex, header='Annexe du dossier de pré-inscription'):
     buffer = BytesIO()
     pdf_canvas = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
     pdf_canvas.setTitle(f"Annexe - {annex['label']}")
     pdf_canvas.setFont('Helvetica-Bold', 18)
-    pdf_canvas.drawCentredString(width / 2, height - 5 * cm, 'Annexe du dossier de pré-inscription')
+    pdf_canvas.drawCentredString(width / 2, height - 5 * cm, header)
     pdf_canvas.setFont('Helvetica-Bold', 14)
     pdf_canvas.drawCentredString(width / 2, height - 7 * cm, annex['label'])
     pdf_canvas.setFont('Helvetica', 11)

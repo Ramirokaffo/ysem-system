@@ -8,6 +8,7 @@ from academic.document_requirements import (
     PROGRAM_DOCUMENTS_BY_FIELD,
 )
 from schools.models import School
+from main.validators import validate_file_size, validate_phone_number
 
 
 class SchoolChoiceField(forms.ModelChoiceField):
@@ -172,6 +173,8 @@ class StudentEditForm(forms.ModelForm):
         self.fields['godfather'].required = False
         self.fields['date_naiss'].required = False
         self.fields['profile_photo'].required = False
+        self.fields['profile_photo'].validators.append(validate_file_size)
+        self.fields['phone_number'].validators.append(validate_phone_number)
 
         self.fields['school'].queryset = School.objects.all().order_by('name', 'phone_number')
         self.fields['program'].queryset = Program.objects.all().order_by('name')
@@ -553,6 +556,14 @@ class StudentMetaDataEditForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name != 'original_country':
                 field.required = False
+
+        for field_name in self.removable_file_fields:
+            if field_name in self.fields:
+                self.fields[field_name].validators.append(validate_file_size)
+
+        for field_name in ('mother_phone_number', 'father_phone_number'):
+            if field_name in self.fields:
+                self.fields[field_name].validators.append(validate_phone_number)
 
         for field_name in PROGRAM_DOCUMENT_FIELD_NAMES:
             if field_name not in self.fields:

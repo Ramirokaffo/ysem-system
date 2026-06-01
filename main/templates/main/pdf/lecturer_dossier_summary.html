@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dossier enseignant</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.4cm 1.6cm 1.6cm 1.6cm;
+            @bottom-left {
+                content: "YSEM — Dossier enseignant";
+                font-family: "DejaVu Sans", sans-serif;
+                font-size: 8pt;
+                color: #6b7280;
+            }
+            @bottom-right {
+                content: "Page " counter(page);
+                font-family: "DejaVu Sans", sans-serif;
+                font-size: 8pt;
+                color: #6b7280;
+            }
+        }
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            color: #111827;
+            font-size: 9.2pt;
+            line-height: 1.35;
+            margin: 0;
+        }
+        table.header {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.35cm;
+        }
+        table.header td {
+            vertical-align: top;
+            padding: 0;
+        }
+        table.header td.left { width: 74%; }
+        table.header td.right { width: 26%; text-align: right; }
+        .logo {
+            max-width: 3.5cm;
+            max-height: 2cm;
+        }
+        .title {
+            margin: 0.2cm 0 0.1cm 0;
+            font-size: 17pt;
+            color: #1f2937;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+        .subtitle {
+            margin: 0;
+            font-size: 10pt;
+            color: #4b5563;
+        }
+        .photo-box {
+            width: 3.2cm;
+            height: 4cm;
+            border: 0.7pt solid #9ca3af;
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            padding: 6pt;
+            box-sizing: border-box;
+            line-height: calc(4cm - 16pt);
+        }
+        .photo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            vertical-align: middle;
+        }
+        .section-title {
+            margin: 0.45cm 0 0.15cm 0;
+            font-size: 12pt;
+            color: #111827;
+            font-weight: 700;
+        }
+        table.section {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f5f5f5;
+            border: 0.5pt solid #b5b5b5;
+        }
+        table.section td {
+            border: 0.3pt solid #d6d6d6;
+            padding: 5pt 6pt;
+            vertical-align: top;
+            font-size: 9.2pt;
+            line-height: 1.2;
+        }
+        table.section td.label {
+            width: 32%;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <table class="header">
+        <tr>
+            <td class="left">
+                {% if logo_uri %}<img src="{{ logo_uri }}" alt="{{ logo_alt }}" class="logo">{% endif %}
+                <div class="title">Dossier enseignant</div>
+                <div class="subtitle">Enseignant : {{ full_name }}</div>
+            </td>
+            <td class="right">
+                <div class="photo-box">
+                    {% if profile_photo_uri %}<img src="{{ profile_photo_uri }}" alt="Photo">{% endif %}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    {% for section in sections %}
+        <div class="section-title">{{ section.title }}</div>
+        <table class="section">
+            {% for row in section.rows %}
+                <tr>
+                    <td class="label">{{ row.0 }}</td>
+                    <td>{{ row.1 }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+</body>
+</html>

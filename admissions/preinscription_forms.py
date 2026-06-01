@@ -12,7 +12,6 @@ d'admission applique son propre design (palette YSEM bleu) via les wrappers
 ``.form-field`` définis dans ``admissions.css``.
 """
 from django import forms
-from django.core.validators import RegexValidator
 from django.forms import formset_factory
 
 from academic.models import Level, Program, Speciality
@@ -27,6 +26,7 @@ from main.forms import (
     UNIVERSITY_LEVEL_CHOICES,
     validate_document_file,
 )
+from main.validators import validate_phone_number
 from main.program_documents import (
     build_program_document_entries,
     get_required_program_document_field_names,
@@ -46,10 +46,7 @@ LANGUE_CHOICES = [
     ('anglais', 'Anglais'),
 ]
 
-PHONE_VALIDATOR = RegexValidator(
-    regex=r'^\+?\d{9,15}$',
-    message="Le numéro doit être au format international, ex: +237 6XX XXX XXX.",
-)
+PHONE_VALIDATOR = validate_phone_number
 
 
 class _PartialMixin:
@@ -111,6 +108,7 @@ class Step2FamilyForm(_PartialMixin, forms.Form):
     profession_pere = forms.CharField(max_length=200, label="Profession du père", required=False,
         widget=forms.TextInput(attrs={'placeholder': 'Profession du père'}))
     telephone_pere = forms.CharField(max_length=17, label="Téléphone du père", required=False,
+        validators=[PHONE_VALIDATOR],
         widget=forms.TextInput(attrs={'placeholder': '+237 6XX XXX XXX'}))
     courriel_pere = forms.EmailField(label="Courriel du père", required=False,
         widget=forms.EmailInput(attrs={'placeholder': 'email@exemple.com'}))
@@ -123,6 +121,7 @@ class Step2FamilyForm(_PartialMixin, forms.Form):
     profession_mere = forms.CharField(max_length=200, label="Profession de la mère", required=False,
         widget=forms.TextInput(attrs={'placeholder': 'Profession de la mère'}))
     telephone_mere = forms.CharField(max_length=17, label="Téléphone de la mère", required=False,
+        validators=[PHONE_VALIDATOR],
         widget=forms.TextInput(attrs={'placeholder': '+237 6XX XXX XXX'}))
     courriel_mere = forms.EmailField(label="Courriel de la mère", required=False,
         widget=forms.EmailInput(attrs={'placeholder': 'email@exemple.com'}))

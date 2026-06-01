@@ -3,6 +3,8 @@ from django.forms import inlineformset_factory
 
 from academic.models import Course, Subject
 from lecturers.models import Lecturer
+from main.forms import RELATIONSHIP_CHOICES
+from main.validators import validate_file_size, validate_phone_number
 
 from .models import LecturerSubject
 
@@ -13,6 +15,13 @@ _TEXTAREA = 'form-control form-textarea'
 
 class ProfileStep1Form(forms.ModelForm):
     """Étape 1 — Informations personnelles de l'enseignant."""
+
+    emergency_contact_relationship = forms.ChoiceField(
+        choices=RELATIONSHIP_CHOICES,
+        required=False,
+        label="Contact d'urgence - Relation",
+        widget=forms.Select(attrs={'class': _INPUT}),
+    )
 
     class Meta:
         model = Lecturer
@@ -48,7 +57,6 @@ class ProfileStep1Form(forms.ModelForm):
             'emergency_contact_name': forms.TextInput(attrs={'class': _INPUT}),
             'emergency_contact_phone': forms.TextInput(attrs={'class': _INPUT}),
             'emergency_contact_email': forms.EmailInput(attrs={'class': _INPUT}),
-            'emergency_contact_relationship': forms.TextInput(attrs={'class': _INPUT}),
             'photo': forms.FileInput(attrs={'class': _INPUT, 'accept': 'image/png,image/jpeg,image/jpg'}),
         }
 
@@ -63,6 +71,9 @@ class ProfileStep1Form(forms.ModelForm):
     def __init__(self, *args, partial=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.partial = partial
+        self.fields['photo'].validators.append(validate_file_size)
+        for name in ('phone_number', 'phone_number_2', 'emergency_contact_phone'):
+            self.fields[name].validators.append(validate_phone_number)
         if not partial:
             for name in self.REQUIRED_FIELDS:
                 if name in self.fields:
@@ -93,6 +104,7 @@ class DiplomaStep2Form(forms.ModelForm):
     def __init__(self, *args, partial=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.partial = partial
+        self.fields['cv'].validators.append(validate_file_size)
         if not partial:
             self.fields['highest_diploma_obtained'].required = True
             # Le CV n'est obligatoire que s'il n'a pas déjà été uploadé.
@@ -114,6 +126,7 @@ class LecturerSubjectForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['subject'].queryset = Subject.objects.order_by('name')
+        self.fields['proof_document'].validators.append(validate_file_size)
 
 
 LecturerSubjectFormSet = inlineformset_factory(

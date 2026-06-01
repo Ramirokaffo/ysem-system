@@ -5,11 +5,15 @@
             <h4 class="mb-2"><i class="fas fa-gavel me-2 mr-2"></i>Décision</h4>
             <p class="text-muted mb-4">
                 Cochez les matières et cours que vous souhaitez valider, puis acceptez le
-                dossier. Vous pouvez aussi le refuser en précisant un motif.
+                dossier. Vous pouvez aussi enregistrer l'avancement pour reprendre le
+                traitement plus tard, ou refuser le dossier en précisant un motif.
             </p>
             <div class="d-flex flex-wrap gap-3">
                 <button type="submit" name="action" value="accept" class="btn btn-success">
                     <i class="fas fa-check-circle me-2 mr-2"></i>Accepter le dossier
+                </button>
+                <button type="submit" name="action" value="save_progress" class="btn btn-outline-dark mx-2">
+                    <i class="fas fa-save me-2 mr-2"></i>Enregistrer l'avancement
                 </button>
                 <button type="button" class="btn btn-danger mx-2" data-toggle="modal" data-target="#refuseModal">
                     <i class="fas fa-times-circle me-2 mr-2"></i>Refuser le dossier
