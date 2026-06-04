@@ -8,13 +8,21 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
+from academic.models import Course
 from lecturers.emails import (
     send_recruitment_accepted_email,
     send_recruitment_refused_email,
 )
+from lecturers.forms import LecturerCreateForm, TeacherRecruitmentSettingsForm
 from lecturers.models import Lecturer
+from main.models import SystemSettings
 from main.pdf_exports import build_lecturer_dossier_pdf
-from recruitment.models import LecturerCourse, LecturerRefusalReason
+from recruitment.forms import (
+    DiplomaStep2Form,
+    LecturerSubjectFormSet,
+    ProfileStep1Form,
+)
+from recruitment.models import LecturerCourse, LecturerRefusalReason, LecturerSubject
 
 
 
@@ -27,12 +35,33 @@ def admin_dashboard(request):
     modules accessibles. Ce tableau de bord sera étoffé ultérieurement.
     """
     submitted = Lecturer.objects.filter(recruitment_submitted=True)
+    settings_obj = SystemSettings.get_settings()
     context = {
         'submitted_count': submitted.count(),
         'pending_courses_count': LecturerCourse.objects.filter(is_validated=False).count(),
         'recent_candidates': submitted.order_by('-recruitment_submitted_at')[:10],
+        'teacher_recruitment_open': settings_obj.teacher_recruitment_open,
     }
     return render(request, 'lecturers/admin/admin_dashboard.html', context)
+
+
+@never_cache
+@login_required
+def lecturer_settings(request):
+    """Configuration des paramètres de recrutement des enseignants."""
+    settings_obj = SystemSettings.get_settings()
+
+    if request.method == 'POST':
+        form = TeacherRecruitmentSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Les paramètres ont été enregistrés avec succès.")
+            return redirect('lecturers:settings')
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        form = TeacherRecruitmentSettingsForm(instance=settings_obj)
+
+    return render(request, 'lecturers/admin/settings.html', {'form': form})
 
 
 def _filter_lecturer_dossiers(params):
@@ -102,6 +131,29 @@ def lecturer_dossiers(request):
 
 @never_cache
 @login_required
+def lecturer_dossier_create(request):
+    """Crée un enseignant directement depuis l'administration, puis redirige
+    vers l'édition complète de son dossier (utile pour les enseignants déjà
+    recrutés avant la mise en place du système)."""
+    if request.method == 'POST':
+        form = LecturerCreateForm(request.POST)
+        if form.is_valid():
+            lecturer = form.save()
+            messages.success(
+                request,
+                f"L'enseignant {lecturer.full_name()} a été créé. "
+                "Vous pouvez maintenant compléter son dossier.",
+            )
+            return redirect('lecturers:dossier_edit', matricule=lecturer.pk)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        form = LecturerCreateForm()
+
+    return render(request, 'lecturers/admin/dossier_create.html', {'form': form})
+
+
+@never_cache
+@login_required
 def lecturer_dossier_detail(request, matricule):
     """Affiche le dossier détaillé d'un enseignant."""
     lecturer = get_object_or_404(
@@ -118,6 +170,102 @@ def lecturer_dossier_detail(request, matricule):
         'lecturer_courses': lecturer.lecturer_courses.all(),
     }
     return render(request, 'lecturers/admin/dossier_detail.html', context)
+
+
+def _sync_lecturer_courses(lecturer, selected_course_codes):
+    """Synchronise les cours d'un enseignant et garantit l'invariant métier :
+    la matière de chaque cours sélectionné fait toujours partie des matières
+    de l'enseignant (créée automatiquement si nécessaire)."""
+    selected_courses = list(
+        Course.objects.filter(pk__in=selected_course_codes).select_related('subject')
+    )
+
+    existing_subject_ids = set(
+        lecturer.lecturer_subjects.values_list('subject_id', flat=True)
+    )
+    for course in selected_courses:
+        if course.subject_id and course.subject_id not in existing_subject_ids:
+            LecturerSubject.objects.get_or_create(
+                lecturer=lecturer, subject_id=course.subject_id
+            )
+            existing_subject_ids.add(course.subject_id)
+
+    existing = {lc.course_id: lc for lc in lecturer.lecturer_courses.all()}
+    selected_ids = {course.pk for course in selected_courses}
+    for course_id, lc in existing.items():
+        if course_id not in selected_ids:
+            lc.delete()
+    for course in selected_courses:
+        if course.pk not in existing:
+            LecturerCourse.objects.create(lecturer=lecturer, course=course)
+
+
+@never_cache
+@login_required
+def lecturer_dossier_edit(request, matricule):
+    """Permet de modifier le dossier complet d'un enseignant : informations
+    personnelles, diplôme, matières et cours proposés."""
+    lecturer = get_object_or_404(
+        Lecturer.objects.prefetch_related(
+            'lecturer_subjects__subject',
+            'lecturer_courses__course',
+        ),
+        pk=matricule,
+    )
+
+    if request.method == 'POST':
+        profile_form = ProfileStep1Form(
+            request.POST, request.FILES, instance=lecturer, partial=True,
+        )
+        diploma_form = DiplomaStep2Form(
+            request.POST, request.FILES, instance=lecturer, partial=True,
+        )
+        subject_formset = LecturerSubjectFormSet(
+            request.POST, request.FILES, instance=lecturer,
+        )
+        selected_course_codes = set(request.POST.getlist('courses'))
+
+        forms_valid = all([
+            profile_form.is_valid(),
+            diploma_form.is_valid(),
+            subject_formset.is_valid(),
+        ])
+        if forms_valid:
+            with transaction.atomic():
+                profile_form.save()
+                diploma_form.save()
+                subject_formset.save()
+                _sync_lecturer_courses(lecturer, selected_course_codes)
+            messages.success(
+                request,
+                f"Le dossier de {lecturer.full_name()} a été mis à jour avec succès.",
+            )
+            if 'save_and_continue' in request.POST:
+                return redirect('lecturers:dossier_edit', matricule=lecturer.pk)
+            return redirect('lecturers:dossier_detail', matricule=lecturer.pk)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        profile_form = ProfileStep1Form(instance=lecturer, partial=True)
+        diploma_form = DiplomaStep2Form(instance=lecturer, partial=True)
+        subject_formset = LecturerSubjectFormSet(instance=lecturer)
+        selected_course_codes = set(
+            lecturer.lecturer_courses.values_list('course_id', flat=True)
+        )
+
+    all_courses = (
+        Course.objects.select_related('subject', 'level')
+        .order_by('subject__name', 'level__academic_order', 'label')
+    )
+
+    context = {
+        'lecturer': lecturer,
+        'profile_form': profile_form,
+        'diploma_form': diploma_form,
+        'subject_formset': subject_formset,
+        'all_courses': all_courses,
+        'selected_course_codes': selected_course_codes,
+    }
+    return render(request, 'lecturers/admin/dossier_edit.html', context)
 
 
 @never_cache

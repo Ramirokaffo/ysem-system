@@ -25,7 +25,7 @@ urlpatterns = [
     path('inscription/<str:pk>/supprimer/', pre_inscription_delete, name='inscription_delete'),
     path('documents/', DocumentsView.as_view(), name='documents'),
     path('statistiques/', StatistiquesView.as_view(), name='statistiques'),
-    path('parametres/', ParametresView.as_view(), name='parametres'),
+    # path('parametres/', ParametresView.as_view(), name='parametres'),
     path('toggle-prospection/', toggle_prospection, name='toggle_prospection'),
     path('profil/', ProfilView.as_view(), name='profil'),
 

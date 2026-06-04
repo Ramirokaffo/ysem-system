@@ -1956,135 +1956,135 @@ class BulkDocumentCreationForm(forms.Form):
         return created_count, skipped_count, errors
 
 
-class GeneralSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres généraux uniquement
-    """
+# class GeneralSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres généraux uniquement
+#     """
 
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'institution_name', 'institution_code', 'address', 'phone',
-            'email', 'website', 'logo', 'timezone', 'language'
-        ]
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'institution_name', 'institution_code', 'address', 'phone',
+#             'email', 'website', 'logo', 'timezone', 'language'
+#         ]
 
-        widgets = {
-            'institution_name': forms.TextInput(attrs={'class': 'form-control', 'id': 'institution-name'}),
-            'institution_code': forms.TextInput(attrs={'class': 'form-control', 'id': 'institution-code'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'id': 'address'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'id': 'phone'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'id': 'email'}),
-            'website': forms.URLInput(attrs={'class': 'form-control', 'id': 'website'}),
-            'logo': forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'logo', 'accept': 'image/*'}),
-            'timezone': forms.Select(attrs={'class': 'form-select', 'id': 'timezone'}, choices=[
-                ('Africa/Douala', 'Africa/Douala (GMT+1)'),
-                ('UTC', 'UTC (GMT+0)'),
-            ]),
-            'language': forms.Select(attrs={'class': 'form-select', 'id': 'language'}, choices=[
-                ('fr', 'Français'),
-                ('en', 'English'),
-            ]),
-        }
-
-
-class AcademicSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres académiques
-    """
-
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'inscription_period', 'auto_approval', 'require_documents',
-            'allow_external_registration'
-        ]
-
-        widgets = {
-            'inscription_period': forms.Select(attrs={'class': 'form-select', 'id': 'inscription-period'}),
-        }
+#         widgets = {
+#             'institution_name': forms.TextInput(attrs={'class': 'form-control', 'id': 'institution-name'}),
+#             'institution_code': forms.TextInput(attrs={'class': 'form-control', 'id': 'institution-code'}),
+#             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'id': 'address'}),
+#             'phone': forms.TextInput(attrs={'class': 'form-control', 'id': 'phone'}),
+#             'email': forms.EmailInput(attrs={'class': 'form-control', 'id': 'email'}),
+#             'website': forms.URLInput(attrs={'class': 'form-control', 'id': 'website'}),
+#             'logo': forms.ClearableFileInput(attrs={'class': 'form-control', 'id': 'logo', 'accept': 'image/*'}),
+#             'timezone': forms.Select(attrs={'class': 'form-select', 'id': 'timezone'}, choices=[
+#                 ('Africa/Douala', 'Africa/Douala (GMT+1)'),
+#                 ('UTC', 'UTC (GMT+0)'),
+#             ]),
+#             'language': forms.Select(attrs={'class': 'form-select', 'id': 'language'}, choices=[
+#                 ('fr', 'Français'),
+#                 ('en', 'English'),
+#             ]),
+#         }
 
 
-class ProgramLevelSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres des programmes et niveaux
-    """
+# class AcademicSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres académiques
+#     """
 
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'auto_level_progression', 'allow_level_change', 'require_level_validation',
-            'allow_program_change', 'require_program_validation'
-        ]
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'inscription_period', 'auto_approval', 'require_documents',
+#             'allow_external_registration'
+#         ]
 
-
-class UserSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres utilisateurs
-    """
-
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'default_role', 'session_timeout', 'view_documents',
-            'download_docs', 'update_profile', 'view_statistics'
-        ]
-
-        widgets = {
-            'default_role': forms.Select(attrs={'class': 'form-select', 'id': 'default-role'}, choices=[
-                ('student', 'Étudiant'),
-                ('scholar', 'Scolarité'),
-                ('teaching', 'Suivi des Enseignements'),
-                ('super_admin', 'Administrateur'),
-            ]),
-            'session_timeout': forms.NumberInput(attrs={'class': 'form-control', 'id': 'session-timeout', 'min': 5, 'max': 480}),
-        }
+#         widgets = {
+#             'inscription_period': forms.Select(attrs={'class': 'form-select', 'id': 'inscription-period'}),
+#         }
 
 
-class DocumentSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres des documents
-    """
+# class ProgramLevelSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres des programmes et niveaux
+#     """
 
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'max_file_size', 'allowed_formats', 'student_card_enabled',
-            'transcript_enabled', 'certificate_enabled', 'diploma_enabled',
-            'require_original_docs'
-        ]
-
-        widgets = {
-            'max_file_size': forms.NumberInput(attrs={'class': 'form-control', 'id': 'max-file-size', 'min': 1, 'max': 50}),
-            'allowed_formats': forms.TextInput(attrs={'class': 'form-control', 'id': 'allowed-formats', 'readonly': True}),
-        }
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'auto_level_progression', 'allow_level_change', 'require_level_validation',
+#             'allow_program_change', 'require_program_validation'
+#         ]
 
 
-class NotificationSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres de notification
-    """
+# class UserSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres utilisateurs
+#     """
 
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'email_enrollment', 'email_documents', 'email_deadlines',
-            'system_errors', 'system_updates'
-        ]
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'default_role', 'session_timeout', 'view_documents',
+#             'download_docs', 'update_profile', 'view_statistics'
+#         ]
+
+#         widgets = {
+#             'default_role': forms.Select(attrs={'class': 'form-select', 'id': 'default-role'}, choices=[
+#                 ('student', 'Étudiant'),
+#                 ('scholar', 'Scolarité'),
+#                 ('teaching', 'Suivi des Enseignements'),
+#                 ('super_admin', 'Administrateur'),
+#             ]),
+#             'session_timeout': forms.NumberInput(attrs={'class': 'form-control', 'id': 'session-timeout', 'min': 5, 'max': 480}),
+#         }
 
 
-class DataManagementSettingsForm(forms.ModelForm):
-    """
-    Formulaire pour les paramètres de gestion des données
-    """
+# class DocumentSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres des documents
+#     """
 
-    class Meta:
-        model = SystemSettings
-        fields = [
-            'backup_frequency', 'data_retention', 'audit_log',
-            'data_encryption', 'auto_cleanup'
-        ]
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'max_file_size', 'allowed_formats', 'student_card_enabled',
+#             'transcript_enabled', 'certificate_enabled', 'diploma_enabled',
+#             'require_original_docs'
+#         ]
 
-        widgets = {
-            'backup_frequency': forms.Select(attrs={'class': 'form-select', 'id': 'backup-frequency'}),
-            'data_retention': forms.NumberInput(attrs={'class': 'form-control', 'id': 'data-retention', 'min': 1, 'max': 20}),
-        }
+#         widgets = {
+#             'max_file_size': forms.NumberInput(attrs={'class': 'form-control', 'id': 'max-file-size', 'min': 1, 'max': 50}),
+#             'allowed_formats': forms.TextInput(attrs={'class': 'form-control', 'id': 'allowed-formats', 'readonly': True}),
+#         }
+
+
+# class NotificationSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres de notification
+#     """
+
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'email_enrollment', 'email_documents', 'email_deadlines',
+#             'system_errors', 'system_updates'
+#         ]
+
+
+# class DataManagementSettingsForm(forms.ModelForm):
+#     """
+#     Formulaire pour les paramètres de gestion des données
+#     """
+
+#     class Meta:
+#         model = SystemSettings
+#         fields = [
+#             'backup_frequency', 'data_retention', 'audit_log',
+#             'data_encryption', 'auto_cleanup'
+#         ]
+
+#         widgets = {
+#             'backup_frequency': forms.Select(attrs={'class': 'form-select', 'id': 'backup-frequency'}),
+#             'data_retention': forms.NumberInput(attrs={'class': 'form-control', 'id': 'data-retention', 'min': 1, 'max': 20}),
+#         }

@@ -7,11 +7,11 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="card-neumorphic p-4 mb-4">
+        <div class="card-neumorphic shadow-soft  p-4 mb-4">
             <div id="filtersAccordion">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="filtersHeading">
-                        <button id="filtersToggle" class="accordion-button collapsed" type="button" aria-expanded="false" aria-controls="filtersCollapse">
+                        <button id="filtersToggle" class="accordion-button collapsed shadow-inset" type="button" aria-expanded="false" aria-controls="filtersCollapse">
                             <i class="fas fa-filter me-2"></i>Filtres
                         </button>
                     </h2>
@@ -83,6 +83,9 @@
                     <h5 class="mb-1"><i class="fas fa-folder-open me-2 mr-2"></i>Liste des dossiers enseignants</h5>
                     <small class="text-muted">{{ filtered_count }} dossier(s) trouvé(s)</small>
                 </div>
+                <a href="{% url 'lecturers:dossier_create' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2 mr-2"></i>Ajouter Enseignant
+                </a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover">

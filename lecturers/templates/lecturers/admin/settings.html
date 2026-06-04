@@ -1,0 +1,94 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Paramètres - YSEM{% endblock %}
+{% block page_title %}Paramètres du recrutement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="card-neumorphic p-4 mb-4">
+                <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                    <i class="fas fa-user-tie me-2 mr-2"></i>
+                    <h5 class="mb-0">Recrutement des enseignants</h5>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    {{ form.teacher_recruitment_open }}
+                    <label class="form-check-label ml-2" for="{{ form.teacher_recruitment_open.id_for_label }}">
+                        {{ form.teacher_recruitment_open.label }}
+                    </label>
+                </div>
+                {% if form.teacher_recruitment_open.errors %}
+                    <div class="text-danger small mb-2">{{ form.teacher_recruitment_open.errors|striptags }}</div>
+                {% endif %}
+                <small class="text-muted d-block">
+                    Lorsque cette option est désactivée, les candidatures ne sont plus acceptées.
+                </small>
+            </div>
+
+            <div class="card-neumorphic p-4 mb-4">
+                <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                    <i class="fas fa-graduation-cap me-2 mr-2"></i>
+                    <h5 class="mb-0">Expérience requise (en années)</h5>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.require_experience_for_licence_to_teach_licence.id_for_label }}">
+                        {{ form.require_experience_for_licence_to_teach_licence.label }}
+                    </label>
+                    {{ form.require_experience_for_licence_to_teach_licence }}
+                    {% if form.require_experience_for_licence_to_teach_licence.errors %}
+                        <div class="text-danger small">{{ form.require_experience_for_licence_to_teach_licence.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ form.require_experience_for_masters_to_teach_masters.id_for_label }}">
+                        {{ form.require_experience_for_masters_to_teach_masters.label }}
+                    </label>
+                    {{ form.require_experience_for_masters_to_teach_masters }}
+                    {% if form.require_experience_for_masters_to_teach_masters.errors %}
+                        <div class="text-danger small">{{ form.require_experience_for_masters_to_teach_masters.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-0">
+                    <label for="{{ form.require_experience_for_doctors_to_teach_doctors.id_for_label }}">
+                        {{ form.require_experience_for_doctors_to_teach_doctors.label }}
+                    </label>
+                    {{ form.require_experience_for_doctors_to_teach_doctors }}
+                    {% if form.require_experience_for_doctors_to_teach_doctors.errors %}
+                        <div class="text-danger small">{{ form.require_experience_for_doctors_to_teach_doctors.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary px-5">
+                    <i class="fas fa-save me-2 mr-2"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control {
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: var(--primary-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color);
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff, 0 0 0 0.2rem rgba(38, 40, 51, 0.25);
+    }
+</style>
+{% endblock %}

@@ -30,6 +30,25 @@
                 </div>
             </div>
         </div>
+        <div class="col-12 col-md-6 col-xl-4 mb-4">
+            <div class="card card-neumorphic shadow-soft p-4 h-100">
+                <div class="d-flex align-items-center">
+                    <span class="icon icon-shape shadow-inset rounded-circle text-dark mr-3">
+                        <i class="fas fa-door-{% if teacher_recruitment_open %}open{% else %}closed{% endif %}"></i>
+                    </span>
+                    <div>
+                        <div class="h5 mb-0">
+                            {% if teacher_recruitment_open %}
+                                <span class="badge bg-success text-white">Ouvert</span>
+                            {% else %}
+                                <span class="badge bg-danger text-white">Fermé</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-gray font-small">Recrutement des enseignants</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card card-neumorphic shadow-soft p-4">
@@ -59,5 +78,71 @@
             <p class="text-gray mb-0">Aucune candidature soumise pour le moment.</p>
         {% endif %}
     </div>
+
+
+
+    <div class="card card-neumorphic shadow-soft p-4 mb-4">
+        <h2 class="h5 mb-1 text-dark"><i class="fas fa-share text-dark mr-2"></i>Liens utiles</h2>
+
+        <div class="mb-3">
+            <label class="font-small text-gray d-block mb-1">Page de connexion enseignant</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="link-lecturer-login" readonly
+                       value="{{ request.scheme }}://{{ request.get_host }}{% url 'lecturers:login' %}">
+                <button type="button" class="btn btn-primary js-copy-link" data-target="link-lecturer-login">
+                    <i class="fas fa-copy mr-1"></i> Copier
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <label class="font-small text-gray d-block mb-1">Page de création de compte enseignant</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="link-lecturer-signup" readonly
+                       value="{{ request.scheme }}://{{ request.get_host }}{% url 'lecturers:signup' %}">
+                <button type="button" class="btn btn-primary js-copy-link" data-target="link-lecturer-signup">
+                    <i class="fas fa-copy mr-1"></i> Copier
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.js-copy-link').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            if (!input) { return; }
+
+            var done = function () {
+                var original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-1"></i> Copié !';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-primary');
+                setTimeout(function () {
+                    btn.innerHTML = original;
+                    btn.classList.add('btn-primary');
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(input.value).then(done).catch(function () {
+                    input.select();
+                    document.execCommand('copy');
+                    done();
+                });
+            } else {
+                input.select();
+                document.execCommand('copy');
+                done();
+            }
+        });
+    });
+</script>
 {% endblock %}

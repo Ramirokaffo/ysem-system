@@ -42,11 +42,11 @@ class Lecturer(models.Model):
     number_of_dependent_children = models.IntegerField(blank=True, null=True, verbose_name="Nombre d'enfants à charge")
     marital_status = models.CharField(blank=True, null=True, max_length=20, choices=[('single', 'Célibataire'), ('married', 'Marié(e)'), ('divorced', 'Divorcé(e)'), ('widowed', 'Veuf/Veuve')], verbose_name="Statut marital")
     has_health_problem = models.BooleanField(default=False, verbose_name="Avez-vous des problèmes de santé?")
-    health_problem_description = models.TextField(blank=True, null=True, verbose_name="Description des problèmes de santé")
-    address = models.TextField(blank=True, null=True, verbose_name="Adresse de résidence")
+    health_problem_description = models.TextField(blank=True, null=True, max_length=3000, verbose_name="Description des problèmes de santé")
+    address = models.TextField(blank=True, null=True, max_length=500, verbose_name="Adresse de résidence")
 
-    nic = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro de CNI")
-    niu = models.CharField(blank=True, null=True, max_length=20, verbose_name="Numéro d'Identification Unique")
+    nic = models.CharField(blank=True, null=True, max_length=30, verbose_name="Numéro de CNI")
+    niu = models.CharField(blank=True, null=True, max_length=30, verbose_name="Numéro d'Identification Unique")
     
     emergency_contact_name = models.CharField(blank=True, null=True, max_length=100, verbose_name="Contact d'urgence - Nom")
     emergency_contact_phone = models.CharField(blank=True, null=True, max_length=20, verbose_name="Contact d'urgence - Téléphone")
@@ -74,6 +74,11 @@ class Lecturer(models.Model):
     recruitment_step = models.PositiveSmallIntegerField(default=0, verbose_name="Dernière étape de recrutement complétée")
     recruitment_submitted = models.BooleanField(default=False, verbose_name="Dossier de candidature soumis")
     recruitment_submitted_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de soumission du dossier")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Date de modification")
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Date de suppression")
+
 
     def save(self, *args, **kwargs):
         # Générer automatiquement le matricule si ce n'est pas déjà fait

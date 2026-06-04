@@ -1,0 +1,87 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un enseignant - YSEM{% endblock %}
+{% block page_title %}Ajouter un enseignant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card-neumorphic p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 flex-wrap gap-2">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2 mr-2"></i>Nouvel enseignant</h5>
+                <a href="{% url 'lecturers:dossiers' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-2 mr-2"></i>Retour à la liste
+                </a>
+            </div>
+            <!-- <p class="text-muted small">
+                Créez un enseignant directement depuis l'administration (utile pour les
+                enseignants déjà recrutés avant la mise en place du système). Vous pourrez
+                ensuite compléter l'intégralité de son dossier.
+            </p> -->
+
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" for="{{ form.firstname.id_for_label }}">
+                            {{ form.firstname.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.firstname }}
+                        {% for error in form.firstname.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" for="{{ form.lastname.id_for_label }}">
+                            {{ form.lastname.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.lastname }}
+                        {% for error in form.lastname.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        <small class="text-muted d-block">Facultatif. Nécessaire pour l'accès au portail enseignant.</small>
+                        {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold" for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {% for error in form.status.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="form-check">
+                            {{ form.is_permanent }}
+                            <label class="form-check-label ml-2" for="{{ form.is_permanent.id_for_label }}">{{ form.is_permanent.label }}</label>
+                        </div>
+                        {% for error in form.is_permanent.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'lecturers:dossiers' %}" class="btn btn-outline-secondary mr-2">Annuler</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-2 mr-2"></i>Créer et compléter le dossier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-label { color: var(--text-color); font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .form-control {
+        background: var(--primary-color);
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+        border-radius: 8px;
+    }
+    .btn { border-radius: 10px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; border: none; }
+    .btn:hover { box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; }
+</style>
+{% endblock %}

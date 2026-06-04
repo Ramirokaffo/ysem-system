@@ -2,10 +2,86 @@ from django import forms
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
+from main.models import SystemSettings
+
 from .models import Lecturer
 
 
 _INPUT_CLASS = 'form-control'
+
+
+class TeacherRecruitmentSettingsForm(forms.ModelForm):
+    """Paramètres de recrutement des enseignants."""
+
+    class Meta:
+        model = SystemSettings
+        fields = [
+            'teacher_recruitment_open',
+            'require_experience_for_licence_to_teach_licence',
+            'require_experience_for_masters_to_teach_masters',
+            'require_experience_for_doctors_to_teach_doctors',
+        ]
+        widgets = {
+            'teacher_recruitment_open': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'require_experience_for_licence_to_teach_licence': forms.NumberInput(attrs={
+                'class': _INPUT_CLASS,
+                'min': 0,
+            }),
+            'require_experience_for_masters_to_teach_masters': forms.NumberInput(attrs={
+                'class': _INPUT_CLASS,
+                'min': 0,
+            }),
+            'require_experience_for_doctors_to_teach_doctors': forms.NumberInput(attrs={
+                'class': _INPUT_CLASS,
+                'min': 0,
+            }),
+        }
+
+
+class LecturerCreateForm(forms.ModelForm):
+    """Création d'un enseignant directement par l'administration (par exemple
+    pour les enseignants déjà recrutés avant la mise en place du système)."""
+
+    class Meta:
+        model = Lecturer
+        fields = ['firstname', 'lastname', 'email', 'is_permanent', 'status']
+        widgets = {
+            'firstname': forms.TextInput(attrs={
+                'class': _INPUT_CLASS,
+                'placeholder': 'Prénom',
+            }),
+            'lastname': forms.TextInput(attrs={
+                'class': _INPUT_CLASS,
+                'placeholder': 'Nom de famille',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': _INPUT_CLASS,
+                'placeholder': 'exemple@email.com',
+            }),
+            'is_permanent': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'status': forms.Select(attrs={'class': _INPUT_CLASS}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['firstname'].required = True
+        self.fields['lastname'].required = True
+        if not self.is_bound:
+            self.fields['status'].initial = 'hired'
+
+    def clean_firstname(self):
+        return (self.cleaned_data.get('firstname') or '').strip()
+
+    def clean_lastname(self):
+        return (self.cleaned_data.get('lastname') or '').strip()
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if email and Lecturer.objects.filter(email__iexact=email).exists():
+            raise ValidationError("Un enseignant existe déjà avec cette adresse e-mail.")
+        return email or None
 
 
 class LecturerSignupForm(forms.Form):

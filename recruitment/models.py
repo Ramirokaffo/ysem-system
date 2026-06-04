@@ -9,8 +9,8 @@ class LecturerSubject(models.Model):
     """
     Modèle pour les matières enseignées par un enseignant
     """
-    lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='lecturer_subjects')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='lecturer_subjects')
+    lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='lecturer_subjects', verbose_name="Enseignant")
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='lecturer_subjects', verbose_name="Matière")
     practice_experience_years = models.IntegerField(default=0, verbose_name="Années d'expérience dans la pratique de cette discipline")
     teaching_experience_years = models.IntegerField(default=0, verbose_name="Années d'expérience dans l'enseignement de cette discipline")
     is_validated = models.BooleanField(default=False, verbose_name="Validée pour enseigner cette matière")

@@ -279,6 +279,36 @@
             </div>
         </div>
 
+        <!-- Liens d'admission à partager -->
+        <div class="card-neumorphic mb-4">
+            <h5 class="mb-1 border-bottom pb-2">
+                <i class="fas fa-share-nodes me-2"></i>
+                Liens d'admission
+            </h5>
+
+            <div class="mb-3">
+                <label class="small text-muted d-block mb-1">Page de connexion (admission)</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="link-admission-login" readonly
+                           value="{{ request.scheme }}://{{ request.get_host }}{% url 'admissions:login' %}">
+                    <button type="button" class="btn btn-primary js-copy-link" data-target="link-admission-login">
+                        <i class="fas fa-copy me-1"></i> Copier
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="small text-muted d-block mb-1">Page de création de compte (admission)</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="link-admission-signup" readonly
+                           value="{{ request.scheme }}://{{ request.get_host }}{% url 'admissions:signup' %}">
+                    <button type="button" class="btn btn-primary js-copy-link" data-target="link-admission-signup">
+                        <i class="fas fa-copy me-1"></i> Copier
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Top Levels -->
         <div class="card-neumorphic">
             <h5 class="mb-4 border-bottom pb-2">
@@ -375,4 +405,39 @@
 
 {% block extra_css %}
 <link type="text/css" href="{% static 'main/css/dashboard.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.js-copy-link').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            if (!input) { return; }
+
+            var done = function () {
+                var original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check me-1"></i> Copié !';
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-primary');
+                setTimeout(function () {
+                    btn.innerHTML = original;
+                    btn.classList.add('btn-primary');
+                    btn.classList.remove('btn-success');
+                }, 2000);
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(input.value).then(done).catch(function () {
+                    input.select();
+                    document.execCommand('copy');
+                    done();
+                });
+            } else {
+                input.select();
+                document.execCommand('copy');
+                done();
+            }
+        });
+    });
+</script>
 {% endblock %}

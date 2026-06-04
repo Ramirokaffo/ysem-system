@@ -1,0 +1,23 @@
+{% comment %}
+    Rendu d'un champ pour le formulaire d'édition du dossier enseignant (admin).
+    Usage : {% include 'lecturers/admin/_edit_field.html' with field=profile_form.firstname col="col-md-6" %}
+{% endcomment %}
+{% if field.field.widget.input_type == 'checkbox' %}
+    <div class="{{ col|default:'col-md-6' }} mb-3">
+        <div class="form-check">
+            {{ field }}
+            <label class="form-check-label ml-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        </div>
+        {% if field.help_text %}<small class="text-muted d-block">{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    </div>
+{% else %}
+    <div class="{{ col|default:'col-md-6' }} mb-3">
+        <label class="form-label fw-bold" for="{{ field.id_for_label }}">
+            {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}<small class="text-muted d-block">{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+    </div>
+{% endif %}

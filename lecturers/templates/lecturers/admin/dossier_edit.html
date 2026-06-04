@@ -1,0 +1,298 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Modifier le dossier de {{ lecturer.firstname }} {{ lecturer.lastname }} - YSEM{% endblock %}
+{% block page_title %}Modifier le dossier enseignant{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" id="dossier-edit-form">
+    {% csrf_token %}
+
+    <!-- Navigation -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <a href="{% url 'lecturers:dossier_detail' lecturer.matricule %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2 mr-2"></i>Retour au dossier
+                    </a>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
+                            {{ lecturer.get_status_display }}
+                        </span>
+                        <button type="submit" name="save_and_continue" value="1" class="btn btn-primary ml-2">
+                            <i class="fas fa-save me-2 mr-2"></i>Enregistrer et continuer
+                        </button>
+                        <button type="submit" class="btn btn-primary ml-2">
+                            <i class="fas fa-save me-2 mr-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations personnelles -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-user me-2 mr-2"></i>Informations personnelles</h4>
+                <div class="row">
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.firstname col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.lastname col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.date_naiss col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.place_of_birth col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.gender col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.nationality col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.marital_status col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.number_of_dependent_children col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.nic col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.niu col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.has_health_problem col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.health_problem_description col="col-12" %}
+                    <div class="col-md-6 mb-3" data-profile-photo-field>
+                        <label class="form-label fw-bold" for="{{ profile_form.photo.id_for_label }}">
+                            {{ profile_form.photo.label }}{% if profile_form.photo.field.required %} <span class="text-danger">*</span>{% endif %}
+                        </label>
+                        <div class="profile-photo-current" {% if not lecturer.photo %}hidden{% endif %} data-profile-photo-preview-wrapper>
+                            <a href="{% if lecturer.photo %}{{ lecturer.photo.url }}{% endif %}" target="_blank">
+                                <img src="{% if lecturer.photo %}{{ lecturer.photo.url }}{% endif %}" alt="Photo" class="doc-thumb d-block" data-profile-photo-preview>
+                            </a>
+                            <span class="profile-photo-note d-block small text-muted mt-2" data-profile-photo-note></span>
+                        </div>
+                        {{ profile_form.photo }}
+                        {% if profile_form.photo.help_text %}<small class="text-muted d-block">{{ profile_form.photo.help_text }}</small>{% endif %}
+                        {% for error in profile_form.photo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coordonnées & contact d'urgence -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-address-book me-2 mr-2"></i>Coordonnées &amp; contact d'urgence</h4>
+                <div class="row">
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.phone_number col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.phone_number_2 col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.address col="col-12" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.emergency_contact_name col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.emergency_contact_relationship col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.emergency_contact_phone col="col-md-6" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=profile_form.emergency_contact_email col="col-md-6" %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations professionnelles -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-4 border-bottom pb-2"><i class="fas fa-briefcase me-2 mr-2"></i>Informations professionnelles</h4>
+                <div class="row">
+                    {% include 'lecturers/admin/_edit_field.html' with field=diploma_form.highest_diploma_obtained col="col-md-4" %}
+                    {% include 'lecturers/admin/_edit_field.html' with field=diploma_form.grade col="col-md-4" %}
+                    <div class="col-md-4 mb-3">
+                        {% include 'lecturers/admin/_edit_field.html' with field=diploma_form.cv col="col-12 p-0" %}
+                        {% if lecturer.cv %}
+                            <a href="{{ lecturer.cv.url }}" target="_blank" class="text-secondary"><i class="fas fa-file-download me-1 mr-1"></i>CV actuel</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matières enseignées -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4" id="subject-formset"
+                 data-prefix="{{ subject_formset.prefix }}"
+                 data-total-name="{{ subject_formset.management_form.TOTAL_FORMS.html_name }}">
+                <h4 class="mb-2 border-bottom pb-2"><i class="fas fa-book me-2 mr-2"></i>Matières enseignées</h4>
+                <p class="text-muted small">
+                    Pour chaque matière, précisez les années d'expérience. La matière d'un cours
+                    sélectionné est automatiquement ajoutée ici si elle est absente.
+                </p>
+
+                {{ subject_formset.management_form }}
+                {% if subject_formset.non_form_errors %}
+                    <div class="alert alert-danger">{{ subject_formset.non_form_errors }}</div>
+                {% endif %}
+
+                <div class="formset-list">
+                    {% for sub in subject_formset %}
+                        <div class="formset-block p-3 mb-3 bg-light rounded" data-form-index="{{ forloop.counter0 }}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>Matière #{{ forloop.counter }}</strong>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove">
+                                    <i class="fas fa-times me-1 mr-1"></i>Retirer
+                                </button>
+                            </div>
+                            {% for hidden in sub.hidden_fields %}{{ hidden }}{% endfor %}
+                            <div class="row">
+                                {% include 'lecturers/admin/_edit_field.html' with field=sub.subject col="col-md-6" %}
+                                {% include 'lecturers/admin/_edit_field.html' with field=sub.practice_experience_years col="col-md-3" %}
+                                {% include 'lecturers/admin/_edit_field.html' with field=sub.teaching_experience_years col="col-md-3" %}
+                                {% include 'lecturers/admin/_edit_field.html' with field=sub.proof_document col="col-md-8" %}
+                                {% if sub.instance.pk and sub.instance.proof_document %}
+                                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                                        <a href="{{ sub.instance.proof_document.url }}" target="_blank"><i class="fas fa-paperclip me-1 mr-1"></i>Justificatif actuel</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if subject_formset.can_delete and sub.instance.pk %}
+                                <div class="form-check">
+                                    {{ sub.DELETE }}
+                                    <label class="form-check-label ml-2" for="{{ sub.DELETE.id_for_label }}">Supprimer cette matière</label>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" class="btn btn-outline-secondary" data-action="add-subject">
+                    <i class="fas fa-plus me-2 mr-2"></i>Ajouter une matière
+                </button>
+
+                <template id="subject-empty-template">
+                    <div class="formset-block p-3 mb-3 bg-light rounded" data-form-index="__prefix__">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>Nouvelle matière</strong>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove">
+                                <i class="fas fa-times me-1 mr-1"></i>Retirer
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ subject_formset.empty_form.subject.label }}</label>
+                                {{ subject_formset.empty_form.subject }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">{{ subject_formset.empty_form.practice_experience_years.label }}</label>
+                                {{ subject_formset.empty_form.practice_experience_years }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">{{ subject_formset.empty_form.teaching_experience_years.label }}</label>
+                                {{ subject_formset.empty_form.teaching_experience_years }}
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-bold">{{ subject_formset.empty_form.proof_document.label }}</label>
+                                {{ subject_formset.empty_form.proof_document }}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cours proposés -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-4">
+                <h4 class="mb-2 border-bottom pb-2"><i class="fas fa-chalkboard-teacher me-2 mr-2"></i>Cours proposés</h4>
+                <p class="text-muted small">
+                    Cochez les cours proposés. Lorsqu'un cours est coché, sa matière est
+                    automatiquement ajoutée aux matières enseignées si elle est absente.
+                </p>
+
+                {% regroup all_courses by subject as subject_groups %}
+                {% if subject_groups %}
+                    {% for group in subject_groups %}
+                        <div class="course-group mb-3">
+                            <h6 class="fw-bold text-secondary"><i class="fas fa-book me-1 mr-1"></i>{{ group.grouper.name|default:'Matière non précisée' }}</h6>
+                            <div class="row">
+                                {% for course in group.list %}
+                                    <div class="col-md-6 col-lg-4 mb-2">
+                                        <div class="form-check p-2 pl-4 bg-light rounded">
+                                            <input type="checkbox" class="form-check-input course-checkbox"
+                                                   id="course-{{ course.course_code }}"
+                                                   name="courses" value="{{ course.course_code }}"
+                                                   data-subject-id="{{ course.subject_id|default:'' }}"
+                                                   {% if course.pk in selected_course_codes %}checked{% endif %}>
+                                            <label class="form-check-label" for="course-{{ course.course_code }}">
+                                                <span class="d-block fw-bold">{{ course.label }}</span>
+                                                <small class="text-muted">{{ course.course_code }}{% if course.level %} • {{ course.level.name }}{% endif %}{% if course.credit_count %} • {{ course.credit_count }} cr.{% endif %}</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-3 bg-light rounded text-muted">Aucun cours disponible.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card-neumorphic p-3 d-flex justify-content-end gap-2">
+                <a href="{% url 'lecturers:dossier_detail' lecturer.matricule %}" class="btn btn-outline-secondary mr-2">Annuler</a>
+                <button type="submit" name="save_and_continue" value="1" class="btn btn-primary mr-2"><i class="fas fa-save me-2 mr-2"></i>Enregistrer et continuer</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2 mr-2"></i>Enregistrer les modifications</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'main/css/profile_photo_cropper.css' %}">
+<style>
+    .form-label { color: var(--text-color); font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .form-control {
+        background: var(--primary-color);
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+        border-radius: 8px;
+    }
+    .bg-light {
+        background: var(--primary-color) !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: inset 1px 1px 3px #b8b9be, inset -1px -1px 3px #fff;
+    }
+    .btn { border-radius: 10px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; border: none; }
+    .btn:hover { box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #fff; }
+    .badge { border-radius: 20px; padding: 0.5em 1em; }
+    .doc-thumb { max-height: 90px; max-width: 100%; border-radius: 8px; margin-top: 8px; box-shadow: 2px 2px 5px #b8b9be, -2px -2px 5px #fff; }
+
+    /* Case "Effacer" générée par le ClearableFileInput de Django : style néomorphique. */
+    #dossier-edit-form input[type="checkbox"][name$="-clear"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 6px;
+        background: var(--primary-color);
+        box-shadow: inset 1px 2px 2px #b8b9be, inset -2px -2px 4px #fff;
+        vertical-align: middle;
+        cursor: pointer;
+        position: relative;
+        margin: 0 .35rem;
+    }
+    #dossier-edit-form input[type="checkbox"][name$="-clear"]:checked::after {
+        content: "\f00c";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        font-size: .65rem;
+        color: var(--accent-color, #4a6cf7);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'lecturers/js/dossier_edit.js' %}"></script>
+<script src="{% static 'main/js/profile_photo_cropper.js' %}"></script>
+{% endblock %}

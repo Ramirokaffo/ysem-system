@@ -13,5 +13,11 @@
             <span>Dossier Enseignant</span>
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'lecturers:settings' %}">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </a>
+    </li>
 </ul>
 
