@@ -28,6 +28,7 @@ urlpatterns = [
     path('dossiers/<str:matricule>/', admin_views.lecturer_dossier_detail, name='dossier_detail'),
     path('dossiers/<str:matricule>/modifier/', admin_views.lecturer_dossier_edit, name='dossier_edit'),
     path('dossiers/<str:matricule>/traiter/', admin_views.lecturer_dossier_process, name='dossier_process'),
+    path('dossiers/<str:matricule>/supprimer/', admin_views.lecturer_dossier_delete, name='dossier_delete'),
     path('dossiers/<str:matricule>/pdf/', admin_views.lecturer_dossier_pdf, name='dossier_pdf'),
 
 ]

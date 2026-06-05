@@ -13,8 +13,8 @@ class LecturerSubjectAdmin(admin.ModelAdmin):
 @admin.register(LecturerCourse)
 class LecturerCourseAdmin(admin.ModelAdmin):
     """Administration des cours enseignés par les enseignants"""
-    list_display = ['lecturer', 'course', 'is_validated', 'validated_by', 'validated_at', 'created_at']
-    list_filter = ['is_validated']
+    list_display = ['lecturer', 'course', 'status', 'validated_by', 'validated_at', 'created_at']
+    list_filter = ['status']
     search_fields = ['lecturer__firstname', 'lecturer__lastname', 'course__label']
     list_per_page = 25
     # raw_id_fields = ['lecturer', 'course', 'validated_by']

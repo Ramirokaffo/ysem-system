@@ -137,6 +137,7 @@
                                 {% include 'lecturers/admin/_edit_field.html' with field=sub.subject col="col-md-6" %}
                                 {% include 'lecturers/admin/_edit_field.html' with field=sub.practice_experience_years col="col-md-3" %}
                                 {% include 'lecturers/admin/_edit_field.html' with field=sub.teaching_experience_years col="col-md-3" %}
+                                {% include 'lecturers/admin/_edit_field.html' with field=sub.status col="col-md-4" %}
                                 {% include 'lecturers/admin/_edit_field.html' with field=sub.proof_document col="col-md-8" %}
                                 {% if sub.instance.pk and sub.instance.proof_document %}
                                     <div class="col-md-4 mb-3 d-flex align-items-end">
@@ -179,6 +180,10 @@
                                 <label class="form-label fw-bold">{{ subject_formset.empty_form.teaching_experience_years.label }}</label>
                                 {{ subject_formset.empty_form.teaching_experience_years }}
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">{{ subject_formset.empty_form.status.label }}</label>
+                                {{ subject_formset.empty_form.status }}
+                            </div>
                             <div class="col-md-8 mb-3">
                                 <label class="form-label fw-bold">{{ subject_formset.empty_form.proof_document.label }}</label>
                                 {{ subject_formset.empty_form.proof_document }}
@@ -196,7 +201,7 @@
             <div class="card-neumorphic p-4">
                 <h4 class="mb-2 border-bottom pb-2"><i class="fas fa-chalkboard-teacher me-2 mr-2"></i>Cours proposés</h4>
                 <p class="text-muted small">
-                    Cochez les cours proposés. Lorsqu'un cours est coché, sa matière est
+                    Cochez les cours que l'enseignant pourra dispenser. Lorsqu'un cours est coché, sa matière est
                     automatiquement ajoutée aux matières enseignées si elle est absente.
                 </p>
 
@@ -218,6 +223,12 @@
                                                 <span class="d-block fw-bold">{{ course.label }}</span>
                                                 <small class="text-muted">{{ course.course_code }}{% if course.level %} • {{ course.level.name }}{% endif %}{% if course.credit_count %} • {{ course.credit_count }} cr.{% endif %}</small>
                                             </label>
+                                            <select name="course_status_{{ course.course_code }}" class="form-control form-control-sm mt-2 course-status"
+                                                    {% if course.pk not in selected_course_codes %}disabled{% endif %}>
+                                                {% for value, label in course_status_choices %}
+                                                    <option value="{{ value }}" {% if course.lecturer_status == value %}selected{% elif not course.lecturer_status and value == 'pending' %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                     </div>
                                 {% endfor %}

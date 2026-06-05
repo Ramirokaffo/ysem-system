@@ -20,10 +20,17 @@
         return node;
     }
 
+    function syncCourseStatus(cb) {
+        var check = cb.closest('.form-check');
+        if (!check) return;
+        var select = check.querySelector('.course-status');
+        if (select) select.disabled = !cb.checked;
+    }
+
     function setCoursesForSubject(subjectId, checked) {
         if (!subjectId) return;
         var boxes = document.querySelectorAll('.course-checkbox[data-subject-id="' + subjectId + '"]');
-        boxes.forEach(function (cb) { cb.checked = checked; });
+        boxes.forEach(function (cb) { cb.checked = checked; syncCourseStatus(cb); });
     }
 
     function isActive(block) {
@@ -98,7 +105,9 @@
     document.querySelectorAll('.course-checkbox').forEach(function (cb) {
         cb.addEventListener('change', function () {
             if (cb.checked) ensureSubject(cb.dataset.subjectId);
+            syncCourseStatus(cb);
         });
+        syncCourseStatus(cb);
     });
 
     // Cocher « Supprimer cette matière » doit aussi décocher les cours de cette

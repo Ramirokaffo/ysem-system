@@ -61,8 +61,10 @@
                         <span class="course-code">{{ lc.course.course_code }}</span>
                         {{ lc.course.label }}
                         {% if lc.course.level %}<em>({{ lc.course.level.name }})</em>{% endif %}
-                        {% if lc.is_validated %}
+                        {% if lc.status == 'validated' %}
                             <span class="badge badge--success">Validé</span>
+                        {% elif lc.status == 'refused' %}
+                            <span class="badge badge--pending">Refusé</span>
                         {% else %}
                             <span class="badge badge--pending">En attente</span>
                         {% endif %}

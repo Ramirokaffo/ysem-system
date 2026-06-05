@@ -9,11 +9,17 @@ class LecturerSubject(models.Model):
     """
     Modèle pour les matières enseignées par un enseignant
     """
+    STATUS_CHOICES = [
+        ('pending', 'En attente de validation'),
+        ('validated', 'Validée'),
+        ('refused', 'Refusée'),
+    ]
+
     lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='lecturer_subjects', verbose_name="Enseignant")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='lecturer_subjects', verbose_name="Matière")
     practice_experience_years = models.IntegerField(default=0, verbose_name="Années d'expérience dans la pratique de cette discipline")
     teaching_experience_years = models.IntegerField(default=0, verbose_name="Années d'expérience dans l'enseignement de cette discipline")
-    is_validated = models.BooleanField(default=False, verbose_name="Validée pour enseigner cette matière")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut de validation de cette matière")
     validated_by = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='validated_subjects', verbose_name="Validée par")
     validated_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de validation")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'ajout")
@@ -33,9 +39,14 @@ class LecturerCourse(models.Model):
     """
     Modèle pour les cours enseignés par un enseignant
     """
+    STATUS_CHOICES = [
+        ('pending', 'En attente de validation'),
+        ('validated', 'Validée'),
+        ('refused', 'Refusée'),
+    ]
     lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='lecturer_courses')
     course = models.ForeignKey('academic.Course', on_delete=models.CASCADE, related_name='lecturer_courses')
-    is_validated = models.BooleanField(default=False, verbose_name="Validé pour enseigner ce cours")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Statut de validation de ce cours")
     validated_by = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='validated_courses', verbose_name="Validé par")
     validated_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de validation")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'ajout")

@@ -15,7 +15,9 @@ class SystemSettingsAdmin(admin.ModelAdmin):
             'fields': ('institution_name', 'institution_long_name', 'institution_code', 'address', 'phone', 'email', 'website', 'logo', 'timezone', 'language')
         }),
         ('Paramètres académiques', {
-            'fields': ('inscription_period', 'auto_approval', 'require_documents', 'allow_external_registration')
+            'fields': ('inscription_period', 
+                    #    'auto_approval', 'require_documents', ''
+                       'allow_external_registration')
         }),
         # ('Programmes et niveaux', {
         #     'fields': ('auto_level_progression', 'allow_level_change', 'require_level_validation',
@@ -24,10 +26,10 @@ class SystemSettingsAdmin(admin.ModelAdmin):
         ('Recrutement des enseignants', {
             'fields': ('teacher_recruitment_open', 'require_experience_for_licence_to_teach_licence', 'require_experience_for_masters_to_teach_masters', 'require_experience_for_doctors_to_teach_doctors')
         }),
-        ('Utilisateurs', {
-            'fields': ('default_role', 'session_timeout', 'view_documents', 'download_docs',
-                      'update_profile', 'view_statistics')
-        }),
+        # ('Utilisateurs', {
+        #     'fields': ('default_role', 'session_timeout', 'view_documents', 'download_docs',
+        #               'update_profile', 'view_statistics')
+        # }),
         ('Documents', {
             'fields': ('max_file_size', 'allowed_formats'
                     #    , 'student_card_enabled', 'transcript_enabled'

@@ -154,6 +154,12 @@
                                     <a href="{% url 'lecturers:dossier_process' lecturer.matricule %}" class="btn btn-sm btn-outline-dark" title="Traiter le dossier">
                                         <i class="fas fa-gavel"></i>
                                     </a>
+                                    <form method="post" action="{% url 'lecturers:dossier_delete' lecturer.matricule %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment supprimer le dossier de {{ lecturer.firstname }} {{ lecturer.lastname }} ?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger mx-1" title="Supprimer le dossier">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                     </div>
                                 </td>
                             </tr>

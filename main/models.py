@@ -11,7 +11,7 @@ class SystemSettings(models.Model):
     institution_long_name = models.CharField(max_length=200, default="Yaoundé Higher School of Economic and Management", verbose_name="Nom complet de l'institution")
     institution_code = models.CharField(max_length=50, default="YSEM001", verbose_name="Code de l'institution")
     address = models.TextField(default="Damas, Yaoundé, Cameroun", verbose_name="Adresse")
-    phone = models.CharField(max_length=20, default="+237 XXX XXX XXX", verbose_name="Téléphone")
+    phone = models.CharField(max_length=40, default="+237 XXX XXX XXX", verbose_name="Téléphone")
     email = models.EmailField(default="contact@ysem.education", verbose_name="Email")
     website = models.URLField(default="https://www.ysem.education", verbose_name="Site web")
     logo = models.ImageField(upload_to='system/logo/', blank=True, null=True, verbose_name="Logo de l'institution")

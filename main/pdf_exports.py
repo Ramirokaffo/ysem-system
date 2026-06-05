@@ -281,14 +281,14 @@ def _build_lecturer_summary_context(lecturer, annex_entries):
         details = (
             f"Exp. pratique : {ls.practice_experience_years} an(s) ; "
             f"Exp. enseignement : {ls.teaching_experience_years} an(s) ; "
-            f"Validée : {'Oui' if ls.is_validated else 'Non'}"
+            f"Statut : {ls.get_status_display()}"
         )
         subject_rows.append((ls.subject.name, details))
 
     course_rows = []
     for lc in lecturer.lecturer_courses.all():
         level_name = getattr(lc.course.level, 'name', None) or '—'
-        details = f"Niveau : {level_name} ; Validé : {'Oui' if lc.is_validated else 'Non'}"
+        details = f"Niveau : {level_name} ; Statut : {lc.get_status_display()}"
         course_rows.append((lc.course.label, details))
 
     refusal_rows = []

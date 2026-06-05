@@ -18,8 +18,8 @@ from lecturers.models import Lecturer
 from main.models import SystemSettings
 from main.pdf_exports import build_lecturer_dossier_pdf
 from recruitment.forms import (
+    AdminLecturerSubjectFormSet,
     DiplomaStep2Form,
-    LecturerSubjectFormSet,
     ProfileStep1Form,
 )
 from recruitment.models import LecturerCourse, LecturerRefusalReason, LecturerSubject
@@ -38,7 +38,7 @@ def admin_dashboard(request):
     settings_obj = SystemSettings.get_settings()
     context = {
         'submitted_count': submitted.count(),
-        'pending_courses_count': LecturerCourse.objects.filter(is_validated=False).count(),
+        'pending_courses_count': LecturerCourse.objects.filter(status='pending').count(),
         'recent_candidates': submitted.order_by('-recruitment_submitted_at')[:10],
         'teacher_recruitment_open': settings_obj.teacher_recruitment_open,
     }
@@ -66,7 +66,7 @@ def lecturer_settings(request):
 
 def _filter_lecturer_dossiers(params):
     """Construit le queryset des dossiers enseignants à partir des filtres GET."""
-    lecturers = Lecturer.objects.all()
+    lecturers = Lecturer.objects.filter(deleted_at__isnull=True)
 
     status = params.get('status')
     gender = params.get('gender')
@@ -157,7 +157,7 @@ def lecturer_dossier_create(request):
 def lecturer_dossier_detail(request, matricule):
     """Affiche le dossier détaillé d'un enseignant."""
     lecturer = get_object_or_404(
-        Lecturer.objects.prefetch_related(
+        Lecturer.objects.filter(deleted_at__isnull=True).prefetch_related(
             'lecturer_subjects__subject',
             'lecturer_courses__course__level',
         ),
@@ -172,10 +172,40 @@ def lecturer_dossier_detail(request, matricule):
     return render(request, 'lecturers/admin/dossier_detail.html', context)
 
 
-def _sync_lecturer_courses(lecturer, selected_course_codes):
+@never_cache
+@login_required
+def lecturer_dossier_delete(request, matricule):
+    """Supprime le dossier d'un enseignant.
+
+    La suppression est appliquée en positionnant ``deleted_at`` : le dossier
+    disparaît des listes et des détails côté administration."""
+    lecturer = get_object_or_404(
+        Lecturer.objects.filter(deleted_at__isnull=True), pk=matricule
+    )
+
+    if request.method != 'POST':
+        return redirect('lecturers:dossier_detail', matricule=matricule)
+
+    lecturer.deleted_at = timezone.now()
+    lecturer.save(update_fields=['deleted_at'])
+
+    messages.success(
+        request,
+        f"Le dossier de {lecturer.full_name()} a été supprimé.",
+    )
+    return redirect('lecturers:dossiers')
+
+
+def _sync_lecturer_courses(lecturer, selected_course_codes, course_statuses=None):
     """Synchronise les cours d'un enseignant et garantit l'invariant métier :
     la matière de chaque cours sélectionné fait toujours partie des matières
-    de l'enseignant (créée automatiquement si nécessaire)."""
+    de l'enseignant (créée automatiquement si nécessaire).
+
+    ``course_statuses`` est un dictionnaire optionnel ``{course_code: statut}``
+    permettant à l'administration de basculer le statut de validation
+    (validé / refusé) de chaque cours sélectionné."""
+    course_statuses = course_statuses or {}
+    valid_statuses = {choice for choice, _ in LecturerCourse.STATUS_CHOICES}
     selected_courses = list(
         Course.objects.filter(pk__in=selected_course_codes).select_related('subject')
     )
@@ -196,8 +226,16 @@ def _sync_lecturer_courses(lecturer, selected_course_codes):
         if course_id not in selected_ids:
             lc.delete()
     for course in selected_courses:
-        if course.pk not in existing:
-            LecturerCourse.objects.create(lecturer=lecturer, course=course)
+        status = course_statuses.get(course.pk)
+        status = status if status in valid_statuses else None
+        lc = existing.get(course.pk)
+        if lc is None:
+            LecturerCourse.objects.create(
+                lecturer=lecturer, course=course, status=status or 'pending'
+            )
+        elif status is not None and status != lc.status:
+            lc.status = status
+            lc.save(update_fields=['status'])
 
 
 @never_cache
@@ -220,10 +258,14 @@ def lecturer_dossier_edit(request, matricule):
         diploma_form = DiplomaStep2Form(
             request.POST, request.FILES, instance=lecturer, partial=True,
         )
-        subject_formset = LecturerSubjectFormSet(
+        subject_formset = AdminLecturerSubjectFormSet(
             request.POST, request.FILES, instance=lecturer,
         )
         selected_course_codes = set(request.POST.getlist('courses'))
+        course_statuses = {
+            code: request.POST.get(f'course_status_{code}')
+            for code in selected_course_codes
+        }
 
         forms_valid = all([
             profile_form.is_valid(),
@@ -235,7 +277,7 @@ def lecturer_dossier_edit(request, matricule):
                 profile_form.save()
                 diploma_form.save()
                 subject_formset.save()
-                _sync_lecturer_courses(lecturer, selected_course_codes)
+                _sync_lecturer_courses(lecturer, selected_course_codes, course_statuses)
             messages.success(
                 request,
                 f"Le dossier de {lecturer.full_name()} a été mis à jour avec succès.",
@@ -247,15 +289,20 @@ def lecturer_dossier_edit(request, matricule):
     else:
         profile_form = ProfileStep1Form(instance=lecturer, partial=True)
         diploma_form = DiplomaStep2Form(instance=lecturer, partial=True)
-        subject_formset = LecturerSubjectFormSet(instance=lecturer)
+        subject_formset = AdminLecturerSubjectFormSet(instance=lecturer)
         selected_course_codes = set(
             lecturer.lecturer_courses.values_list('course_id', flat=True)
         )
 
-    all_courses = (
+    course_status_map = dict(
+        lecturer.lecturer_courses.values_list('course_id', 'status')
+    )
+    all_courses = list(
         Course.objects.select_related('subject', 'level')
         .order_by('subject__name', 'level__academic_order', 'label')
     )
+    for course in all_courses:
+        course.lecturer_status = course_status_map.get(course.pk, '')
 
     context = {
         'lecturer': lecturer,
@@ -264,6 +311,7 @@ def lecturer_dossier_edit(request, matricule):
         'subject_formset': subject_formset,
         'all_courses': all_courses,
         'selected_course_codes': selected_course_codes,
+        'course_status_choices': LecturerCourse.STATUS_CHOICES,
     }
     return render(request, 'lecturers/admin/dossier_edit.html', context)
 
@@ -295,6 +343,7 @@ def lecturer_dossier_process(request, matricule):
         Lecturer.objects.prefetch_related(
             'lecturer_subjects__subject',
             'lecturer_courses__course__level',
+            'lecturer_courses__course__subject',
             'refusal_reasons',
         ),
         pk=matricule,
@@ -323,24 +372,35 @@ def lecturer_dossier_process(request, matricule):
 
 
 def _apply_validation_selection(request, lecturer):
-    """Met à jour l'état de validation des matières/cours selon les cases cochées."""
+    """Met à jour l'état de validation des matières/cours selon les cases cochées.
+
+    Les matières/cours cochés sont validés ; ceux qui ne le sont pas sont refusés.
+    Un cours ne peut être validé que si sa matière est elle-même validée :
+    cocher un cours dont la matière n'est pas cochée le laisse donc refusé.
+    """
     validated_subject_ids = set(request.POST.getlist('validated_subjects'))
     validated_course_ids = set(request.POST.getlist('validated_courses'))
     now = timezone.now()
 
+    validated_subject_pks = set()
     for ls in lecturer.lecturer_subjects.all():
         should_validate = str(ls.pk) in validated_subject_ids
-        ls.is_validated = should_validate
+        ls.status = 'validated' if should_validate else 'refused'
         ls.validated_by = request.user if should_validate else None
         ls.validated_at = now if should_validate else None
-        ls.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+        ls.save(update_fields=['status', 'validated_by', 'validated_at'])
+        if should_validate:
+            validated_subject_pks.add(ls.subject_id)
 
     for lc in lecturer.lecturer_courses.all():
-        should_validate = str(lc.pk) in validated_course_ids
-        lc.is_validated = should_validate
+        should_validate = (
+            str(lc.pk) in validated_course_ids
+            and lc.course.subject_id in validated_subject_pks
+        )
+        lc.status = 'validated' if should_validate else 'refused'
         lc.validated_by = request.user if should_validate else None
         lc.validated_at = now if should_validate else None
-        lc.save(update_fields=['is_validated', 'validated_by', 'validated_at'])
+        lc.save(update_fields=['status', 'validated_by', 'validated_at'])
 
 
 def _process_save_progress(request, lecturer):

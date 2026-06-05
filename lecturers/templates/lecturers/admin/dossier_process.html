@@ -160,7 +160,7 @@
                             {% for ls in lecturer_subjects %}
                             <tr>
                                 <td class="text-center">
-                                    <input type="checkbox" name="validated_subjects" value="{{ ls.pk }}" {% if ls.is_validated %}checked{% endif %}>
+                                    <input type="checkbox" class="subject-checkbox" name="validated_subjects" value="{{ ls.pk }}" data-subject-id="{{ ls.subject.pk }}" {% if ls.status == 'validated' %}checked{% endif %}>
                                 </td>
                                 <td>{{ ls.subject.name }}</td>
                                 <td class="text-center">{{ ls.practice_experience_years }} an(s)</td>
@@ -210,7 +210,7 @@
                             {% for lc in lecturer_courses %}
                             <tr>
                                 <td class="text-center">
-                                    <input type="checkbox" name="validated_courses" value="{{ lc.pk }}" {% if lc.is_validated %}checked{% endif %}>
+                                    <input type="checkbox" class="course-checkbox" name="validated_courses" value="{{ lc.pk }}" data-subject-id="{{ lc.course.subject.pk|default:'' }}" title="La matière correspondante doit être validée pour pouvoir valider ce cours." {% if lc.status == 'validated' %}checked{% endif %}>
                                 </td>
                                 <td>{{ lc.course.label }}</td>
                                 <td>{{ lc.course.level.name|default:"—" }}</td>
@@ -300,5 +300,37 @@
             modal.find('#descriptionModalText').html('<span class="text-muted">Aucune description disponible.</span>');
         }
     });
+
+    // Un cours ne peut être validé que si sa matière est validée.
+    (function () {
+        var subjectCheckboxes = document.querySelectorAll('.subject-checkbox');
+        var courseCheckboxes = document.querySelectorAll('.course-checkbox');
+
+        function refreshCourseAvailability() {
+            var validatedSubjects = new Set();
+            subjectCheckboxes.forEach(function (cb) {
+                if (cb.checked) {
+                    validatedSubjects.add(cb.dataset.subjectId);
+                }
+            });
+
+            courseCheckboxes.forEach(function (cb) {
+                var subjectId = cb.dataset.subjectId;
+                var allowed = subjectId !== '' && validatedSubjects.has(subjectId);
+                if (allowed) {
+                    cb.disabled = false;
+                } else {
+                    cb.checked = false;
+                    cb.disabled = true;
+                }
+            });
+        }
+
+        subjectCheckboxes.forEach(function (cb) {
+            cb.addEventListener('change', refreshCourseAvailability);
+        });
+
+        refreshCourseAvailability();
+    })();
 </script>
 {% endblock %}

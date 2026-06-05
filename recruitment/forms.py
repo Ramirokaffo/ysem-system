@@ -140,6 +140,29 @@ LecturerSubjectFormSet = inlineformset_factory(
 )
 
 
+class AdminLecturerSubjectForm(LecturerSubjectForm):
+    """Variante administrateur : permet en plus de modifier le statut de
+    validation de la matière (validée / refusée) à tout moment."""
+
+    class Meta(LecturerSubjectForm.Meta):
+        fields = LecturerSubjectForm.Meta.fields + ['status']
+        widgets = {
+            **LecturerSubjectForm.Meta.widgets,
+            'status': forms.Select(attrs={'class': _INPUT}),
+        }
+
+
+AdminLecturerSubjectFormSet = inlineformset_factory(
+    parent_model=Lecturer,
+    model=LecturerSubject,
+    form=AdminLecturerSubjectForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)
+
+
 class CourseSelectionForm(forms.Form):
     """Étape 4 — sélection des cours proposés (filtrés selon diplôme/expérience)."""
 
