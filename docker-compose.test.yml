@@ -45,9 +45,9 @@ services:
     ports:
       - "8001:8000"
     volumes:
-      - static_prod:/app/static
-      - media_prod:/app/media
-      - logs_prod:/app/logs
+      - static_test:/app/static
+      - media_test:/app/media
+      - logs_test:/app/logs
 
   # phpMyAdmin - MySQL Administration
   phpmyadmin:
@@ -78,3 +78,52 @@ networks:
   ysem-network-test:
     name: ysem-network-test
     driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
