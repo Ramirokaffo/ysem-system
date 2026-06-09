@@ -48,6 +48,7 @@ class BaseUser(AbstractUser):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True, verbose_name="Photo de profil")
 
     gender = models.CharField(
         max_length=10,

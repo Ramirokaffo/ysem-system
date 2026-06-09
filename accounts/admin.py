@@ -29,7 +29,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('username', 'password')
         }),
         ('Informations personnelles', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender')
+            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender', 'profile_image')
         }),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
@@ -53,7 +53,7 @@ class BaseUserAdmin(UserAdmin):
             'fields': ('username', 'password1', 'password2'),
         }),
         ('Informations personnelles', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender')
+            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'gender', 'profile_image')
         }),
         ('Informations professionnelles', {
             'fields': ('accessible_modules',)

@@ -4,143 +4,102 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>YSEM - Système de Gestion Académique</title>
+    <title>{{ institution_name }} - Système de gestion intégré</title>
 
     <!-- Font Awesome -->
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
 
     <!-- Neumorphism CSS -->
     <link type="text/css" href="{% static 'neumorphism-ui-v1.0.0/html&css/css/neumorphism.css' %}" rel="stylesheet">
+
+    <style>
+        /* Utilitaires de recadrage uniquement — l'habillage reste neumorphique */
+        .vitrine-hero-img { width: 100%; height: 360px; object-fit: cover; }
+        .vitrine-gallery-img { width: 100%; height: 200px; object-fit: cover; }
+        .vitrine-logo-img { max-height: 78px; width: auto; }
+    </style>
 </head>
 
 <body>
     <!-- Hero Section -->
-    <section class="section bg-soft pb-5 overflow-hidden">
+    <section class="section bg-soft pt-6 pb-5 overflow-hidden">
         <div class="container">
-            <div class="row justify-content-center text-center pt-6">
-                <div class="col-lg-8 col-xl-8">
-                    <!-- Logo/Icon with neumorphic effect -->
-                    <div class="bg-soft shadow-soft border border-light rounded p-4 mb-4 mx-auto d-inline-flex align-items-center justify-content-center">
-                        <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}" style="max-height: 78px; width: auto;">
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-6 text-center text-lg-left mb-5 mb-lg-0">
+                    <div class="bg-soft shadow-soft border border-light rounded p-4 mb-4 d-inline-flex align-items-center justify-content-center">
+                        <img src="{{ institution_logo_url }}" alt="{{ institution_logo_alt }}" class="vitrine-logo-img">
                     </div>
-                    <h1 class="display-2 mb-3">YSEM</h1>
-                    <p class="lead px-md-6">Système de Gestion Académique moderne et intuitif pour une gestion optimale de votre établissement</p>
+                    <h1 class="display-3 mb-3">{{ institution_name }}</h1>
+                    <p class="lead text-muted mb-4">
+                        Système de gestion intégré de l'établissement — scolarité, enseignements,
+                        planification, prospection et gestion des enseignants réunis dans une seule plateforme.
+                    </p>
+                    <a href="{% url 'authentication:login' %}" class="btn btn-primary btn-lg shadow-soft">
+                        <span class="fas fa-sign-in-alt mr-2"></span>Accéder au système
+                    </a>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="card bg-primary shadow-soft border-light p-2 rounded overflow-hidden">
+                        <img src="{% static 'main/images/heros/hero-1.jpg' %}" alt="{{ institution_name }}" class="vitrine-hero-img rounded">
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Main Content -->
-    <section class="section section-lg">
+    <!-- Modules Section -->
+    <section class="section bg-primary section-lg">
         <div class="container">
+            <div class="row">
+                <div class="col text-center mb-5">
+                    <h2 class="h3">Un système, tous vos métiers</h2>
+                    <p class="lead text-muted">L'ensemble des activités de l'établissement, centralisées et coordonnées</p>
+                </div>
+            </div>
             <div class="row justify-content-center">
-                <div class="col-12 col-lg-10 col-xl-8">
-
-                    <!-- Services Cards -->
-                    <div class="row mb-5">
-                        <!-- Administration -->
-                        <div class="col-12 col-md-6 mb-5 mb-md-0">
-                            <div class="card bg-primary shadow-soft border-light p-5 h-100 text-center">
-                                <!-- Icon with neumorphic effect -->
-                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
-                                    <i class="fas fa-users-cog fa-2x"></i>
-                                </div>
-                                <h3 class="h4 mb-3">Administration</h3>
-                                <p class="text-muted mb-4 px-lg-3">
-                                    Accès réservé au personnel administratif pour la gestion des étudiants,
-                                    des inscriptions et des documents officiels.
-                                </p>
-                                <a href="{% url 'authentication:login' %}" class="btn btn-primary btn-lg shadow-soft">
-                                    <i class="fas fa-sign-in-alt me-2"></i>
-                                    Connexion Administration
-                                </a>
-                            </div>
+                {% for module in modules %}
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <div class="card bg-primary shadow-soft border-light p-4 h-100 text-center">
+                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
+                            <i class="{{ module.icon }} fa-lg"></i>
                         </div>
-
-                        <!-- Portail Étudiant -->
-                        <div class="col-12 col-md-6">
-                            <div class="card bg-primary shadow-soft border-light p-5 h-100 text-center">
-                                <!-- Icon with neumorphic effect -->
-                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
-                                    <i class="fas fa-user-graduate fa-2x text-success"></i>
-                                </div>
-                                <h3 class="h4 mb-3">Portail Étudiant</h3>
-                                <p class="text-muted mb-4 px-lg-3">
-                                    Consultez vos documents officiels en ligne avec votre matricule
-                                    et le mot de passe fourni par la scolarité.
-                                </p>
-                                <a href="{% url 'student_portal:login' %}" class="btn btn-success btn-lg shadow-soft">
-                                    <i class="fas fa-external-link-alt me-2"></i>
-                                    Accès Étudiant
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Inscription Section -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card bg-primary shadow-soft border-light p-5 text-center">
-                                <!-- Icon with neumorphic effect -->
-                                <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-4 mx-auto">
-                                    <i class="fas fa-file-signature fa-2x text-info"></i>
-                                </div>
-                                <h3 class="h4 mb-3">Nouvelle Inscription</h3>
-                                <p class="text-muted mb-4 px-lg-6">
-                                    Vous souhaitez rejoindre YSEM ? Commencez votre parcours académique en remplissant notre formulaire d'inscription en ligne.
-                                </p>
-                                <a href="{% url 'admissions:signup' %}" class="btn btn-info btn-lg shadow-soft">
-                                    <i class="fas fa-plus-circle me-2"></i>
-                                    S'inscrire en ligne
-                                </a>
-                            </div>
-                        </div>
+                        <h3 class="h5 mb-2">{{ module.label }}</h3>
+                        <p class="text-muted mb-0">{{ module.description }}</p>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="section bg-primary pt-0 section-lg">
+    <!-- Établissement Section -->
+    <section class="section bg-soft section-lg">
         <div class="container">
             <div class="row">
-                <div class="col text-center">
-                    <div class="mb-5">
-                        <h2 class="h3">Pourquoi choisir YSEM ?</h2>
-                        <p class="lead text-muted">Une plateforme complète pour tous vos besoins académiques</p>
-                    </div>
+                <div class="col text-center mb-5">
+                    <h2 class="h3">L'établissement</h2>
+                    <p class="lead text-muted">Un cadre dédié à la réussite et à l'encadrement</p>
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 col-md-4">
-                    <!-- Icon box -->
-                    <div class="icon-box text-center mb-5 mb-md-0">
-                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
-                            <span class="fas fa-shield-alt text-danger"></span>
-                        </div>
-                        <h3 class="h5 my-3">Sécurisé</h3>
-                        <p class="px-lg-4">Vos données sont protégées par des systèmes de sécurité avancés</p>
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card bg-primary shadow-soft border-light p-2 rounded overflow-hidden">
+                        <img src="{% static 'main/images/heros/hero-2.jpg' %}" alt="{{ institution_name }}" class="vitrine-gallery-img rounded">
                     </div>
                 </div>
-                <div class="col-12 col-md-4 mb-5 mb-md-0">
-                    <!-- Icon box -->
-                    <div class="icon-box text-center">
-                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
-                            <span class="fas fa-clock text-success"></span>
-                        </div>
-                        <h3 class="h5 my-3">Disponible 24/7</h3>
-                        <p class="px-lg-4">Accédez à vos services académiques à tout moment, où que vous soyez</p>
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card bg-primary shadow-soft border-light p-2 rounded overflow-hidden">
+                        <img src="{% static 'main/images/heros/hero-3.jpg' %}" alt="{{ institution_name }}" class="vitrine-gallery-img rounded">
                     </div>
                 </div>
-                <div class="col-12 col-md-4 mb-5 mb-md-0">
-                    <!-- Icon box -->
-                    <div class="icon-box text-center">
-                        <div class="icon icon-shape icon-lg bg-soft shadow-soft border border-light rounded-circle mb-3">
-                            <span class="fas fa-mobile-alt text-info"></span>
-                        </div>
-                        <h3 class="h5 my-3">Responsive</h3>
-                        <p class="px-lg-4">Interface adaptée à tous vos appareils : ordinateur, tablette, mobile</p>
+                <div class="col-12 col-md-6 mb-4 mb-md-0">
+                    <div class="card bg-primary shadow-soft border-light p-2 rounded overflow-hidden">
+                        <img src="{% static 'main/images/heros/hero-4.jpg' %}" alt="{{ institution_name }}" class="vitrine-gallery-img rounded">
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="card bg-primary shadow-soft border-light p-2 rounded overflow-hidden">
+                        <img src="{% static 'main/images/heros/hero-5.jpg' %}" alt="{{ institution_name }}" class="vitrine-gallery-img rounded">
                     </div>
                 </div>
             </div>
@@ -148,23 +107,24 @@
     </section>
 
     <!-- Footer -->
-    <footer class="section bg-soft pt-5 pb-3">
+    <footer class="section bg-soft pt-0 pb-5">
         <div class="container">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <div class="card bg-primary shadow-soft border-light p-4 mb-4">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-8 text-center">
+                    <div class="card bg-primary shadow-soft border-light p-5">
                         <div class="card-body">
                             <div class="icon icon-shape icon-md bg-soft shadow-soft border border-light rounded-circle mb-3 mx-auto">
-                                <i class="fas fa-phone text-secondary"></i>
+                                <i class="fas fa-lock text-secondary"></i>
                             </div>
-                            <h4 class="h5 mb-3">Besoin d'aide ?</h4>
+                            <h4 class="h5 mb-3">Espace réservé au personnel</h4>
                             <p class="text-muted mb-0">
-                                Pour toute assistance technique ou administrative, contactez le service scolarité
+                                Cet espace est destiné à la gestion interne de l'établissement.
+                                Connectez-vous avec vos identifiants pour accéder à vos modules.
                             </p>
                         </div>
                     </div>
-                    <p class="text-muted mb-0">
-                        <small>© 2024 YSEM - Système de Gestion Académique. Tous droits réservés.</small>
+                    <p class="text-muted mt-4 mb-0">
+                        <small>© {% now "Y" %} {{ institution_name }}. Tous droits réservés.</small>
                     </p>
                 </div>
             </div>

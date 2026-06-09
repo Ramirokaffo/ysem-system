@@ -88,13 +88,19 @@
                         <span class="d-block font-weight-bold text-dark">{{ user.get_full_name|default:user.username }}</span>
                         <small class="text-muted">{{ user.get_role_display|default:"Administrateur" }}</small>
                     </div>
-                    <span class="icon icon-shape icon-shape-xs shadow-inset border border-light rounded-circle bg-primary text-dark font-weight-bold">
-                        {% if user.first_name and user.last_name %}
-                            {{ user.first_name.0 }}{{ user.last_name.0 }}
-                        {% else %}
-                            <span class="fas fa-user"></span>
-                        {% endif %}
-                    </span>
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="Photo de profil"
+                             class="icon icon-shape icon-shape-xs shadow-inset border border-light rounded-circle"
+                             style="object-fit: cover;">
+                    {% else %}
+                        <span class="icon icon-shape icon-shape-xs shadow-inset border border-light rounded-circle bg-primary text-dark font-weight-bold">
+                            {% if user.first_name and user.last_name %}
+                                {{ user.first_name.0 }}{{ user.last_name.0 }}
+                            {% else %}
+                                <span class="fas fa-user"></span>
+                            {% endif %}
+                        </span>
+                    {% endif %}
                 </a>
 
                 <!-- Menu déroulant -->

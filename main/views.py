@@ -29,8 +29,18 @@ logger = logging.getLogger(__name__)
 
 
 class HomeView(TemplateView):
-    """Vue d'accueil publique"""
+    """Vitrine interne du système de gestion de l'établissement"""
     template_name = 'main/home.html'
+
+    def get_context_data(self, **kwargs):
+        from accounts.access_modules import MODULE_CONFIG
+
+        context = super().get_context_data(**kwargs)
+        context['modules'] = [
+            {'label': cfg['label'], 'description': cfg['description'], 'icon': cfg['icon']}
+            for cfg in MODULE_CONFIG.values()
+        ]
+        return context
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -631,6 +641,17 @@ class ProfilView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Mon Profil'
         return context
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        if request.FILES.get('profile_image'):
+            user.profile_image = request.FILES['profile_image']
+        user.save()
+        messages.success(request, "Profil mis à jour avec succès.")
+        return redirect('main:profil')
 
 
 class UserProfileView(LoginRequiredMixin, TemplateView):
