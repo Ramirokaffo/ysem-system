@@ -20,6 +20,13 @@
                         <a href="{% url 'lecturers:dossier_pdf' lecturer.matricule %}" target="_blank" class="btn btn-outline-dark mr-2">
                             <i class="fas fa-file-pdf me-2 mr-2"></i>Exporter en PDF
                         </a>
+                        {% if lecturer.email %}
+                        {% with full_name=lecturer.firstname|add:' '|add:lecturer.lastname %}
+                        <a href="{% url 'emails:compose' %}?recipients={{ lecturer.email|urlencode }}&recipient_label={{ full_name|urlencode }}&next={{ request.get_full_path|urlencode }}" class="btn btn-outline-info mr-2">
+                            <i class="fas fa-envelope me-2 mr-2"></i>Envoyer un email
+                        </a>
+                        {% endwith %}
+                        {% endif %}
                         <span class="badge fs-6 {% if lecturer.status == 'hired' %}bg-success text-white{% elif lecturer.status == 'pending' %}bg-warning text-dark{% elif lecturer.status == 'refused' or lecturer.status == 'licensed' or lecturer.status == 'resigned' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %}">
                             {{ lecturer.get_status_display }}
                         </span>

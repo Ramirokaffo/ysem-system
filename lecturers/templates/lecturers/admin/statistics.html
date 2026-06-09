@@ -1,0 +1,157 @@
+{% extends 'lecturers/admin/base.html' %}
+{% load static %}
+
+{% block title %}Statistiques enseignants - YSEM{% endblock %}
+{% block page_title %}Statistiques enseignants{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+        <div class="card card-neumorphic shadow-soft p-4 h-100">
+            <div class="d-flex align-items-center">
+                <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3"><i class="fas fa-users"></i></span>
+                <div>
+                    <div class="h3 mb-0">{{ total_lecturers }}</div>
+                    <div class="text-gray font-small">Dossiers enseignants</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+        <div class="card card-neumorphic shadow-soft p-4 h-100">
+            <div class="d-flex align-items-center">
+                <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3"><i class="fas fa-user-check"></i></span>
+                <div>
+                    <div class="h3 mb-0">{{ hired_count }}</div>
+                    <div class="text-gray font-small">Enseignants recrutés</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+        <div class="card card-neumorphic shadow-soft p-4 h-100">
+            <div class="d-flex align-items-center">
+                <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3"><i class="fas fa-hourglass-half"></i></span>
+                <div>
+                    <div class="h3 mb-0">{{ pending_count }}</div>
+                    <div class="text-gray font-small">En attente de validation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3 mb-4">
+        <div class="card card-neumorphic shadow-soft p-4 h-100">
+            <div class="d-flex align-items-center">
+                <span class="icon icon-shape bg-primary shadow-inset rounded-circle text-dark mr-3"><i class="fas fa-id-badge"></i></span>
+                <div>
+                    <div class="h3 mb-0">{{ permanent_count }}</div>
+                    <div class="text-gray font-small">Enseignants permanents</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h5 class="mb-3"><i class="fas fa-chart-bar me-2 mr-2"></i>Répartition par statut du dossier</h5>
+            {% if status_stats %}
+                <div class="chart-container"><canvas id="statusChart"></canvas></div>
+            {% else %}
+                <p class="text-gray mb-0">Aucune donnée disponible.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h5 class="mb-3"><i class="fas fa-venus-mars me-2 mr-2"></i>Répartition par genre</h5>
+            {% if gender_stats %}
+                <div class="chart-container"><canvas id="genderChart"></canvas></div>
+            {% else %}
+                <p class="text-gray mb-0">Aucune donnée disponible.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h5 class="mb-3"><i class="fas fa-graduation-cap me-2 mr-2"></i>Répartition par diplôme</h5>
+            {% if diploma_stats %}
+                <div class="chart-container"><canvas id="diplomaChart"></canvas></div>
+            {% else %}
+                <p class="text-gray mb-0">Aucune donnée disponible.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card-neumorphic p-4 h-100">
+            <h5 class="mb-3"><i class="fas fa-briefcase me-2 mr-2"></i>Type de contrat</h5>
+            {% if total_lecturers %}
+                <div class="chart-container"><canvas id="contractChart"></canvas></div>
+            {% else %}
+                <p class="text-gray mb-0">Aucune donnée disponible.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{{ status_stats|json_script:"status-stats-data" }}
+{{ gender_stats|json_script:"gender-stats-data" }}
+{{ diploma_stats|json_script:"diploma-stats-data" }}
+{{ contract_stats|json_script:"contract-stats-data" }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container { position: relative; height: 320px; }
+    .icon-shape { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const parseStats = (id) => {
+        const el = document.getElementById(id);
+        return el ? JSON.parse(el.textContent) : [];
+    };
+    const baseOptions = (legend) => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: legend, position: 'bottom' } },
+    });
+    const barChart = (id, stats) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !stats.length) return;
+        new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: stats.map((s) => s.label),
+                datasets: [{ data: stats.map((s) => s.count), backgroundColor: stats.map((s) => s.color), borderRadius: 8 }],
+            },
+            options: { ...baseOptions(false), scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+        });
+    };
+    const pieChart = (id, stats, type) => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !stats.length) return;
+        new Chart(canvas.getContext('2d'), {
+            type: type || 'doughnut',
+            data: {
+                labels: stats.map((s) => s.label),
+                datasets: [{ data: stats.map((s) => s.count), backgroundColor: stats.map((s) => s.color), borderColor: '#fff', borderWidth: 2 }],
+            },
+            options: { ...baseOptions(true), cutout: type === 'pie' ? undefined : '58%' },
+        });
+    };
+    barChart('statusChart', parseStats('status-stats-data'));
+    barChart('diplomaChart', parseStats('diploma-stats-data'));
+    pieChart('genderChart', parseStats('gender-stats-data'), 'pie');
+    pieChart('contractChart', parseStats('contract-stats-data'));
+});
+</script>
+{% endblock %}

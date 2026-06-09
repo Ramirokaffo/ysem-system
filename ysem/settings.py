@@ -104,6 +104,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
 
+    'tinymce',  # Éditeur WYSIWYG
+
     # Applications personnalisées
     "main",
     "accounts",
@@ -120,8 +122,8 @@ INSTALLED_APPS = [
     "scholarship",
     "admissions",
     "recruitment",
-    "lecturers"
-
+    "lecturers",
+    "emails",
 ]
 
 MIDDLEWARE = [
@@ -356,3 +358,77 @@ LOGGING = {
         },
     },
 }
+
+
+
+
+
+TINYMCE_DEFAULT_CONFIG = {
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 20,
+    'selector': 'textarea',
+    'theme': 'silver',
+    'menu': {
+        'favs': {'title': 'My Favorites', 'items': 'code visualaid | searchreplace | emoticons'}
+    },
+    'menubar': 'favs file edit view insert format tools table help restoredraft',
+    'plugins': '''
+            textcolor save link image media preview codesample contextmenu
+            table code lists fullscreen insertdatetime nonbreaking
+            contextmenu directionality searchreplace wordcount visualblocks
+            visualchars code fullscreen autolink lists charmap print hr
+            anchor pagebreak emoticons accordion lists advlist searchreplace
+            preview quickbars autosave directionality importcss
+            ''',
+    'toolbar1': '''
+            fullscreen preview bold italic underline | fontselect,
+            fontsizeselect | forecolor backcolor | alignleft alignright |
+            aligncenter alignjustify | indent outdent | bullist numlist table |
+            | link image media | codesample | emoticons | accordion |
+            lists advlist | searchreplace | preview | restoredraft | ltr rtl
+            ''',
+    'toolbar2': '''
+            visualblocks visualchars | accordion |
+            charmap hr pagebreak nonbreaking anchor | code | quickimage | quicktable |
+            ''',
+    'contextmenu': 'formats | link image media | codesample',
+    'ui_mode': 'split',
+    'min_height': 500,
+    'statusbar': True,
+    'image_caption': True,
+    # 'file_picker_types': 'file image media',
+    'file_picker_types': 'image',
+
+    'automatic_uploads': True,
+    'image_advtab': True,
+    'image_uploadtab': True,
+    'object_resizing': True,
+    'autosave_retention': '1440m',
+    'content_css': [os.path.join("/", STATIC_URL, "css", "myTinyCME.css"), 'document'],
+    'importcss_append': True,
+    'autosave_restore_when_empty': True,
+    'file_picker_callback': '''(cb, value, meta) => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        const id = 'blobid' + (new Date()).getTime();
+        const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+        const base64 = reader.result.split(',')[1];
+        const blobInfo = blobCache.create(id, file, base64);
+        blobCache.add(blobInfo);
+
+        cb(blobInfo.blobUri(), { title: file.name });
+      });
+      reader.readAsDataURL(file);
+    });
+
+    input.click();
+  }''',
+    'image_list': '/get_images_url'
+}
+

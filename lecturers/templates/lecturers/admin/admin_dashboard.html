@@ -61,6 +61,7 @@
                             <th>Enseignant</th>
                             <th>Diplôme</th>
                             <th>Soumis le</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,6 +70,11 @@
                                 <td>{{ candidate.full_name|default:candidate }}</td>
                                 <td>{{ candidate.highest_diploma_obtained|default:"—" }}</td>
                                 <td>{{ candidate.recruitment_submitted_at|date:"d/m/Y H:i"|default:"—" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'lecturers:dossier_detail' candidate.matricule %}" class="btn btn-sm btn-outline-secondary" title="Voir le dossier">
+                                        <i class="fas fa-eye mr-1"></i>Voir le dossier
+                                    </a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

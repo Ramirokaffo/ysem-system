@@ -23,6 +23,7 @@ urlpatterns = [
 
     path('home/', admin_views.admin_dashboard, name='home'),
     path('parametres/', admin_views.lecturer_settings, name='settings'),
+    path('statistiques/', admin_views.lecturer_statistics, name='statistics'),
     path('dossiers/', admin_views.lecturer_dossiers, name='dossiers'),
     path('dossiers/ajouter/', admin_views.lecturer_dossier_create, name='dossier_create'),
     path('dossiers/<str:matricule>/', admin_views.lecturer_dossier_detail, name='dossier_detail'),

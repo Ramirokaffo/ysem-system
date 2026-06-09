@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -34,7 +34,9 @@ def admin_dashboard(request):
     L'accès au module est contrôlé en amont par le middleware basé sur les
     modules accessibles. Ce tableau de bord sera étoffé ultérieurement.
     """
-    submitted = Lecturer.objects.filter(recruitment_submitted=True)
+    submitted = Lecturer.objects.filter(
+        recruitment_submitted=True, deleted_at__isnull=True
+    )
     settings_obj = SystemSettings.get_settings()
     context = {
         'submitted_count': submitted.count(),
@@ -62,6 +64,75 @@ def lecturer_settings(request):
         form = TeacherRecruitmentSettingsForm(instance=settings_obj)
 
     return render(request, 'lecturers/admin/settings.html', {'form': form})
+
+
+@never_cache
+@login_required
+def lecturer_statistics(request):
+    """Statistiques sur les dossiers enseignants : répartition par statut,
+    diplôme, genre et type de contrat."""
+    lecturers = Lecturer.objects.filter(deleted_at__isnull=True)
+    total = lecturers.count()
+
+    palette = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+
+    def _decorate(stats, labels_map=None):
+        decorated = []
+        for index, stat in enumerate(stats):
+            value = stat['value']
+            label = labels_map.get(value, value) if labels_map else value
+            decorated.append({
+                'label': label or 'Non renseigné',
+                'count': stat['count'],
+                'color': palette[index % len(palette)],
+            })
+        return decorated
+
+    status_stats = _decorate(
+        [
+            {'value': s['status'], 'count': s['count']}
+            for s in lecturers.values('status')
+            .annotate(count=Count('matricule')).order_by('-count')
+        ],
+        dict(Lecturer.LECTURERS_STATUS_CHOICES),
+    )
+
+    diploma_stats = _decorate(
+        [
+            {'value': d['highest_diploma_obtained'], 'count': d['count']}
+            for d in lecturers.values('highest_diploma_obtained')
+            .annotate(count=Count('matricule')).order_by('-count')
+        ],
+        dict(Lecturer.DIPLOMAS_CHOICES),
+    )
+
+    gender_stats = _decorate(
+        [
+            {'value': g['gender'], 'count': g['count']}
+            for g in lecturers.values('gender')
+            .annotate(count=Count('matricule')).order_by('-count')
+        ],
+        {'M': 'Masculin', 'F': 'Féminin'},
+    )
+
+    permanent_count = lecturers.filter(is_permanent=True).count()
+    contract_stats = [
+        {'label': 'Permanent', 'count': permanent_count, 'color': palette[1]},
+        {'label': 'Vacataire', 'count': total - permanent_count, 'color': palette[5]},
+    ]
+
+    context = {
+        'total_lecturers': total,
+        'hired_count': lecturers.filter(status='hired').count(),
+        'pending_count': lecturers.filter(status='pending').count(),
+        'permanent_count': permanent_count,
+        'pending_courses_count': LecturerCourse.objects.filter(status='pending').count(),
+        'status_stats': status_stats,
+        'diploma_stats': diploma_stats,
+        'gender_stats': gender_stats,
+        'contract_stats': contract_stats,
+    }
+    return render(request, 'lecturers/admin/statistics.html', context)
 
 
 def _filter_lecturer_dossiers(params):

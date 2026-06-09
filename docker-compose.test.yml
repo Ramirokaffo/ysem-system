@@ -1,0 +1,80 @@
+# Environnement de TEST
+#   Lancement : docker compose -f docker-compose.test.yml up -d --build
+#
+
+name: ysem-test
+
+services:
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ysem-mysql-test
+    restart: unless-stopped
+    networks:
+      - ysem-network-test
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+      
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ramirokaffo/raal:latest
+    restart: unless-stopped
+    networks:
+      - ysem-network-test
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
+    volumes:
+      - static_prod:/app/static
+      - media_prod:/app/media
+      - logs_prod:/app/logs
+
+  # phpMyAdmin - MySQL Administration
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ysem-phpmyadmin-test
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "8086:80"
+    networks:
+      - ysem-network-test
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  static_prod:
+  media_prod:
+  logs_prod:
+
+networks:
+  ysem-network-test:
+    name: ysem-network-test
+    driver: bridge
