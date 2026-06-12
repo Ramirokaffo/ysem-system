@@ -3,25 +3,27 @@ name: Build & Deploy TEST
 on:
   push:
     tags:
-        - 'test-v*'
-    # branches:
-    #   - develop
+      - 'test-v*'
+
+jobs:
 
   build:
-    needs: build
+    runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@v4
 
-      - uses: docker/login-action@v3
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - uses: docker/build-push-action@v6
+      - name: Build and Push Image
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -29,14 +31,13 @@ on:
             ramirokaffo/raal:test-latest
             ramirokaffo/raal:${{ github.ref_name }}
 
-jobs:
   deploy:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
       - name: Deploy to TEST
         uses: appleboy/ssh-action@v1.2.0
-
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -56,11 +57,11 @@ jobs:
               -p"${DB_ROOT_PASSWORD}" \
               "${DB_NAME}" \
               > /opt/backups/ysem_test_$(date +%F_%H-%M-%S).sql
-            
+
             find /opt/backups \
-                -name "*.sql" \
-                -mtime +30 \
-                -delete
+              -name "*.sql" \
+              -mtime +30 \
+              -delete
 
             docker compose pull
 
