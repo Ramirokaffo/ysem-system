@@ -1,16 +1,16 @@
-# name: Deploy TEST
+# name: Deploy PROD
 
 # on:
 #   push:
 #     branches:
-#       - develop
+#       - main
 
 # jobs:
 #   deploy:
 #     runs-on: ubuntu-latest
 
 #     steps:
-#       - name: Deploy to TEST
+#       - name: Deploy to PROD
 #         uses: appleboy/ssh-action@v1.2.0
 
 #         with:
@@ -20,7 +20,7 @@
 #           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
 
 #           script: |
-#             cd /opt/ysem/test
+#             cd /opt/ysem/prod
 
 #             docker compose pull
 

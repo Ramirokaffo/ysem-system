@@ -1,0 +1,64 @@
+name: Build & Deploy TEST
+
+on:
+  push:
+    tags:
+        - 'test-v*'
+    # branches:
+    #   - develop
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ramirokaffo/raal:test-latest
+            ramirokaffo/raal:${{ github.ref_name }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to TEST
+        uses: appleboy/ssh-action@v1.2.0
+
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+
+          script: |
+            cd /opt/ysem/test
+
+            source .env
+
+            mkdir -p /opt/backups
+
+            docker exec ysem-mysql-test \
+              mysqldump \
+              -u root \
+              -p"${DB_ROOT_PASSWORD}" \
+              "${DB_NAME}" \
+              > /opt/backups/ysem_test_$(date +%F_%H-%M-%S).sql
+
+            docker compose pull
+
+            docker compose up -d --force-recreate
