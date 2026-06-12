@@ -8,7 +8,7 @@ on:
     #   - develop
 
   build:
-    runs-on: ubuntu-latest
+    needs: build
 
     steps:
 
