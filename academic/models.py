@@ -182,6 +182,7 @@ class Speciality(models.Model):
     Modèle pour les spécialités académiques
     """
     name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
     program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='specialities')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='specialities')
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
@@ -193,6 +194,26 @@ class Speciality(models.Model):
     class Meta:
         verbose_name = "Spécialité"
         verbose_name_plural = "Spécialités"
+
+
+class TeachingUnit(models.Model):
+    """
+    Modèle pour les unités d'enseignement
+    """
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, related_name='teaching_unit_specialities')
+    courses = models.ManyToManyField('Course', blank=True, related_name='teaching_units', verbose_name="Cours associés")
+    created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Unité d'enseignement"
+        verbose_name_plural = "Unités d'enseignement"
+
 
 
 class Course(models.Model):
@@ -210,7 +231,8 @@ class Course(models.Model):
     description = models.TextField(blank=True, null=True, verbose_name="Description")
     credit_count = models.IntegerField(verbose_name="Nombre de crédits")
     speciality = models.ForeignKey(Speciality, on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Spécialité")
-    subject = models.ForeignKey('Subject', on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Matière")
+    teaching_unit = models.ForeignKey(TeachingUnit, on_delete=models.SET_NULL, null=True, related_name='primary_courses', verbose_name="Unité d'enseignement")
+    subject = models.ForeignKey('Subject', on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Domaine")
     level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, related_name='courses', verbose_name="Niveau")
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
@@ -266,11 +288,10 @@ class Course(models.Model):
 
 class Subject(models.Model):
     """
-    Modèle pour les matières
+    Modèle pour les domaines/matières
     """
     name = models.CharField(max_length=200, verbose_name="Nom de la matière")
     description = models.TextField(blank=True, null=True, verbose_name="Description")
-    # course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subjects')
     created_at = models.DateTimeField(blank=True, null=True, auto_created=True, auto_now_add=True, verbose_name="Date d'ajout")
     last_updated = models.DateTimeField(auto_now=True, verbose_name="dernière mise à jour")
 
@@ -278,8 +299,8 @@ class Subject(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "Matière"
-        verbose_name_plural = "Matières"
+        verbose_name = "Domaine"
+        verbose_name_plural = "Domaines"
 
 class AcademicYear(models.Model):
     """

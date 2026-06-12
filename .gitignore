@@ -22,3 +22,6 @@ env314/
 ENV/
 .venv/
 
+
+id_ed25519_ysem
+id_ed25519_ysem.pub

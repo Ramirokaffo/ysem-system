@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from payments.models import PaymentInstallment
-from .models import Speciality, Department, Level, Course, Program, AcademicYear, ProgramDocumentRequirement, Subject
+from .models import Speciality, Department, Level, Course, Program, AcademicYear, ProgramDocumentRequirement, Subject, TeachingUnit
 
 
 class ProgramDocumentRequirementInline(admin.StackedInline):
@@ -36,7 +36,7 @@ class SpecialityAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('name', 'program'),
+            'fields': ('name', 'program', 'description'),
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),
@@ -46,13 +46,37 @@ class SpecialityAdmin(admin.ModelAdmin):
 
     readonly_fields = ['created_at', 'last_updated']
 
-    # def departments_count(self, obj):
-    #     count = obj.departments.count()
-    #     if count > 0:
-    #         return format_html('<strong>{}</strong> département{}', count, 's' if count > 1 else '')
-    #     return '0 département'
-    # departments_count.short_description = 'Départements'
+# class TeachingUnitCourseInline(admin.TabularInline):
+#     model = Course
+#     fields = ('course_code', 'label', 'level', 'subject', 'credit_count')
+#     readonly_fields = ('course_code', 'label', 'level', 'subject', 'credit_count')
+#     can_delete = True
+#     show_change_link = True
+#     verbose_name_plural = 'Cours associés'
 
+@admin.register(TeachingUnit)
+class TeachingUnitAdmin(admin.ModelAdmin):
+    """Administration des unités d'enseignement"""
+    list_display = ['name', 'created_at']
+    search_fields = ['name']
+    ordering = ['name']
+    list_per_page = 25
+    date_hierarchy = 'created_at'
+    save_on_top = True
+
+    # inlines = [TeachingUnitCourseInline]
+
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('name', 'program', 'description', 'courses', ),
+        }),
+        ('Informations système', {
+            'fields': ('created_at', 'last_updated'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    readonly_fields = ['created_at', 'last_updated']
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
@@ -135,8 +159,8 @@ class SubjectAdmin(admin.ModelAdmin):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     """Administration des cours"""
-    list_display = ['course_code', 'label', 'subject', 'program', 'credit_count', 'level', 'created_at']
-    list_filter = ['level', 'subject', 'program', 'credit_count', 'created_at']
+    list_display = ['course_code', 'label', 'subject', 'program', 'credit_count', 'level', 'teaching_unit', 'created_at']
+    list_filter = ['level', 'subject', 'teaching_unit', 'program', 'speciality', 'credit_count', 'created_at']
     search_fields = ['course_code', 'label', 'level__name']
     ordering = ['level__name', 'course_code']
     list_per_page = 25
@@ -145,7 +169,7 @@ class CourseAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('course_code', 'label', 'level', 'subject', 'program', 'description')
+            'fields': ('course_code', 'label', 'level', 'subject', 'program', 'teaching_unit', 'speciality', 'description')
         }),
         ('Crédits', {
             'fields': ('credit_count',)
@@ -182,7 +206,7 @@ class ProgramAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Informations générales', {
-            'fields': ('name',)
+            'fields': ('name', 'description')
         }),
         ('Informations système', {
             'fields': ('created_at', 'last_updated'),

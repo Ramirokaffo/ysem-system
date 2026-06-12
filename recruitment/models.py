@@ -28,8 +28,8 @@ class LecturerSubject(models.Model):
 
     class Meta:
         unique_together = ('lecturer', 'subject')
-        verbose_name = "Matière enseignée"
-        verbose_name_plural = "Matières enseignées"
+        verbose_name = "Domaine d'enseignement"
+        verbose_name_plural = "Domaines d'enseignement"
 
     def __str__(self):
         return f"{self.lecturer.full_name()} - {self.subject.name}"
@@ -69,15 +69,15 @@ class LecturerRefusalReason(models.Model):
     relation un-à-plusieurs conservant l'historique des motifs.
     """
     lecturer = models.ForeignKey(Lecturer, on_delete=models.CASCADE, related_name='refusal_reasons')
-    reason = models.TextField(verbose_name="Motif de refus")
+    reason = models.TextField(verbose_name="Motif de refus", max_length=1000, help_text="Indiquez clairement les raisons du refus de la candidature. Cela aidera l'enseignant à comprendre les points à améliorer pour une éventuelle resoumission.")
     can_be_resubmitted = models.BooleanField(default=False, verbose_name="Resoumission autorisée")
     created_by = models.ForeignKey(BaseUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='lecturer_refusals', verbose_name="Refusé par")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date du refus")
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = "Motif de refus"
-        verbose_name_plural = "Motifs de refus"
+        verbose_name = "Motif de refus de candidature"
+        verbose_name_plural = "Motifs de refus de candidature"
 
     def __str__(self):
         return f"Refus de {self.lecturer.full_name()} le {self.created_at:%d/%m/%Y}"
