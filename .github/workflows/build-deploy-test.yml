@@ -58,6 +58,11 @@ jobs:
               -p"${DB_ROOT_PASSWORD}" \
               "${DB_NAME}" \
               > /opt/backups/ysem_test_$(date +%F_%H-%M-%S).sql
+            
+            find /opt/backups \
+                -name "*.sql" \
+                -mtime +30 \
+                -delete
 
             docker compose pull
 
